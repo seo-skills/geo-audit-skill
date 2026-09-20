@@ -58,13 +58,28 @@ def test_the_codes_users_hit_have_a_troubleshooting_entry():
         assert code in TROUBLESHOOTING, f"{code} has no troubleshooting entry"
 
 
-def test_readme_signal_table_matches_the_data_files():
-    declared = data.weights()["citability"]["signals"]
-    for signal_id, meta in declared.items():
-        row = re.search(rf"\| `{re.escape(signal_id)}` \| (\w+) \| (\d+) \|", README)
-        assert row, f"{signal_id} is missing from the README table"
-        assert row.group(1) == meta["class"]
-        assert int(row.group(2)) == meta["max"]
+def test_readme_category_table_matches_the_data_files():
+    """The README's headline claim about what it measures, asserted."""
+    for name, category in data.weights().items():
+        row = re.search(
+            rf"\| \*\*{re.escape(name)}\*\* \| (\d+) \| (\d+)", README
+        )
+        assert row, f"{name} is missing from the README category table"
+        assert int(row.group(1)) == category["weight"], f"{name} weight"
+        assert int(row.group(2)) == len(category["signals"]), f"{name} signal count"
+
+
+def test_the_category_weights_sum_to_one_hundred():
+    assert sum(category["weight"] for category in data.weights().values()) == 100
+
+
+def test_readme_states_the_rules_that_shape_the_numbers():
+    for claim in (
+        "never scored as a failure",
+        "never becomes a number",
+        "scored once",
+    ):
+        assert claim in README, f"the README no longer states: {claim}"
 
 
 def test_readme_exit_code_table_matches_the_error_module():

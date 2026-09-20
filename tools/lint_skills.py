@@ -272,6 +272,26 @@ def lint_skill(report: Report, path: Path, version: str, contract: str, allowed:
         "description should say when to use the skill, not only what it is",
     )
 
+    if "## Preflight" in text:
+        preflight = text.split("## Preflight", 1)[1].split("\n## ", 1)[0]
+        report.check(
+            DIST_NAME in preflight,
+            where,
+            f"the preflight must name the current distribution, {DIST_NAME}",
+        )
+        report.check(
+            version.rsplit(".", 1)[0] in preflight,
+            where,
+            f"the preflight must name the current version line, {version.rsplit('.', 1)[0]}.x",
+        )
+        report.check(
+            "geo --version" in preflight,
+            where,
+            "the preflight must tell the model how to check the CLI",
+        )
+    else:
+        report.fail(where, "has no Preflight section")
+
     if CONTRACT_BEGIN in text and CONTRACT_END in text:
         block = text.split(CONTRACT_BEGIN, 1)[1].split(CONTRACT_END, 1)[0]
         report.check(

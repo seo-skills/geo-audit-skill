@@ -12,9 +12,9 @@ CLI      uv tool install seomator-geo-audit                  ->  geo audit <url>
 The CLI computes; the model explains and prioritizes. No score is ever produced by
 an LLM doing arithmetic in prose.
 
-> **Status: 0.2.0 in progress.** `fetch`, `crawl`, `score`, `audit` and `doctor` work
-> end to end with the full safety, evidence and exit-code contract behind them.
-> `report`, `compare` and the agency kit are still ahead. See [the roadmap](#roadmap).
+> **Status: 0.3.0.** All six scoring categories, eleven commands and nine skills work
+> end to end. What is left before 1.0 is the practitioner eval, not more features.
+> See [the roadmap](#roadmap).
 
 ## Install
 
@@ -41,10 +41,12 @@ the signals behind it, and the fixes ranked by what they recover.
 
 `geo audit` crawls the site and scores every category over it. It respects
 robots.txt for the links it discovers, holds to one request per second across the
-whole crawl, and records the result so you can reproduce the number later:
+whole crawl, and records the result so you can reproduce it later:
 
 ```bash
 geo audit https://example.com --rescore <run_id>   # recomputes, no network
+geo report https://example.com --pdf               # a document you can send
+geo compare https://example.com                    # what changed since last time
 ```
 
 Output is JSON whenever stdout is not a terminal, so the second command needs no
@@ -64,32 +66,36 @@ They never guess a number, and they never see raw page text.
 
 ## What it measures today
 
-**Citability** (weight 25) - seven signals over a page:
+Six categories, weighted to 100. Every signal is classified, and the class decides
+what it is allowed to do to a number.
 
-| Signal | Class | Max | Question |
+| Category | Weight | Signals | Asks |
 |---|---|---|---|
-| `citability.self_containment` | heuristic | 25 | Does each passage name its own subject? |
-| `citability.answer_first` | heuristic | 20 | Does each section lead with the answer? |
-| `citability.structure` | deterministic | 15 | Do the headings segment the page into answerable parts? |
-| `citability.evidence_density` | heuristic | 15 | Do claims carry numbers, dates and sources? |
-| `citability.extractability` | deterministic | 15 | Is the content in the HTML a crawler receives? |
-| `citability.attribution` | deterministic | 10 | Does the page say who wrote it and when? |
-| `citability.render_parity` | heuristic | 10 | How much text appears only after JavaScript? |
+| **citability** | 25 | 7 | Can a passage be lifted from the page and used as an answer? |
+| **brand** | 20 | 4 | Does the name resolve to an entity an engine can look up? |
+| **content** | 20 | 4 + 2 advisory | Is it deep, attributed, dated and quotable? |
+| **technical** | 15 | 6 | Can a crawler reach, read and index it at all? |
+| **schema** | 10 | 5 | Does the page describe itself in a form nobody has to interpret? |
+| **platform** | 10 | 4 | Is the per-surface plumbing there: llms.txt, preview cards, feeds, hreflang? |
 
-**Technical** (weight 15) - crawler access against the AI crawler tokens in
-robots.txt, indexability, metadata, status health, transport security, URL
-structure.
+Full definitions and thresholds: [docs/concepts/signals.md](docs/concepts/signals.md).
 
-**Schema** (weight 10) - presence, validity against schema.org requirements,
-publisher identity, article properties, and types that answer a question directly.
+### Three rules that shape every number
 
-`render_parity` needs the optional browser extra. Without it that signal is **null**,
-`completeness` reports 6 of 7 citability signals computed, and the score is taken
-over the six that were. **A signal that could not be measured is never scored as a
-failure** - and the same rule applies one level up: `geo audit --only schema` scores
-out of schema, not out of schema plus two zeroes.
+**A signal that could not be measured is never scored as a failure.** It is `null`,
+`completeness` names it, and the score is taken over the signals that were computed.
+The same rule applies one level up: `geo audit --only schema` scores out of schema,
+not out of schema plus five zeroes. A category whose input you did not supply — brand,
+without a name — is out of scope rather than missing.
 
-Full definitions, thresholds and rationale: [docs/concepts/signals.md](docs/concepts/signals.md).
+**Model judgement never becomes a number.** Two content questions are marked
+`advisory`: they carry a rubric and no value, a model answers them, and the composite
+filters on signal class so no code path turns an answer into a score. They appear in
+their own labelled section of the report.
+
+**A fact is scored once.** No signal id appears in two categories, and a test asserts
+it. Crawler access is technical; answer-shaped schema types are schema; preview cards
+are platform.
 
 ## Reading the output
 
@@ -139,16 +145,19 @@ would abort exactly the sites that most need a report.
 
 ## Roadmap
 
-| Release | Adds |
+| Release | State |
 |---|---|
-| 0.1.0 | `fetch`, `score`, `doctor`; evidence model; safety guards; `geo:citability` |
-| 0.2.0 | `crawl`, `audit` with rescoring, the technical and schema categories; then `scan`, `llmstxt`, `validate`, `prune` and five more skills |
-| 0.3.0 | reports in HTML and PDF with client and operator modes, run comparison, full docs |
-| 1.0.0 | envelope `schema_version` frozen |
+| 0.1.0 | `fetch`, `score`, `doctor`; evidence model; safety guards |
+| 0.2.0 | `crawl`, `audit` with rescoring, `scan`, `llmstxt`, `validate`, `prune`; technical, schema and brand |
+| 0.3.0 | `report` in HTML and PDF with client and operator modes, `compare`; content and platform; nine skills |
+| 1.0.0 | envelope `schema_version` frozen, after two consecutive practitioner evals |
+
+The gate on 1.0 is not a feature. It is [the eval](tests/evals/README.md): two rounds
+where an outside practitioner would send at least four of five reports unedited.
 
 ## Docs
 
-* [Quickstart](docs/quickstart.md)
+* [Quickstart](docs/quickstart.md) · [Practitioner eval](tests/evals/README.md)
 * [Command reference](docs/commands.md) (generated from the parser)
 * [Signals](docs/concepts/signals.md) · [Evidence](docs/concepts/evidence.md) · [Scoring methodology](docs/concepts/scoring-methodology.md) · [Score divergence](docs/concepts/score-divergence.md)
 * [Troubleshooting](docs/troubleshooting.md) — every exit code and `GEO_E_*` code mapped to a fix

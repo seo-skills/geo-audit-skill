@@ -1,5 +1,5 @@
 {
-  "cli_version": "0.2.0",
+  "cli_version": "0.3.0",
   "command": "fetch",
   "completeness": null,
   "data_version": "2026.09",

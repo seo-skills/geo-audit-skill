@@ -1,0 +1,10 @@
+{
+  "comment": "The five sites for the practitioner eval. Replace these with sites the practitioner knows well; they are a starting shape, not a recommendation. Keep max_pages modest and the rate at the default: the harness is a guest on someone else's server. Each entry may carry `args` for extra CLI flags, and `brand` for a brand file.",
+  "sites": [
+    { "url": "https://example.com", "shape": "placeholder", "max_pages": 10, "brand": null },
+    { "url": "https://example.org", "shape": "placeholder", "max_pages": 10, "brand": null },
+    { "url": "https://example.net", "shape": "placeholder", "max_pages": 10, "brand": null },
+    { "url": "https://example.edu", "shape": "placeholder", "max_pages": 10, "brand": null },
+    { "url": "https://example.io", "shape": "placeholder", "max_pages": 10, "brand": null }
+  ]
+}

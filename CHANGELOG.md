@@ -7,6 +7,56 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-20
+
+Reports, comparison, and the last two scoring categories. All six categories now
+compute and their weights sum to 100.
+
+### Added
+
+- **`geo report`** — a recorded audit rendered as a single self-contained HTML file,
+  optionally printed to PDF through the browser so the print stylesheet decides the
+  page breaks. Two modes: client, and operator with a provenance section.
+- **Client and operator isolation by construction.** `render_client` builds a
+  namespace with no `operator` key in it, under `StrictUndefined`, so a leak is a
+  render error rather than a field in a document already sent. Tests prove the
+  mechanism, walk every operator field, and check a report for data from a second
+  audited site.
+- **Brand tokens** with a real contrast rule. The header keeps the brand colour with
+  automatically chosen text; the accent, which is where palettes actually fail on
+  white, falls back loudly with a stderr warning and an operator-view annotation.
+- **`geo compare`** — what moved between two recorded audits, by category, finding and
+  page, with no network. It refuses across a scoring or data version change, because
+  that difference would measure the tool rather than the site.
+- **Content category** (weight 20): depth, expertise, freshness, readability.
+- **The advisory mechanism.** Two content questions carry a rubric and no value, a
+  model answers them, and `composite()` filters on signal class so no code path turns
+  an answer into a number. `geo report --advisory` folds answers into a labelled
+  section; answers to questions nobody asked, and verdicts outside the fixed set, are
+  refused.
+- **Platform category** (weight 10): llms.txt, preview cards, feeds, hreflang.
+  Deliberately narrow — anything already scored elsewhere is left out.
+- **Three more skills**: `geo:content`, `geo:compare`, `geo:report`. Nine in total.
+- **The practitioner eval harness** (`tests/evals/`): audits the sites, renders the
+  reports, and emits a blank two-person scoring form. It produces the inputs to a
+  judgement and never the judgement; a test asserts it never pre-fills an answer.
+
+### Changed
+
+- `hreflang` is not measured on a single-language site rather than scored zero.
+- Open Graph moved from `technical.metadata` to `platform.social_cards`, so one tag
+  counts once. A test asserts no signal id appears in two categories.
+- `--out` means one thing per command: this command's primary artifact. For `report`
+  that is the HTML file.
+- The skill lint checks each preflight names the current distribution and version.
+
+### Fixed
+
+- `geo report --out x.html` wrote the HTML and then overwrote it with the JSON
+  envelope.
+- Three skills shipped naming the old product in their preflight. The lint now
+  catches that class.
+
 ## [0.2.0] - 2026-09-20
 
 The audit itself: a crawler, four scored categories, and five more skills.
@@ -134,6 +184,7 @@ contract behind them, and one skill end to end.
   composite is taken over the signals that were computed; a signal that was not
   measured is never scored as a failure.
 
-[Unreleased]: https://github.com/seo-skills/geo-audit-skill/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/seo-skills/geo-audit-skill/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.3.0
 [0.2.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.2.0
 [0.1.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.1.0

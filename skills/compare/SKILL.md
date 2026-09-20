@@ -1,7 +1,7 @@
 ---
 name: compare
 description: Show what changed between two recorded audits of a site: score movement, which findings were resolved or introduced, and which pages changed. Use when asked whether things improved, what changed since last time, or to report progress on GEO work.
-version: 0.2.0
+version: 0.3.0
 allowed-tools: Bash, Read
 ---
 
@@ -19,10 +19,10 @@ Run this first, once per session:
 geo --version
 ```
 
-Expected: `geo-audit-cli 0.2.x` or newer.
+Expected: `seomator-geo-audit 0.2.x` or newer.
 
-- **Command not found** -> stop and say: "The geo CLI is not installed. Install it with `uv tool install geo-audit-cli` (or `pipx install geo-audit-cli`), then run this again."
-- **Older than 0.2.0** -> stop and say: "This skill needs geo-audit-cli 0.2.0 or newer. Upgrade with `uv tool upgrade geo-audit-cli`."
+- **Command not found** -> stop and say: "The geo CLI is not installed. Install it with `uv tool install seomator-geo-audit` (or `pipx install seomator-geo-audit`), then run this again."
+- **Older than 0.3.0** -> stop and say: "This skill needs seomator-geo-audit 0.3.0 or newer. Upgrade with `uv tool upgrade seomator-geo-audit`."
 - **Anything else odd** -> run `geo doctor` and relay what it reports.
 
 ## Run

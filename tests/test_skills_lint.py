@@ -45,8 +45,14 @@ def make_skill(tmp_path: Path, *, body: str, version: str = VERSION, name: str =
     return path
 
 
-def contract_block(text: str = CONTRACT) -> str:
-    return f"{lint_skills.CONTRACT_BEGIN}\n{text}\n{lint_skills.CONTRACT_END}"
+PREFLIGHT = (
+    "## Preflight\n\nRun `geo --version`. Expected: "
+    "`seomator-geo-audit " + VERSION.rsplit(".", 1)[0] + ".x` or newer.\n"
+)
+
+
+def contract_block(text: str = CONTRACT, preflight: str = PREFLIGHT) -> str:
+    return f"{preflight}\n{lint_skills.CONTRACT_BEGIN}\n{text}\n{lint_skills.CONTRACT_END}"
 
 
 def lint_one(path: Path) -> list[str]:
@@ -67,8 +73,23 @@ def test_a_drifted_response_contract_is_caught(tmp_path):
 
 
 def test_missing_contract_markers_are_caught(tmp_path):
-    path = make_skill(tmp_path, body="No contract here.")
+    path = make_skill(tmp_path, body=PREFLIGHT + "\n\nNo contract here.")
     assert any("markers are missing" in e for e in lint_one(path))
+
+
+def test_a_missing_preflight_is_caught(tmp_path):
+    path = make_skill(tmp_path, body=contract_block(preflight=""))
+    assert any("no Preflight section" in e for e in lint_one(path))
+
+
+def test_a_preflight_naming_the_wrong_distribution_is_caught(tmp_path):
+    """The bug this check exists for: three skills shipped naming the old
+    product in the one sentence a user is told to type."""
+    stale = "## Preflight\n\nRun `geo --version`. Expected: `geo-audit-cli 0.2.x`.\n"
+    path = make_skill(tmp_path, body=contract_block(preflight=stale))
+    errors = lint_one(path)
+    assert any("must name the current distribution" in e for e in errors)
+    assert any("must name the current version line" in e for e in errors)
 
 
 def test_a_version_mismatch_is_caught(tmp_path):
