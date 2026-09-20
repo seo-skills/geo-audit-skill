@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GEO audit — {{ client.site }} — {{ client.generated_on }}</title>
+<style>{{ stylesheet }}</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    {% if client.brand.name or client.brand.logo %}
+    <div class="brandline">
+      {% if client.brand.logo %}<img src="{{ client.brand.logo }}" alt="{{ client.brand.name or 'Logo' }}">{% endif %}
+      {% if client.brand.name %}<span class="who">{{ client.brand.name }}</span>{% endif %}
+    </div>
+    {% endif %}
+    <h1>GEO audit: {{ client.site }}</h1>
+    <p class="meta">{{ client.pages_scored }} page{{ '' if client.pages_scored == 1 else 's' }} scored &middot; {{ client.generated_on }}</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  {# 1 — the answer #}
+  <section aria-labelledby="verdict-heading">
+    <h2 id="verdict-heading" class="sr-only" style="position:absolute;left:-9999px">Result</h2>
+    <div class="verdict">
+      <span class="score">{{ client.composite if client.composite is not none else '—' }}</span>
+      <span class="outof">out of 100</span>
+      {% if client.tier %}<span class="tier">{{ client.tier }}</span>{% endif %}
+    </div>
+    {% if client.tier_meaning %}<p class="verdict-meaning">{{ client.tier_meaning }}</p>{% endif %}
+
+    {% if client.evidence_note %}
+    <div class="note"><p>{{ client.evidence_note }}</p></div>
+    {% endif %}
+
+    {% if client.headlines %}
+    <h2>What stands out</h2>
+    <ul>
+      {% for fix in client.headlines %}
+      <li><strong>{{ fix.title }}</strong> — {{ fix.severity }}, affects {{ fix.page_count }} page{{ '' if fix.page_count == 1 else 's' }}.</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if client.top_fixes %}
+    <h2>What to do, in order</h2>
+    {% for fix in client.top_fixes %}
+    <div class="fix {{ fix.severity }}">
+      <h3>{{ loop.index }}. {{ fix.title }}</h3>
+      <p class="tags">
+        <span class="tag">{{ fix.severity }}</span>
+        &middot; {{ fix.effort }} effort
+        &middot; {{ fix.page_count }} page{{ '' if fix.page_count == 1 else 's' }}
+        {% if fix.points %}&middot; recovers up to {{ fix.points }} points in {{ fix.category }}{% endif %}
+      </p>
+      <p>{{ fix.remediation }}</p>
+      {% if fix.pages %}
+      <p class="pages">{{ fix.pages[:3] | join(' · ') }}{% if fix.page_count > 3 %} and {{ fix.page_count - 3 }} more{% endif %}</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+    {% endif %}
+  </section>
+
+  {# 2 — category scores #}
+  {% if client.categories %}
+  <section>
+    <h2>Category scores</h2>
+    <table>
+      <thead><tr><th>Category</th><th>Score</th><th>Rating</th><th>Weight</th><th>What it measures</th></tr></thead>
+      <tbody>
+      {% for category in client.categories %}
+        <tr>
+          <td class="label" data-label="Category">{{ category.name }}</td>
+          <td class="num label" data-label="Score">{{ category.score }}/100</td>
+          <td class="label" data-label="Rating">{{ category.tier }}</td>
+          <td class="num label" data-label="Weight">{{ category.weight if category.weight else '—' }}</td>
+          <td class="label" data-label="Measures">{{ category.blurb }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+  {% endif %}
+
+  {# 3 — findings by category #}
+  {% if client.by_category %}
+  <section>
+    <h2>Everything found</h2>
+    {% for category, fixes in client.by_category.items() %}
+    <h3>{{ category }}</h3>
+    {% for fix in fixes %}
+    <div class="fix {{ fix.severity }}">
+      <h3>{{ fix.title }}</h3>
+      <p class="tags"><span class="tag">{{ fix.severity }}</span> &middot; {{ fix.effort }} effort &middot; {{ fix.page_count }} page{{ '' if fix.page_count == 1 else 's' }}</p>
+      <p>{{ fix.remediation }}</p>
+      {% if fix.pages %}<p class="pages">{{ fix.pages | join(' · ') }}</p>{% endif %}
+    </div>
+    {% endfor %}
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  {# 4 — advisory, visually distinct and excluded from every number #}
+  {% if client.advisory %}
+  <section class="advisory">
+    <span class="label">Advisory — model judgement, not scored</span>
+    <h2>Advisory analysis</h2>
+    <p>Nothing in this section contributes to any score above. It is included because
+       it is useful, and separated because it is judgement rather than measurement.</p>
+    {% for item in client.advisory %}
+    <h3>{{ item.id }}</h3>
+    <p>{{ item.detail.get('note', '') }}</p>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  {# 5 — appendix #}
+  <section class="appendix">
+    <h2>How this was measured</h2>
+    <p>Every number above is computed by a program from a recorded snapshot of the
+       site, not judged by a model. The same snapshot scored again produces the same
+       number.</p>
+
+    <h3>Categories and their weights</h3>
+    <dl>
+      {% for entry in client.methodology %}
+      <dt>{{ entry.name }}{% if entry.weight %} — weight {{ entry.weight }}{% endif %}</dt>
+      <dd>{{ entry.blurb }}</dd>
+      {% endfor %}
+    </dl>
+
+    <h3>Signal classes</h3>
+    <dl>
+      {% for entry in client.signal_classes %}
+      <dt>{{ entry.name }}</dt><dd>{{ entry.meaning }}</dd>
+      {% endfor %}
+    </dl>
+
+    <h3>Comparability</h3>
+    <p>A score is comparable with another score from this tool at the same scoring and
+       data version. Numbers from other tools measure different things.</p>
+  </section>
+
+  {% block provenance %}{% endblock %}
+
+  <footer class="colophon">
+    <p>Evidence {{ client.evidence_stamp }} &middot; scoring {{ client.versions.scoring }} &middot;
+       data {{ client.versions.data }} &middot; normalizer {{ client.versions.normalizer }}</p>
+    {% if client.brand.attribution %}
+    <p>Generated with {{ client.product_name }} {{ client.versions.tool }}.</p>
+    {% endif %}
+  </footer>
+
+</div>
+</body>
+</html>

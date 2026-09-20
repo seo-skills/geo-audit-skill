@@ -31,6 +31,7 @@ from geo_audit.commands import crawl as crawl_cmd
 from geo_audit.commands import doctor as doctor_cmd
 from geo_audit.commands import llmstxt as llmstxt_cmd
 from geo_audit.commands import prune as prune_cmd
+from geo_audit.commands import report as report_cmd
 from geo_audit.commands import scan as scan_cmd
 from geo_audit.commands import validate as validate_cmd
 from geo_audit.commands import fetch as fetch_cmd
@@ -51,9 +52,15 @@ COMMANDS = {
     "validate": validate_cmd.run,
     "llmstxt": llmstxt_cmd.run,
     "scan": scan_cmd.run,
+    "report": report_cmd.run,
     "prune": prune_cmd.run,
     "doctor": doctor_cmd.run,
 }
+
+# `--out` means "write this command's primary artifact here". For most commands
+# that artifact is the JSON envelope. For `report` it is the HTML file, which
+# the command writes itself - so the envelope must not then overwrite it.
+OWNS_OUT = frozenset({"report"})
 
 CONFIG_KEYS = (
     "timeout",
@@ -89,7 +96,12 @@ class UsageParser(argparse.ArgumentParser):
 def _global_flags() -> argparse.ArgumentParser:
     parent = argparse.ArgumentParser(add_help=False)
     parent.add_argument("--json", action="store_true", help="force JSON output")
-    parent.add_argument("--out", metavar="PATH", help="also write the JSON envelope here")
+    parent.add_argument(
+        "--out",
+        metavar="PATH",
+        help="write this command's primary artifact here (the JSON envelope, or "
+        "the HTML file for `report`)",
+    )
     parent.add_argument("--config", metavar="PATH", help="JSON file of default flag values")
     parent.add_argument(
         "--no-input",
@@ -285,6 +297,29 @@ def build_parser() -> argparse.ArgumentParser:
     )
     scan.add_argument("--timeout", type=float, default=http.DEFAULT_TIMEOUT, metavar="SECONDS")
 
+    report = subparsers.add_parser(
+        "report",
+        parents=[parent],
+        help="render a recorded audit as an HTML report",
+        description="Render a recorded audit as a single self-contained HTML file, "
+        "optionally as a PDF. Reads from disk and never crawls, so the same record "
+        "always produces the same document.",
+    )
+    report.add_argument("url", help="the site whose recorded audit to render")
+    report.add_argument("--run", metavar="RUN_ID", help="a specific run, instead of the latest")
+    report.add_argument(
+        "--mode",
+        default="client",
+        metavar="MODE",
+        help="client (default) or operator; operator adds a provenance section",
+    )
+    report.add_argument(
+        "--brand-config", metavar="PATH", help="a brand.json of colours, logo and name"
+    )
+    report.add_argument("--pdf", action="store_true", help="also write a PDF beside the HTML")
+    # `--out` is inherited from the global flags and means the HTML path here,
+    # which is why `report` is in OWNS_OUT.
+
     prune = subparsers.add_parser(
         "prune",
         parents=[parent],
@@ -356,7 +391,7 @@ def progress(args: argparse.Namespace, message: str) -> None:
 
 def _emit(envelope: dict, args: argparse.Namespace, out: TextIO) -> None:
     payload = envelope_mod.dumps(envelope)
-    if getattr(args, "out", None):
+    if getattr(args, "out", None) and args.command not in OWNS_OUT:
         target = Path(args.out).expanduser()
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(payload + "\n", encoding="utf-8")

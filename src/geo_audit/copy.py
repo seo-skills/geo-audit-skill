@@ -34,6 +34,15 @@ NO_BLOCKS = (
     "extractable blocks."
 )
 
+# 3 — PDF unavailable
+PDF_UNAVAILABLE = (
+    "PDF skipped: {reason}. HTML report written to {path}. To enable PDF: "
+    "`uv tool install 'seomator-geo-audit[browser]' && playwright install chromium`"
+)
+
+# 6 — success, report
+REPORT_WRITTEN = "{mode} report for {site} written to {path}."
+
 # 4 — error
 ERROR = "{message} ({code}) {hint} Details: {log}"
 

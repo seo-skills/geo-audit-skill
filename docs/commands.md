@@ -18,6 +18,7 @@ positional arguments:
     validate  check the structured data on one page
     llmstxt   check for an llms.txt, or build one from the site
     scan      check whether a brand exists as a lookupable entity
+    report    render a recorded audit as an HTML report
     prune     apply the retention rules to recorded history
     doctor    check this installation and its environment
 
@@ -45,7 +46,8 @@ positional arguments:
 options:
   -h, --help         show this help message and exit
   --json             force JSON output
-  --out PATH         also write the JSON envelope here
+  --out PATH         write this command's primary artifact here (the JSON
+                     envelope, or the HTML file for `report`)
   --config PATH      JSON file of default flag values
   --no-input         never prompt (reserved: this release never prompts)
   --quiet            suppress progress on stderr
@@ -79,7 +81,8 @@ positional arguments:
 options:
   -h, --help         show this help message and exit
   --json             force JSON output
-  --out PATH         also write the JSON envelope here
+  --out PATH         write this command's primary artifact here (the JSON
+                     envelope, or the HTML file for `report`)
   --config PATH      JSON file of default flag values
   --no-input         never prompt (reserved: this release never prompts)
   --quiet            suppress progress on stderr
@@ -121,7 +124,8 @@ positional arguments:
 options:
   -h, --help            show this help message and exit
   --json                force JSON output
-  --out PATH            also write the JSON envelope here
+  --out PATH            write this command's primary artifact here (the JSON
+                        envelope, or the HTML file for `report`)
   --config PATH         JSON file of default flag values
   --no-input            never prompt (reserved: this release never prompts)
   --quiet               suppress progress on stderr
@@ -166,7 +170,8 @@ positional arguments:
 options:
   -h, --help         show this help message and exit
   --json             force JSON output
-  --out PATH         also write the JSON envelope here
+  --out PATH         write this command's primary artifact here (the JSON
+                     envelope, or the HTML file for `report`)
   --config PATH      JSON file of default flag values
   --no-input         never prompt (reserved: this release never prompts)
   --quiet            suppress progress on stderr
@@ -200,7 +205,8 @@ positional arguments:
 options:
   -h, --help         show this help message and exit
   --json             force JSON output
-  --out PATH         also write the JSON envelope here
+  --out PATH         write this command's primary artifact here (the JSON
+                     envelope, or the HTML file for `report`)
   --config PATH      JSON file of default flag values
   --no-input         never prompt (reserved: this release never prompts)
   --quiet            suppress progress on stderr
@@ -231,7 +237,8 @@ positional arguments:
 options:
   -h, --help         show this help message and exit
   --json             force JSON output
-  --out PATH         also write the JSON envelope here
+  --out PATH         write this command's primary artifact here (the JSON
+                     envelope, or the HTML file for `report`)
   --config PATH      JSON file of default flag values
   --no-input         never prompt (reserved: this release never prompts)
   --quiet            suppress progress on stderr
@@ -266,7 +273,8 @@ positional arguments:
 options:
   -h, --help         show this help message and exit
   --json             force JSON output
-  --out PATH         also write the JSON envelope here
+  --out PATH         write this command's primary artifact here (the JSON
+                     envelope, or the HTML file for `report`)
   --config PATH      JSON file of default flag values
   --no-input         never prompt (reserved: this release never prompts)
   --quiet            suppress progress on stderr
@@ -306,7 +314,8 @@ positional arguments:
 options:
   -h, --help         show this help message and exit
   --json             force JSON output
-  --out PATH         also write the JSON envelope here
+  --out PATH         write this command's primary artifact here (the JSON
+                     envelope, or the HTML file for `report`)
   --config PATH      JSON file of default flag values
   --no-input         never prompt (reserved: this release never prompts)
   --quiet            suppress progress on stderr
@@ -316,6 +325,41 @@ options:
   --site URL         also read this site's Organization sameAs links and
                      compare them
   --timeout SECONDS
+```
+
+## `geo report`
+
+Render a recorded audit as a single self-contained HTML file, optionally as a PDF. Reads from disk and never crawls, so the same record always produces the same document.
+
+```
+usage: geo report [-h] [--json] [--out PATH] [--config PATH] [--no-input]
+                  [--quiet] [--verbose] [--allow-private] [--fail-on-partial]
+                  [--run RUN_ID] [--mode MODE] [--brand-config PATH] [--pdf]
+                  url
+
+Render a recorded audit as a single self-contained HTML file, optionally as a
+PDF. Reads from disk and never crawls, so the same record always produces the
+same document.
+
+positional arguments:
+  url                  the site whose recorded audit to render
+
+options:
+  -h, --help           show this help message and exit
+  --json               force JSON output
+  --out PATH           write this command's primary artifact here (the JSON
+                       envelope, or the HTML file for `report`)
+  --config PATH        JSON file of default flag values
+  --no-input           never prompt (reserved: this release never prompts)
+  --quiet              suppress progress on stderr
+  --verbose            more progress on stderr
+  --allow-private      permit a private, loopback or link-local start URL
+  --fail-on-partial    exit 5 when the result is PARTIAL
+  --run RUN_ID         a specific run, instead of the latest
+  --mode MODE          client (default) or operator; operator adds a
+                       provenance section
+  --brand-config PATH  a brand.json of colours, logo and name
+  --pdf                also write a PDF beside the HTML
 ```
 
 ## `geo prune`
@@ -333,7 +377,8 @@ would remove before removing it.
 options:
   -h, --help         show this help message and exit
   --json             force JSON output
-  --out PATH         also write the JSON envelope here
+  --out PATH         write this command's primary artifact here (the JSON
+                     envelope, or the HTML file for `report`)
   --config PATH      JSON file of default flag values
   --no-input         never prompt (reserved: this release never prompts)
   --quiet            suppress progress on stderr
@@ -360,7 +405,8 @@ extras. Always exits 0: it reports, it does not gate.
 options:
   -h, --help         show this help message and exit
   --json             force JSON output
-  --out PATH         also write the JSON envelope here
+  --out PATH         write this command's primary artifact here (the JSON
+                     envelope, or the HTML file for `report`)
   --config PATH      JSON file of default flag values
   --no-input         never prompt (reserved: this release never prompts)
   --quiet            suppress progress on stderr

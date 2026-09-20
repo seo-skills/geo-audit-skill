@@ -1,0 +1,81 @@
+{% extends "report.html.j2" %}
+{# The only template that may name `operator`. `render_client` builds a
+   namespace without that key, so a leak here is an UndefinedError, not a
+   silently delivered field. #}
+{% block provenance %}
+<section class="provenance">
+  <h2>Provenance — operator copy only</h2>
+  <p>This section is not present in the client report.</p>
+
+  <table>
+    <tbody>
+      <tr><td class="label" data-label="Run">Run</td><td><code>{{ operator.run_id }}</code></td></tr>
+      <tr><td class="label" data-label="Observed">Observed</td><td>{{ operator.observed_at }}</td></tr>
+      <tr><td class="label" data-label="Evidence">Evidence hash</td><td><code>{{ operator.evidence_hash }}</code></td></tr>
+      {% if operator.record_path %}
+      <tr><td class="label" data-label="Record">Record</td><td><code>{{ operator.record_path }}</code></td></tr>
+      {% endif %}
+      <tr><td class="label" data-label="Coverage">Signals computed</td>
+          <td>{{ operator.completeness.get('computed') }} of {{ operator.completeness.get('total') }}
+          {% if operator.completeness.get('missing') %}— not measured: {{ operator.completeness.get('missing') | join(', ') }}{% endif %}</td></tr>
+    </tbody>
+  </table>
+
+  {% if operator.crawl_limits %}
+  <h3>Crawl settings</h3>
+  <p>{{ operator.crawl_limits.get('requests_per_second') }} request/s across
+     {{ operator.crawl_limits.get('concurrency') }} workers, cap
+     {{ operator.crawl_limits.get('max_pages') }} pages, timeout
+     {{ operator.crawl_limits.get('timeout') }}s, robots
+     {{ 'respected' if operator.crawl_limits.get('robots_respected') else 'ignored' }}.</p>
+  {% endif %}
+
+  {% if operator.pages_failed %}
+  <h3>Pages that could not be evaluated ({{ operator.pages_failed | length }})</h3>
+  <table>
+    <thead><tr><th>Reason</th><th>Status</th><th>URL</th></tr></thead>
+    <tbody>
+      {% for entry in operator.pages_failed %}
+      <tr><td class="label" data-label="Reason">{{ entry.reason }}</td>
+          <td class="num label" data-label="Status">{{ entry.status if entry.status else '—' }}</td>
+          <td class="label" data-label="URL"><code>{{ entry.url }}</code></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  {% if operator.disallowed %}
+  <h3>Out of reach by robots.txt ({{ operator.disallowed | length }})</h3>
+  <ul>{% for url in operator.disallowed %}<li><code>{{ url }}</code></li>{% endfor %}</ul>
+  {% endif %}
+
+  <h3>Signals, with class and value</h3>
+  <table>
+    <thead><tr><th>Signal</th><th>Class</th><th>Value</th></tr></thead>
+    <tbody>
+      {% for signal in operator.signals %}
+      <tr><td class="label" data-label="Signal"><code>{{ signal.id }}</code></td>
+          <td class="label" data-label="Class">{{ signal.class }}</td>
+          <td class="num label" data-label="Value">{% if signal.value is none %}not measured{% else %}{{ signal.value }}/{{ signal.max }}{% endif %}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h3>Brand and contrast</h3>
+  {% if operator.brand_warnings %}
+  <ul>{% for warning in operator.brand_warnings %}<li>{{ warning }}</li>{% endfor %}</ul>
+  {% else %}
+  <p>Brand tokens applied without substitution.</p>
+  {% endif %}
+  <table>
+    <thead><tr><th>Pair</th><th>Ratio</th><th>AA</th></tr></thead>
+    <tbody>
+      {% for entry in operator.contrast %}
+      <tr><td class="label" data-label="Pair">{{ entry.pair }}</td>
+          <td class="num label" data-label="Ratio">{{ entry.ratio }}:1</td>
+          <td class="label" data-label="AA">{{ 'pass' if entry.passes_aa else 'FAIL' }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

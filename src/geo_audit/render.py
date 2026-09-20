@@ -54,6 +54,8 @@ def render(envelope: dict, out: TextIO | None = None) -> None:
         _render_audit(envelope, out, style)
     elif command == "compare":
         _render_compare(envelope, out, style)
+    elif command == "report":
+        _render_report(envelope, out, style)
     elif command == "validate":
         _render_validate(envelope, out, style)
     elif command == "llmstxt":
@@ -309,6 +311,56 @@ def _arrow(delta: float | None) -> str:
     if delta < 0:
         return "dn"
     return "--"
+
+
+def _render_report(envelope: dict, out: TextIO, style: Style) -> None:
+    block = envelope.get("report") or {}
+    scores = envelope.get("scores") or {}
+    brand = block.get("brand") or {}
+
+    print(
+        style.bold(
+            copytext.REPORT_WRITTEN.format(
+                mode=block.get("mode", "client").capitalize(),
+                site=block.get("site"),
+                path=block.get("path"),
+            )
+        ),
+        file=out,
+    )
+    print(
+        style.dim(
+            f"  GEO score {scores.get('composite')}/100 "
+            f"({(scores.get('tier') or '').capitalize()}) from run {block.get('from_run')}, "
+            f"recorded {block.get('observed_at')}."
+        ),
+        file=out,
+    )
+    if block.get("pdf_path"):
+        print(style.dim(f"  PDF: {block['pdf_path']}"), file=out)
+    if block.get("pdf_skipped"):
+        print(file=out)
+        print(block["pdf_skipped"], file=out)
+    if brand.get("customised"):
+        print(style.dim(f"  Brand: {brand.get('name') or brand.get('source')}"), file=out)
+    for warning in brand.get("warnings") or []:
+        print(style.dim(f"  Brand fallback: {warning}"), file=out)
+    if block.get("mode") == "client":
+        print(
+            style.dim(
+                "  Client mode: no run ids, evidence hashes, failed-page list or "
+                "signal internals are in this file."
+            ),
+            file=out,
+        )
+
+    print(file=out)
+    print(
+        copytext.NEXT_COMMAND.format(
+            command=f"geo report {block.get('site', '')} --mode operator"
+        ),
+        file=out,
+    )
 
 
 def _render_compare(envelope: dict, out: TextIO, style: Style) -> None:
