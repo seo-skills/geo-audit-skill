@@ -12,9 +12,10 @@ CLI      uv tool install seomator-geo-audit                  ->  geo audit <url>
 The CLI computes; the model explains and prioritizes. No score is ever produced by
 an LLM doing arithmetic in prose.
 
-> **Status: 0.3.0.** All six scoring categories, eleven commands and nine skills work
-> end to end. What is left before 1.0 is the practitioner eval, not more features.
-> See [the roadmap](#roadmap).
+> **Status: 0.4.0, feature-complete and frozen.** Eleven commands, nine skills, six
+> scoring categories, and an envelope schema the build enforces. What stands between
+> this and 1.0 is [the practitioner eval](tests/evals/README.md) — a human gate, by
+> design. See [the roadmap](#roadmap).
 
 ## Install
 
@@ -150,7 +151,8 @@ would abort exactly the sites that most need a report.
 | 0.1.0 | `fetch`, `score`, `doctor`; evidence model; safety guards |
 | 0.2.0 | `crawl`, `audit` with rescoring, `scan`, `llmstxt`, `validate`, `prune`; technical, schema and brand |
 | 0.3.0 | `report` in HTML and PDF with client and operator modes, `compare`; content and platform; nine skills |
-| 1.0.0 | envelope `schema_version` frozen, after two consecutive practitioner evals |
+| 0.4.0 | envelope JSON Schema enforced in CI; golden coverage for every command; the agency kit closed at its gate and deferred |
+| 1.0.0 | the frozen schema tagged, after two consecutive practitioner evals |
 
 The gate on 1.0 is not a feature. It is [the eval](tests/evals/README.md): two rounds
 where an outside practitioner would send at least four of five reports unedited.

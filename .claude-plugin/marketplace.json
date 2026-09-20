@@ -7,14 +7,14 @@
   },
   "metadata": {
     "description": "SEOmator GEO Audit Skill: GEO and SEO audit tooling for Claude Code",
-    "version": "0.3.0"
+    "version": "0.4.0"
   },
   "plugins": [
     {
       "name": "geo",
       "source": "./",
       "description": "SEOmator GEO Audit Skill. Scores are computed by a Python CLI and explained by the model, never the other way round.",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "author": {
         "name": "SEOmator"
       },

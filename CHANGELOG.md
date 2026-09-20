@@ -7,6 +7,46 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-09-20
+
+No new features. The envelope contract stops being a promise in prose and becomes
+something the build checks.
+
+### Added
+
+- **A published envelope JSON Schema**, shipped inside the package so a consumer
+  validates against the version they installed rather than against `main`.
+  `additionalProperties: false` at the top level is the freeze: a new top-level key
+  fails validation, which makes adding one a deliberate edit with a `schema_version`
+  decision attached.
+- **Every command's output validated against it in CI**, including a failing run.
+  Verified by injecting an unfrozen key into `doctor` and confirming the build breaks
+  with a message naming it.
+- **Golden coverage for all eleven commands**, up from four. `doctor` gets shape
+  coverage rather than a golden — it reports on the machine it runs on, so its values
+  are not comparable between two of them — and a test asserts no command is left with
+  neither.
+- **Troubleshooting prose for every error code**, asserted rather than curated, and a
+  quickstart that walks the whole workflow with a test that every command appears in it.
+
+### Changed
+
+- **The agency kit (M4) is closed at its gate and deferred, not deleted.** The gate
+  asked for concrete demand and there is none, because nothing is published yet. No
+  Flask, `rich` or `portalocker` dependency ships. The design in the project document
+  stands for whenever the first real request arrives.
+- Goldens scrub absolute paths and run-dependent values, so they are stable across
+  machines rather than passing by accident on one.
+- The schema fixture is module-scoped: the same coverage in 1.6s instead of 14s, which
+  is about twelve seconds back on each of six CI matrix cells.
+
+### Notes
+
+**1.0.0 is blocked on one thing, and it is not code.** The machinery for the schema
+freeze is here; 1.0.0 is the promise. The gate is two consecutive practitioner evals
+where an outside reviewer would send four of five reports unedited. See
+[tests/evals/README.md](tests/evals/README.md).
+
 ## [0.3.0] - 2026-09-20
 
 Reports, comparison, and the last two scoring categories. All six categories now
@@ -184,7 +224,8 @@ contract behind them, and one skill end to end.
   composite is taken over the signals that were computed; a signal that was not
   measured is never scored as a failure.
 
-[Unreleased]: https://github.com/seo-skills/geo-audit-skill/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/seo-skills/geo-audit-skill/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.4.0
 [0.3.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.3.0
 [0.2.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.2.0
 [0.1.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.1.0
