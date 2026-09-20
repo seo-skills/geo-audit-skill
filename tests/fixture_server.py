@@ -79,6 +79,14 @@ def site_routes() -> dict[str, Route]:
     return routes
 
 
+class _Server(ThreadingHTTPServer):
+    # The stdlib default is 5. The socket starts listening in the constructor
+    # but nothing accepts until the serving thread is scheduled, so a burst
+    # arriving in that window fills the queue and the kernel refuses it.
+    request_queue_size = 128
+    daemon_threads = True
+
+
 class _Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
     routes: dict[str, Route] = {}
@@ -130,7 +138,7 @@ class _Handler(BaseHTTPRequestHandler):
 class FixtureServer:
     def __init__(self, routes: dict[str, Route]) -> None:
         handler = type("BoundHandler", (_Handler,), {"routes": routes})
-        self._server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
+        self._server = _Server(("127.0.0.1", 0), handler)
         self._thread = threading.Thread(target=self._server.serve_forever, daemon=True)
 
     @property
@@ -140,7 +148,26 @@ class FixtureServer:
 
     def __enter__(self) -> "FixtureServer":
         self._thread.start()
+        self._await_ready()
         return self
+
+    def _await_ready(self, attempts: int = 100) -> None:
+        """Block until the server is actually accepting.
+
+        Starting the thread is not the same as serving: without this, the
+        first burst of requests can arrive before anything calls accept().
+        """
+        import socket
+        import time
+
+        host, port = self._server.server_address[:2]
+        for _ in range(attempts):
+            try:
+                with socket.create_connection((host, port), timeout=0.5):
+                    return
+            except OSError:
+                time.sleep(0.02)
+        raise RuntimeError(f"fixture server never started on {host}:{port}")
 
     def __exit__(self, *exc) -> None:
         self._server.shutdown()

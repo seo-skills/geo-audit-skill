@@ -119,6 +119,23 @@ def _peer_address(response: requests.Response) -> str | None:
     return None
 
 
+def _drain(response: requests.Response, limit: int) -> None:
+    """Read and discard a body so the connection closes with FIN, not RST.
+
+    Redirect bodies are normally a few bytes, and abandoning them mid-response
+    resets the socket. The limit is still honoured: an abusive server that
+    attaches a huge body to a 302 gets reset, which is the correct outcome.
+    """
+    read = 0
+    try:
+        for chunk in response.iter_content(chunk_size=8192):
+            read += len(chunk)
+            if read > limit:
+                return
+    except requests.RequestException:
+        return
+
+
 def _decode(raw: bytes, content_type: str | None) -> tuple[str, str]:
     encoding = None
     if content_type and "charset=" in content_type.lower():
@@ -238,6 +255,7 @@ def fetch(
                 location = response.headers.get("location")
 
                 if status in _REDIRECT_STATUSES and location:
+                    _drain(response, max_bytes)
                     chain.append(Hop(url=current, status=status, location=location))
                     current = urljoin(current, location)
                     continue

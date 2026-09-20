@@ -55,6 +55,26 @@ def test_redirect_to_a_private_host_is_refused(site, monkeypatch):
     assert raised.value.code in {"GEO_E_REDIRECT_BLOCKED", "GEO_E_PRIVATE_ADDRESS"}
 
 
+def test_an_abandoned_redirect_chain_leaves_the_server_usable(site):
+    """Regression, Linux-only in practice.
+
+    Redirect responses were abandoned without reading their bodies, so every
+    hop closed with RST instead of FIN. On Linux that left later connections
+    to the same server refused, and the whole suite failed downstream of one
+    redirect-loop test.
+    """
+    for _ in range(5):
+        with pytest.raises(GeoError):
+            http.fetch(f"{site.url}/redirect-loop", allow_private=True, max_redirects=5)
+    assert http.fetch(f"{site.url}/ssr-rich.html", allow_private=True).status == 200
+
+
+def test_a_long_redirect_chain_does_not_disturb_later_requests(site):
+    for _ in range(10):
+        assert http.fetch(f"{site.url}/redirect/3", allow_private=True).status == 200
+    assert http.fetch(f"{site.url}/schema-none.html", allow_private=True).status == 200
+
+
 def test_non_html_content_type_is_refused(site):
     with pytest.raises(GeoError) as raised:
         http.fetch(f"{site.url}/not-html", allow_private=True)
