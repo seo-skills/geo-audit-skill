@@ -98,6 +98,59 @@ and every prose signal is being computed on what is left.
 geo fetch https://example.com/page
 ```
 
+## `GEO_E_INCOMPARABLE`
+
+`geo compare` refuses when the two runs were scored under different rules — the
+formula changed (`scoring_version` major) or the constants did (`data_version`).
+
+This is not a bug to work around. Subtracting them would measure the tool rather than
+the site, and "your score fell six points" when only our thresholds moved is a false
+statement to whoever reads it. Re-run the older URL to get a comparable pair:
+
+```bash
+geo audit https://example.com
+geo compare https://example.com
+```
+
+## `GEO_E_TIMEOUT`, `GEO_E_DNS`, `GEO_E_CONNECT`, `GEO_E_TLS`
+
+Four different failures, and the message says which:
+
+| Message says | Means |
+|---|---|
+| the connection was refused | Nothing is listening. Check the port and any proxy. |
+| the server reset the connection | Something closed it mid-flight, often bot protection. |
+| closed the connection before sending a response | Usually a stale keep-alive connection; it retries once already. |
+| the connection timed out | Raise `--timeout` if the host is simply slow. |
+| couldn't resolve | DNS. Check for a typo and whether the domain resolves from this machine. |
+| TLS handshake failed | An expired or self-signed certificate. Fix the site, not the audit. |
+
+All four exit 3, which means no HTTP response was obtained. A response that arrived
+and said 403 or 500 is a **finding**, not one of these.
+
+## `GEO_E_BAD_URL` and `GEO_E_BLOCKED_SCHEME`
+
+Pass an absolute `http://` or `https://` URL. `example.com` is not one, and
+`file://`, `data://` and the rest are refused by design rather than by omission.
+
+## `GEO_E_BAD_ARGS`
+
+A flag value the command cannot use: an unknown category for `--only`, a run id that
+is not 26 characters, a brand or advisory file that is missing or malformed, an answer
+to an advisory question that was never asked. The message names which.
+
+## `GEO_E_PARTIAL`
+
+Only ever raised by `--fail-on-partial`. It means some pages could not be evaluated,
+and the findings name which and why. Drop the flag to accept a partial result — a
+PARTIAL audit exits 0 by default on purpose, because the sites whose bot protection
+blocks a crawler are exactly the sites that most need a report.
+
+## `GEO_E_INTERNAL`
+
+A bug here, not in the site. The message names the exception type and the log has the
+traceback. Please open an issue with both.
+
 ## Where the log is
 
 ```

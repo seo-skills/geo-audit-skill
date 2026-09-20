@@ -45,17 +45,23 @@ def test_every_error_code_is_documented_with_its_hint():
         assert spec.hint in COMMANDS
 
 
-def test_the_codes_users_hit_have_a_troubleshooting_entry():
-    """Not every code needs prose, but the ones with context do."""
-    for code in (
-        "GEO_E_PRIVATE_ADDRESS",
-        "GEO_E_REDIRECT_BLOCKED",
-        "GEO_E_TOO_LARGE",
-        "GEO_E_BAD_CONTENT_TYPE",
-        "GEO_E_TOO_MANY_REDIRECTS",
-        "GEO_E_STATE_NEWER",
-    ):
-        assert code in TROUBLESHOOTING, f"{code} has no troubleshooting entry"
+def test_every_error_code_has_troubleshooting_prose():
+    """A hint says what to do; the prose says why it happened.
+
+    Every code the CLI can raise gets both, so nobody has to read the source
+    to understand an exit status.
+    """
+    missing = [code for code in ERRORS if code not in TROUBLESHOOTING]
+    assert not missing, f"no troubleshooting prose for: {sorted(missing)}"
+
+
+def test_every_command_appears_in_the_quickstart():
+    """The quickstart is the only page most people read."""
+    quickstart = (ROOT / "docs/quickstart.md").read_text(encoding="utf-8")
+    parser = build_parser()
+    subparsers = next(a for a in parser._actions if hasattr(a, "choices") and a.choices)
+    missing = [name for name in subparsers.choices if f"geo {name}" not in quickstart]
+    assert not missing, f"the quickstart never shows: {sorted(missing)}"
 
 
 def test_readme_category_table_matches_the_data_files():
