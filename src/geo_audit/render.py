@@ -112,6 +112,9 @@ def _render_score(envelope: dict, out: TextIO, style: Style) -> None:
     )
     print(style.dim(f"  {scores.get('tier_meaning', '')}"), file=out)
 
+    if envelope.get("note"):
+        print(f"  {envelope['note']}", file=out)
+
     completeness = envelope.get("completeness") or {}
     if completeness.get("missing"):
         print(

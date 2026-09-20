@@ -68,6 +68,47 @@ def test_partial_state_names_how_many_pages_were_scored(site, geo_home):
     assert "Scores reflect the 41 pages only." in text
 
 
+def test_an_empty_page_states_the_reason_instead_of_a_bare_zero(site, geo_home):
+    _, output = render(["score", f"{site.url}/no-blocks.html", "--allow-private", "--no-render"])
+    assert "No citable content blocks found on this page." in output
+    assert "reason: no extractable blocks" in output
+
+
+def test_an_empty_page_is_not_told_to_rewrite_passages_it_does_not_have(site, geo_home):
+    """Every prose signal reads zero on an empty page, but only one is a cause."""
+    import io as _io
+    import json as _json
+
+    from geo_audit.cli import main as _main
+
+    buffer = _io.StringIO()
+    _main(
+        ["score", f"{site.url}/no-blocks.html", "--allow-private", "--quiet", "--no-render", "--json"],
+        out=buffer,
+    )
+    ids = {f["id"] for f in _json.loads(buffer.getvalue())["findings"]}
+    assert "citability.extractability" in ids, "the cause must still be reported"
+    assert "citability.self_containment" not in ids
+    assert "citability.answer_first" not in ids
+    assert "citability.attribution" not in ids
+
+
+def test_a_page_with_content_still_gets_every_finding(site, geo_home):
+    import io as _io
+    import json as _json
+
+    from geo_audit.cli import main as _main
+
+    buffer = _io.StringIO()
+    _main(
+        ["score", f"{site.url}/weak-prose.html", "--allow-private", "--quiet", "--no-render", "--json"],
+        out=buffer,
+    )
+    ids = {f["id"] for f in _json.loads(buffer.getvalue())["findings"]}
+    assert "citability.self_containment" in ids
+    assert "citability.answer_first" in ids
+
+
 def test_a_finding_with_no_points_to_recover_does_not_advertise_zero(site, geo_home):
     """robots and fetch findings are not scored signals.
 

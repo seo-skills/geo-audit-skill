@@ -56,11 +56,19 @@ def run(args, run_id: str) -> dict:
     signals = citability.score(page.doc, rendered_chars=rendered_chars)
     score, completeness = composite(signals)
     tier = data.tier_for(score)
-    findings = prioritize(findings_for(signals, block["final_url"]) + page.findings)
+    findings = findings_for(signals, block["final_url"]) + page.findings
 
     extra = {"page": block}
-    if page.doc is not None and not page.doc.blocks:
+    if not page.doc.blocks:
+        # Every prose signal reads zero on an empty page, but only one of them
+        # is a cause; the rest are consequences. Telling someone to rewrite the
+        # opening sentence of each passage, on a page with no passages, is
+        # worse than saying nothing. Report what explains the absence.
         extra["note"] = copytext.NO_BLOCKS
+        findings = [f for f in findings if not f.id.startswith("citability.")
+                    or f.id == "citability.extractability"]
+
+    findings = prioritize(findings)
 
     result = envelope.build(
         "score",
