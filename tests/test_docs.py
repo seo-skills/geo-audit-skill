@@ -73,6 +73,16 @@ def test_readme_exit_code_table_matches_the_error_module():
     assert "--fail-on-partial" in README
 
 
+def test_the_prepublication_note_disappears_once_the_package_is_published():
+    """A reminder, not a rule.
+
+    While the note is present the README must offer a command that works
+    today; when the PyPI release lands, delete the note and this test.
+    """
+    if "Not on PyPI yet" in README:
+        assert "git+https://github.com/seo-skills/geo-audit-skill" in README
+
+
 def test_readme_names_the_current_version():
     assert CLI_VERSION in README
 

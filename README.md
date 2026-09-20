@@ -19,6 +19,9 @@ uv tool install geo-audit-cli      # or: pipx install geo-audit-cli
 
 Python 3.11 or newer. No browser required.
 
+> **Not on PyPI yet.** Until the first release is published, install from source:
+> `uv tool install git+https://github.com/seo-skills/geo-audit-skill`
+
 ## Quickstart
 
 ```bash
