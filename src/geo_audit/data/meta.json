@@ -1,0 +1,4 @@
+{
+  "data_version": "2026.09",
+  "note": "Thresholds, weights, tiers and crawler tokens live here, not in code and not in prose. Data changes ship as a patch release on PyPI; pinning the data means pinning the package."
+}

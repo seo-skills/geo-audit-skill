@@ -1,0 +1,21 @@
+{
+  "comment": "Product tokens evaluated against a site's robots.txt. `gates` names what a site loses by disallowing the token. Every entry carries the operator's own documentation URL: this list is checkable, not folklore.",
+  "crawlers": [
+    { "token": "GPTBot", "operator": "OpenAI", "purpose": "model training", "gates": "presence in future OpenAI model weights", "critical": false, "docs": "https://platform.openai.com/docs/bots" },
+    { "token": "OAI-SearchBot", "operator": "OpenAI", "purpose": "search index", "gates": "appearing in ChatGPT search results", "critical": true, "docs": "https://platform.openai.com/docs/bots" },
+    { "token": "ChatGPT-User", "operator": "OpenAI", "purpose": "user-triggered browsing", "gates": "ChatGPT reading the page when a user links it", "critical": true, "docs": "https://platform.openai.com/docs/bots" },
+    { "token": "PerplexityBot", "operator": "Perplexity", "purpose": "search index", "gates": "being cited in Perplexity answers", "critical": true, "docs": "https://docs.perplexity.ai/guides/bots" },
+    { "token": "Perplexity-User", "operator": "Perplexity", "purpose": "user-triggered browsing", "gates": "Perplexity opening the page for a user", "critical": true, "docs": "https://docs.perplexity.ai/guides/bots" },
+    { "token": "ClaudeBot", "operator": "Anthropic", "purpose": "model training", "gates": "presence in future Claude model weights", "critical": false, "docs": "https://support.anthropic.com/en/articles/8896518" },
+    { "token": "Claude-SearchBot", "operator": "Anthropic", "purpose": "search index", "gates": "appearing in Claude's search results", "critical": true, "docs": "https://support.anthropic.com/en/articles/8896518" },
+    { "token": "Claude-User", "operator": "Anthropic", "purpose": "user-triggered browsing", "gates": "Claude reading the page when a user links it", "critical": true, "docs": "https://support.anthropic.com/en/articles/8896518" },
+    { "token": "Google-Extended", "operator": "Google", "purpose": "Gemini and Vertex grounding", "gates": "use as a grounding source for Gemini", "critical": true, "docs": "https://developers.google.com/search/docs/crawling-indexing/overview-google-crawlers" },
+    { "token": "Googlebot", "operator": "Google", "purpose": "search index", "gates": "Google Search and AI Overviews, both of which source from the index", "critical": true, "docs": "https://developers.google.com/search/docs/crawling-indexing/overview-google-crawlers" },
+    { "token": "Bingbot", "operator": "Microsoft", "purpose": "search index", "gates": "Bing and Copilot, which source from the Bing index", "critical": true, "docs": "https://www.bing.com/webmasters/help/which-crawlers-does-bing-use-8c184ec0" },
+    { "token": "Applebot", "operator": "Apple", "purpose": "search index", "gates": "Siri and Spotlight suggestions", "critical": false, "docs": "https://support.apple.com/en-us/119829" },
+    { "token": "Applebot-Extended", "operator": "Apple", "purpose": "model training", "gates": "use in Apple foundation models", "critical": false, "docs": "https://support.apple.com/en-us/119829" },
+    { "token": "meta-externalagent", "operator": "Meta", "purpose": "model training and indexing", "gates": "use by Meta AI", "critical": false, "docs": "https://developers.facebook.com/docs/sharing/webmasters/web-crawlers/" },
+    { "token": "Amazonbot", "operator": "Amazon", "purpose": "search index", "gates": "Alexa answers", "critical": false, "docs": "https://developer.amazon.com/amazonbot" },
+    { "token": "CCBot", "operator": "Common Crawl", "purpose": "open web corpus", "gates": "inclusion in the corpus most open models train on", "critical": false, "docs": "https://commoncrawl.org/ccbot" }
+  ]
+}

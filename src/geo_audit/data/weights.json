@@ -1,0 +1,24 @@
+{
+  "categories": {
+    "citability": {
+      "weight": 25,
+      "signals": {
+        "citability.self_containment": { "max": 25, "class": "heuristic" },
+        "citability.answer_first":     { "max": 20, "class": "heuristic" },
+        "citability.structure":        { "max": 15, "class": "deterministic" },
+        "citability.evidence_density": { "max": 15, "class": "heuristic" },
+        "citability.extractability":   { "max": 15, "class": "deterministic" },
+        "citability.attribution":      { "max": 10, "class": "deterministic" },
+        "citability.render_parity":    { "max": 10, "class": "heuristic", "requires": "browser" }
+      }
+    }
+  },
+  "planned_categories": {
+    "comment": "Declared so the divergence table can reference them before they ship. Absent from every computation until their milestone lands.",
+    "technical": { "weight": 15, "milestone": "M2" },
+    "schema": { "weight": 10, "milestone": "M2" },
+    "brand": { "weight": 20, "milestone": "M2" },
+    "content": { "weight": 20, "milestone": "M3" },
+    "platform": { "weight": 10, "milestone": "M3" }
+  }
+}

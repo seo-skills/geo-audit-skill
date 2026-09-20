@@ -1,0 +1,73 @@
+{
+  "comment": "One entry per scored signal. Severity is the ceiling: a signal scoring between full_severity_below and no_finding_above is demoted one step down the ladder. Remediation copy is data, so correcting the advice never touches the scorer.",
+  "signals": {
+    "citability.self_containment": {
+      "severity": "critical",
+      "effort": "medium",
+      "title": "Passages depend on the paragraph above them",
+      "remediation": "Rewrite the opening sentence of each passage so it names its own subject. An engine lifts one paragraph, not the page: a paragraph that starts with \"This also means...\" arrives at the reader with nothing to point at."
+    },
+    "citability.answer_first": {
+      "severity": "high",
+      "effort": "medium",
+      "title": "Sections build up to the answer instead of leading with it",
+      "remediation": "Put the direct answer in the first sentence under each heading, then explain. Move throat-clearing openers below the answer or delete them."
+    },
+    "citability.structure": {
+      "severity": "medium",
+      "effort": "low",
+      "title": "Heading structure does not segment the page into answerable sections",
+      "remediation": "Give the page one H1 and at least three H2s, each phrased as the question its section answers. Do not skip heading levels; split any section over 400 words."
+    },
+    "citability.evidence_density": {
+      "severity": "high",
+      "effort": "medium",
+      "title": "Claims arrive without numbers, dates or sources",
+      "remediation": "Add the specific figure, date, version or measurement to each claim, and link the primary source. Passages carrying a checkable fact are the ones engines quote."
+    },
+    "citability.extractability": {
+      "severity": "critical",
+      "effort": "high",
+      "title": "Little usable content is present in the HTML the crawler receives",
+      "remediation": "Server-render the main content, or pre-render it for crawlers. Most AI crawlers do not execute JavaScript, so content that only appears after hydration does not exist to them."
+    },
+    "citability.attribution": {
+      "severity": "medium",
+      "effort": "low",
+      "title": "The page does not say who wrote it or when",
+      "remediation": "Add a visible byline, a published date and a last-modified date, and mirror them in Article or Organization JSON-LD. Attribution is what lets an engine decide the page is safe to quote."
+    },
+    "citability.render_parity": {
+      "severity": "critical",
+      "effort": "high",
+      "title": "Much of the visible text only appears after JavaScript runs",
+      "remediation": "Move the text that appears only after hydration into the server response. Compare the two yourself with `curl` and your browser's view-source."
+    }
+  },
+  "checks": {
+    "robots.ai_crawler_blocked": {
+      "severity": "critical",
+      "effort": "low",
+      "title": "robots.txt blocks crawlers that AI answers depend on",
+      "remediation": "Allow the listed tokens in robots.txt, or accept that this page cannot appear in those engines' answers. Training tokens and search tokens are separate decisions: you can refuse training and still be citable."
+    },
+    "robots.unreachable": {
+      "severity": "high",
+      "effort": "low",
+      "title": "robots.txt returns a server error",
+      "remediation": "Fix or remove /robots.txt. RFC 9309 tells compliant crawlers to treat a 5xx as a complete disallow, so a broken robots.txt blocks the whole site."
+    },
+    "fetch.blocked": {
+      "severity": "critical",
+      "effort": "medium",
+      "title": "The page refused an ordinary crawler request",
+      "remediation": "Allowlist the AI crawler tokens in the bot-protection rules. Whatever blocked this request blocks them the same way."
+    },
+    "fetch.server_error": {
+      "severity": "critical",
+      "effort": "medium",
+      "title": "The page returned a server error",
+      "remediation": "Fix the error and re-run the audit. Nothing on this page was scored."
+    }
+  }
+}
