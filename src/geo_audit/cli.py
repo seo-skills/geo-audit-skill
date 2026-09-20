@@ -23,22 +23,36 @@ from geo_audit._version import (
     SCHEMA_VERSION,
     SCORING_VERSION,
 )
+from geo_audit.commands import crawl as crawl_cmd
 from geo_audit.commands import doctor as doctor_cmd
 from geo_audit.commands import fetch as fetch_cmd
 from geo_audit.commands import score as score_cmd
 from geo_audit.data import data_version
 from geo_audit.errors import EXIT_INTERNAL, EXIT_OK, EXIT_USAGE, GeoError
+from geo_audit.lib import crawl as crawl_lib
 from geo_audit.lib import http
 from geo_audit.lib.evidence import PARTIAL
 from geo_audit.lib.ids import new_run_id
 
 COMMANDS = {
     "fetch": fetch_cmd.run,
+    "crawl": crawl_cmd.run,
     "score": score_cmd.run,
     "doctor": doctor_cmd.run,
 }
 
-CONFIG_KEYS = ("timeout", "max_bytes", "max_redirects", "allow_private", "no_robots", "no_render")
+CONFIG_KEYS = (
+    "timeout",
+    "max_bytes",
+    "max_redirects",
+    "allow_private",
+    "no_robots",
+    "no_render",
+    "max_pages",
+    "rate",
+    "concurrency",
+    "no_sitemap",
+)
 
 
 def version_line() -> str:
@@ -94,6 +108,41 @@ def _page_flags(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--no-robots", action="store_true", help="skip the robots.txt lookup")
 
 
+def _crawl_flags(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--max-pages",
+        type=int,
+        default=crawl_lib.MAX_PAGES,
+        metavar="N",
+        help=f"stop after N pages (default {crawl_lib.MAX_PAGES})",
+    )
+    parser.add_argument(
+        "--rate",
+        type=float,
+        default=crawl_lib.REQUESTS_PER_SECOND,
+        metavar="PER_SECOND",
+        help=(
+            f"requests per second across the whole crawl, not per worker "
+            f"(default {crawl_lib.REQUESTS_PER_SECOND:g})"
+        ),
+    )
+    parser.add_argument(
+        "--concurrency",
+        type=int,
+        default=crawl_lib.CONCURRENCY,
+        metavar="N",
+        help=(
+            f"pages in flight at once (default {crawl_lib.CONCURRENCY}); the rate "
+            f"limit still governs throughput"
+        ),
+    )
+    parser.add_argument(
+        "--no-sitemap",
+        action="store_true",
+        help="do not seed the frontier from the sitemaps robots.txt advertises",
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parent = _global_flags()
     parser = UsageParser(
@@ -111,6 +160,17 @@ def build_parser() -> argparse.ArgumentParser:
         "content blocks, evidence hash, robots access. Never returns page text.",
     )
     _page_flags(fetch)
+
+    crawl = subparsers.add_parser(
+        "crawl",
+        parents=[parent],
+        help="map what a crawler can reach on a site",
+        description="Crawl a site and report the frontier: pages fetched, pages "
+        "that failed and why, pages robots.txt put out of reach, and pages found "
+        "only in the sitemap. Nothing is scored; `geo audit` does that.",
+    )
+    _page_flags(crawl)
+    _crawl_flags(crawl)
 
     score = subparsers.add_parser(
         "score",

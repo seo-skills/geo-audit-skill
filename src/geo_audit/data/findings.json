@@ -67,7 +67,13 @@
       "severity": "critical",
       "effort": "medium",
       "title": "The page returned a server error",
-      "remediation": "Fix the error and re-run the audit. Nothing on this page was scored."
+      "remediation": "Fix the error and re-run the audit. Nothing on this page was scored, and a crawler that met the same error will have stored nothing either."
+    },
+    "fetch.not_found": {
+      "severity": "high",
+      "effort": "low",
+      "title": "A link points at a page that does not exist",
+      "remediation": "Fix the link or remove it. A crawler that follows it spends part of its budget on a 404, and an engine that followed it from a citation sends the reader nowhere."
     }
   }
 }

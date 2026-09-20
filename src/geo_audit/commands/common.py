@@ -61,34 +61,50 @@ def _check_finding(key: str, page_url: str, detail: str | None = None) -> Findin
     )
 
 
-def load_page(url: str, options: Options, session: requests.Session | None = None) -> Page:
+def load_page(
+    url: str,
+    options: Options,
+    session: requests.Session | None = None,
+    robots: robots_lib.RobotsFile | None = None,
+) -> Page:
     """Fetch and normalize one page.
 
     A blocked or erroring page is not an exception: it comes back as a Page
     with `failure` set and a critical finding attached. Refusing to report on
     a site because its bot protection works would abort exactly the audits
     that most need writing.
+
+    `robots` lets a crawl fetch robots.txt once for the whole run instead of
+    once per page.
     """
     page = Page(url=url)
     owned = session is None
     session = session or http.new_session()
 
     try:
-        if options.check_robots:
+        if robots is not None:
+            page.robots = robots
+        elif options.check_robots:
             page.robots = robots_lib.load(
                 url,
                 session=session,
                 allow_private=options.allow_private,
                 timeout=min(options.timeout, 10.0),
             )
-            if page.robots.unreachable and page.robots.status and page.robots.status >= 500:
-                page.findings.append(
-                    _check_finding(
-                        "robots.unreachable",
-                        url,
-                        f"{page.robots.source_url} returned {page.robots.status}",
-                    )
+        if (
+            page.robots is not None
+            and robots is None
+            and page.robots.unreachable
+            and page.robots.status
+            and page.robots.status >= 500
+        ):
+            page.findings.append(
+                _check_finding(
+                    "robots.unreachable",
+                    url,
+                    f"{page.robots.source_url} returned {page.robots.status}",
                 )
+            )
 
         result = http.fetch(
             url,
@@ -109,6 +125,11 @@ def load_page(url: str, options: Options, session: requests.Session | None = Non
             page.failure = {"url": result.final_url, "reason": "server_error", "status": result.status}
             page.findings.append(
                 _check_finding("fetch.server_error", result.final_url, f"HTTP {result.status}")
+            )
+        elif result.status in (404, 410):
+            page.failure = {"url": result.final_url, "reason": "not_found", "status": result.status}
+            page.findings.append(
+                _check_finding("fetch.not_found", result.final_url, f"HTTP {result.status}")
             )
         elif not result.ok:
             page.failure = {"url": result.final_url, "reason": "http_error", "status": result.status}

@@ -147,7 +147,7 @@
       ],
       "self_allowed": true,
       "sitemaps": [
-        "/sitemap.xml"
+        "http://fixture/sitemap.xml"
       ],
       "source_url": "http://fixture/robots.txt",
       "status": 200,

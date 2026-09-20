@@ -143,6 +143,40 @@ def findings_for(signals: list[Signal], page: str) -> list[Finding]:
     return out
 
 
+def merge(findings: list[Finding]) -> list[Finding]:
+    """Collapse the same finding seen on several pages into one.
+
+    Twelve copies of "no byline" is not twelve findings; it is one finding
+    affecting twelve pages, and the page list is what tells the reader whether
+    it is a template problem or a one-off.
+    """
+    merged: dict[str, Finding] = {}
+    for finding in findings:
+        existing = merged.get(finding.id)
+        if existing is None:
+            merged[finding.id] = Finding(
+                id=finding.id,
+                severity=finding.severity,
+                effort=finding.effort,
+                title=finding.title,
+                remediation=finding.remediation,
+                pages=list(finding.pages),
+                excerpt=finding.excerpt,
+                points_lost=finding.points_lost,
+            )
+            continue
+        for page in finding.pages:
+            if page not in existing.pages:
+                existing.pages.append(page)
+        existing.points_lost = max(existing.points_lost, finding.points_lost)
+        if _SEVERITY_ORDER.index(finding.severity) < _SEVERITY_ORDER.index(existing.severity):
+            existing.severity = finding.severity
+        existing.excerpt = existing.excerpt or finding.excerpt
+    for finding in merged.values():
+        finding.pages.sort()
+    return list(merged.values())
+
+
 def prioritize(findings: list[Finding]) -> list[Finding]:
     """Deterministic order: severity, then effort, then points recovered, then id.
 

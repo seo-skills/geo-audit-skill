@@ -10,6 +10,7 @@ Deterministic GEO audits. Every number traces to recorded evidence.
 positional arguments:
   COMMAND
     fetch     report what a crawler sees on one page
+    crawl     map what a crawler can reach on a site
     score     score the citability of one page
     doctor    check this installation and its environment
 
@@ -47,6 +48,47 @@ options:
   --timeout SECONDS
   --max-bytes BYTES
   --no-robots        skip the robots.txt lookup
+```
+
+## `geo crawl`
+
+Crawl a site and report the frontier: pages fetched, pages that failed and why, pages robots.txt put out of reach, and pages found only in the sitemap. Nothing is scored; `geo audit` does that.
+
+```
+usage: geo crawl [-h] [--json] [--out PATH] [--config PATH] [--no-input]
+                 [--quiet] [--verbose] [--allow-private] [--fail-on-partial]
+                 [--timeout SECONDS] [--max-bytes BYTES] [--no-robots]
+                 [--max-pages N] [--rate PER_SECOND] [--concurrency N]
+                 [--no-sitemap]
+                 url
+
+Crawl a site and report the frontier: pages fetched, pages that failed and
+why, pages robots.txt put out of reach, and pages found only in the sitemap.
+Nothing is scored; `geo audit` does that.
+
+positional arguments:
+  url                an absolute http:// or https:// URL
+
+options:
+  -h, --help         show this help message and exit
+  --json             force JSON output
+  --out PATH         also write the JSON envelope here
+  --config PATH      JSON file of default flag values
+  --no-input         never prompt (reserved: this release never prompts)
+  --quiet            suppress progress on stderr
+  --verbose          more progress on stderr
+  --allow-private    permit a private, loopback or link-local start URL
+  --fail-on-partial  exit 5 when the result is PARTIAL
+  --timeout SECONDS
+  --max-bytes BYTES
+  --no-robots        skip the robots.txt lookup
+  --max-pages N      stop after N pages (default 50)
+  --rate PER_SECOND  requests per second across the whole crawl, not per
+                     worker (default 1)
+  --concurrency N    pages in flight at once (default 5); the rate limit still
+                     governs throughput
+  --no-sitemap       do not seed the frontier from the sitemaps robots.txt
+                     advertises
 ```
 
 ## `geo score`

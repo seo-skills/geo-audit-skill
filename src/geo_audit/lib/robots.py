@@ -145,7 +145,9 @@ def parse(text: str, source_url: str = "", status: int | None = 200) -> RobotsFi
 
         if key == "sitemap":
             if value:
-                robots.sitemaps.append(value)
+                # The spec wants an absolute URL here; plenty of real files
+                # write a path instead.
+                robots.sitemaps.append(urljoin(source_url, value) if source_url else value)
             continue
 
         if group is None:

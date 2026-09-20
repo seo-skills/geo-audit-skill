@@ -47,6 +47,8 @@ def render(envelope: dict, out: TextIO | None = None) -> None:
         _render_score(envelope, out, style)
     elif command == "fetch":
         _render_fetch(envelope, out, style)
+    elif command == "crawl":
+        _render_crawl(envelope, out, style)
     elif command == "doctor":
         _render_doctor(envelope, out, style)
     else:  # pragma: no cover - every command registers a renderer
@@ -76,6 +78,9 @@ def _render_findings(envelope: dict, out: TextIO, style: Style, limit: int = 3) 
         mark = _SEVERITY_MARK.get(finding["severity"], "  ")
         print(f"  {mark} {finding['title']}", file=out)
         meta = f"{finding['severity']} · {finding['effort']} effort"
+        pages = finding.get("pages") or []
+        if len(pages) > 1:
+            meta += f" · {len(pages)} pages"
         if finding["points_lost"] > 0:
             meta += f" · +{finding['points_lost']:g} points available"
         print(style.dim(f"      {meta}"), file=out)
@@ -189,6 +194,70 @@ def _render_fetch(envelope: dict, out: TextIO, style: Style) -> None:
     )
     _render_findings(envelope, out, style)
     print(copytext.NEXT_COMMAND.format(command=f"geo score {page.get('final_url', '')}"), file=out)
+
+
+def _render_crawl(envelope: dict, out: TextIO, style: Style) -> None:
+    block = envelope.get("crawl") or {}
+    evidence = envelope.get("evidence") or {}
+    failed = evidence.get("pages_failed") or []
+
+    print(
+        style.bold(
+            f"{block.get('pages_ok', 0)} of {block.get('pages_crawled', 0)} pages "
+            f"scorable on {block.get('site')} - evidence {evidence.get('stamp')}."
+        ),
+        file=out,
+    )
+    limits = block.get("limits") or {}
+    print(
+        style.dim(
+            f"  {limits.get('requests_per_second')} req/s across "
+            f"{limits.get('concurrency')} workers, cap {limits.get('max_pages')} pages, "
+            f"{block.get('elapsed_ms', 0) / 1000:.1f}s. Stopped: {block.get('stopped_because')}."
+        ),
+        file=out,
+    )
+    if block.get("seeded_from_sitemap"):
+        print(
+            style.dim(
+                f"  {block['seeded_from_sitemap']} page(s) came from the sitemap, not from a link."
+            ),
+            file=out,
+        )
+
+    if failed:
+        print(file=out)
+        print(style.bold(f"Could not be evaluated ({len(failed)})"), file=out)
+        for entry in failed[:10]:
+            status = entry.get("status")
+            print(f"  {entry['reason']:<16} {status if status else '':>3} {entry['url']}", file=out)
+        if len(failed) > 10:
+            print(style.dim(f"  {len(failed) - 10} more in the JSON output."), file=out)
+
+    disallowed = block.get("disallowed_by_robots") or []
+    if disallowed:
+        print(file=out)
+        print(style.bold(f"Out of reach by robots.txt ({len(disallowed)})"), file=out)
+        for url in disallowed[:5]:
+            print(f"  {url}", file=out)
+        if len(disallowed) > 5:
+            print(style.dim(f"  {len(disallowed) - 5} more in the JSON output."), file=out)
+
+    _render_findings(envelope, out, style)
+
+    print(file=out)
+    print(
+        style.dim(
+            f"Evidence {evidence.get('stamp')} - site hash "
+            f"{(evidence.get('content_hash') or '')[:8]} - normalizer "
+            f"{envelope['normalizer_version']}"
+        ),
+        file=out,
+    )
+    print(
+        copytext.NEXT_COMMAND.format(command=f"geo audit {block.get('start_url', '')}"),
+        file=out,
+    )
 
 
 def _render_doctor(envelope: dict, out: TextIO, style: Style) -> None:

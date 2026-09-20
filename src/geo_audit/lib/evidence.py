@@ -31,6 +31,19 @@ def digest(blocks: Iterable[Block], normalizer_version: int = NORMALIZER_VERSION
     return hashlib.sha256(joined).hexdigest()
 
 
+def site_digest(
+    page_digests: Iterable[str], normalizer_version: int = NORMALIZER_VERSION
+) -> str:
+    """One hash over a set of page hashes.
+
+    Sorted, so two crawls that visit the same pages in a different order -
+    which concurrency makes routine - produce the same site hash.
+    """
+    payload = [f"normalizer_version{_UNIT}{normalizer_version}"]
+    payload.extend(sorted(page_digests))
+    return hashlib.sha256(_RECORD.join(payload).encode("utf-8")).hexdigest()
+
+
 def short(full_digest: str) -> str:
     return full_digest[:8]
 

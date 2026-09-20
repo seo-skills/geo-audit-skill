@@ -84,6 +84,21 @@ def site_routes() -> dict[str, Route]:
             status=302, body=moved, headers={"Location": target}
         )
     routes["/private/secret.html"] = _page("schema-none.html")
+    routes["/whitepaper.pdf"] = Reply(
+        body="%PDF-1.4 not really a pdf", content_type="application/pdf"
+    )
+    # Two pages reachable only from the sitemap, so a crawl that ignores it
+    # finds strictly less than one that does not.
+    routes["/sitemap.xml"] = Reply(
+        body=(
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+            "  <url><loc>{base}/schema-broken.html</loc></url>\n"
+            "  <url><loc>{base}/injection.html</loc></url>\n"
+            "</urlset>\n"
+        ),
+        content_type="application/xml; charset=utf-8",
+    )
     return routes
 
 
@@ -97,6 +112,17 @@ class _Server(ThreadingHTTPServer):
     # arriving in that window fills the queue and the kernel refuses it.
     request_queue_size = 128
     daemon_threads = True
+
+    def __init__(self, *args, **kwargs) -> None:
+        # Every path requested, so a test can assert that a URL was never
+        # fetched rather than only that it produced no result.
+        self.requests_seen: list[str] = []
+        self._log_lock = threading.Lock()
+        super().__init__(*args, **kwargs)
+
+    def note(self, path: str) -> None:
+        with self._log_lock:
+            self.requests_seen.append(path)
 
 
 class _Handler(BaseHTTPRequestHandler):
@@ -123,6 +149,7 @@ class _Handler(BaseHTTPRequestHandler):
         import time
 
         path = self.path.split("?", 1)[0]
+        self.server.note(self.path)
         route = self.routes.get(path)
         if route is None:
             reply = Reply(status=404, body="<html><body>no fixture route</body></html>")
@@ -161,9 +188,23 @@ class _Handler(BaseHTTPRequestHandler):
 
 class FixtureServer:
     def __init__(self, routes: dict[str, Route]) -> None:
+        self._routes = routes
         handler = type("BoundHandler", (_Handler,), {"routes": routes})
         self._server = _Server(("127.0.0.1", 0), handler)
         self._thread = threading.Thread(target=self._server.serve_forever, daemon=True)
+
+    def _materialise_origin(self) -> None:
+        """Fill `{base}` in any route body with this server's real origin."""
+        for route in self._routes.values():
+            if isinstance(route, Reply) and isinstance(route.body, str) and "{base}" in route.body:
+                route.body = route.body.replace("{base}", self.url)
+
+    @property
+    def requests_seen(self) -> list[str]:
+        return list(self._server.requests_seen)
+
+    def reset_requests(self) -> None:
+        self._server.requests_seen.clear()
 
     @property
     def connection_count(self) -> int:
@@ -180,6 +221,7 @@ class FixtureServer:
     def __enter__(self) -> "FixtureServer":
         self._thread.start()
         self._await_ready()
+        self._materialise_origin()
         return self
 
     def _await_ready(self, attempts: int = 100) -> None:

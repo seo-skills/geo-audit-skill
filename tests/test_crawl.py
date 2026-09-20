@@ -1,0 +1,300 @@
+"""The crawl engine: the frontier rules, the rate limit, and what is never fetched."""
+
+from __future__ import annotations
+
+import io
+import json
+import time
+
+import pytest
+
+from geo_audit.cli import main
+from geo_audit.lib import evidence
+from geo_audit.lib.crawl import (
+    CONCURRENCY,
+    MAX_PAGES,
+    REQUESTS_PER_SECOND,
+    CrawlOptions,
+    Pacer,
+    crawl,
+    is_crawlable,
+    normalize_url,
+)
+
+FAST = dict(allow_private=True, requests_per_second=50.0)
+
+
+def run_crawl(site, **kwargs):
+    options = CrawlOptions(**{**FAST, **kwargs})
+    return crawl(f"{site.url}/hub.html", options)
+
+
+# --- URL normalisation -----------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "raw,expected",
+    [
+        ("https://Example.com/a", "https://example.com/a"),
+        ("https://example.com", "https://example.com/"),
+        ("https://example.com/a/", "https://example.com/a"),
+        ("https://example.com/a#section", "https://example.com/a"),
+        ("https://example.com/a?utm_source=x", "https://example.com/a"),
+        ("https://example.com/a?utm_source=x&id=7", "https://example.com/a?id=7"),
+        ("https://example.com/a?b=2&a=1", "https://example.com/a?a=1&b=2"),
+        ("https://example.com:443/a", "https://example.com/a"),
+        ("http://example.com:80/a", "http://example.com/a"),
+        ("http://example.com:8080/a", "http://example.com:8080/a"),
+    ],
+)
+def test_normalize_url(raw, expected):
+    assert normalize_url(raw) == expected
+
+
+def test_a_real_query_parameter_is_not_a_tracking_parameter():
+    assert normalize_url("https://x.test/p?page=2") == "https://x.test/p?page=2"
+
+
+@pytest.mark.parametrize(
+    "url,ok",
+    [
+        ("https://x.test/page", True),
+        ("https://x.test/page.html", True),
+        ("https://x.test/a.PDF", False),
+        ("https://x.test/a.jpg", False),
+        ("https://x.test/bundle.js", False),
+        ("https://x.test/feed.xml", False),
+        ("mailto:a@b.c", False),
+        ("javascript:void(0)", False),
+    ],
+)
+def test_is_crawlable(url, ok):
+    assert is_crawlable(url) is ok
+
+
+# --- the rate limit --------------------------------------------------------
+
+
+def test_the_pacer_spaces_slots_evenly():
+    pacer = Pacer(20.0)
+    started = time.monotonic()
+    for _ in range(5):
+        pacer.wait()
+    assert 0.15 < time.monotonic() - started < 0.6
+
+
+def test_the_rate_limit_is_global_not_per_worker(site):
+    """Five workers at one request per second each is five per second.
+
+    That is not what "one request per second" means to the person whose
+    server it is, so concurrency must not multiply the rate.
+    """
+    timings = {}
+    for concurrency in (1, 5):
+        started = time.monotonic()
+        result = crawl(
+            f"{site.url}/hub.html",
+            CrawlOptions(
+                allow_private=True,
+                max_pages=5,
+                requests_per_second=8.0,
+                concurrency=concurrency,
+                use_sitemap=False,
+            ),
+        )
+        timings[concurrency] = (time.monotonic() - started, len(result.pages))
+
+    (serial, pages_serial), (parallel, pages_parallel) = timings[1], timings[5]
+    assert pages_serial == pages_parallel == 5
+    assert parallel > 0.35, "five pages at 8/s cannot finish faster than the limit"
+    assert abs(parallel - serial) < serial, "concurrency must not multiply the rate"
+
+
+def test_a_zero_rate_disables_pacing():
+    pacer = Pacer(0)
+    started = time.monotonic()
+    for _ in range(50):
+        pacer.wait()
+    assert time.monotonic() - started < 0.1
+
+
+# --- the frontier ----------------------------------------------------------
+
+
+def test_a_crawl_follows_internal_links(site):
+    result = run_crawl(site, max_pages=20)
+    found = {page.url.replace(site.url, "") for page in result.pages}
+    assert "/hub.html" in found
+    assert "/ssr-rich.html" in found
+    assert "/weak-prose.html" in found
+
+
+def test_a_disallowed_page_is_never_requested(site):
+    """Not merely filtered from the results: never asked for."""
+    site.reset_requests()
+    result = run_crawl(site, max_pages=20)
+    assert any(url.endswith("/private/secret.html") for url in result.disallowed)
+    assert not any("/private/" in path for path in site.requests_seen)
+
+
+def test_a_non_page_extension_is_never_requested(site):
+    site.reset_requests()
+    result = run_crawl(site, max_pages=20)
+    assert not any("whitepaper.pdf" in path for path in site.requests_seen)
+    assert not any("whitepaper" in failure["url"] for failure in result.failures)
+
+
+def test_another_host_is_not_crawled(site):
+    result = run_crawl(site, max_pages=20)
+    assert all("elsewhere.example" not in page.url for page in result.pages)
+
+
+def test_tracking_parameters_do_not_produce_duplicate_pages(site):
+    """The hub links the same article three ways."""
+    site.reset_requests()
+    run_crawl(site, max_pages=20)
+    fetched = [p for p in site.requests_seen if p.split("?")[0].endswith("/ssr-rich.html")]
+    assert len(fetched) == 1, f"fetched the same article {len(fetched)} times: {fetched}"
+
+
+def test_the_sitemap_seeds_pages_no_link_points_at(site):
+    with_sitemap = run_crawl(site, max_pages=20, use_sitemap=True)
+    without = run_crawl(site, max_pages=20, use_sitemap=False)
+
+    assert with_sitemap.seeded_from_sitemap == 2
+    assert without.seeded_from_sitemap == 0
+
+    only_in_sitemap = {"/schema-broken.html", "/injection.html"}
+    reachable = {p.url.replace(site.url, "") for p in with_sitemap.pages}
+    linked_only = {p.url.replace(site.url, "") for p in without.pages}
+    assert only_in_sitemap <= reachable
+    assert not (only_in_sitemap & linked_only)
+
+
+def test_max_pages_stops_the_crawl_and_says_so(site):
+    result = run_crawl(site, max_pages=3)
+    assert len(result.pages) == 3
+    assert result.stopped_because == "max_pages"
+
+
+def test_an_exhausted_frontier_reports_exhausted(site):
+    result = run_crawl(site, max_pages=50)
+    assert result.stopped_because == "exhausted"
+
+
+# --- failures are data -----------------------------------------------------
+
+
+def test_a_failing_page_is_recorded_not_raised(site):
+    result = run_crawl(site, max_pages=20)
+    reasons = {failure["reason"] for failure in result.failures}
+    assert "not_found" in reasons, "the 404 must be reported"
+    assert "not_html" in reasons, "the JSON endpoint must be reported"
+    assert result.ok_pages, "one bad page must not sink the crawl"
+
+
+def test_a_broken_link_is_not_called_a_server_error(site, geo_home):
+    """Different cause, different fix: one is your link, one is your server."""
+    _, envelope = run_cli(
+        ["crawl", f"{site.url}/hub.html", "--allow-private", "--rate", "50", "--max-pages", "20"]
+    )
+    ids = {finding["id"] for finding in envelope["findings"]}
+    assert "fetch.not_found" in ids
+    assert "fetch.server_error" not in ids
+
+
+def test_a_finding_seen_on_several_pages_is_one_finding_with_a_page_list(site, geo_home):
+    """Twelve copies of one problem is one problem affecting twelve pages."""
+    _, envelope = run_cli(
+        ["crawl", f"{site.url}/hub.html", "--allow-private", "--rate", "50", "--max-pages", "20"]
+    )
+    ids = [finding["id"] for finding in envelope["findings"]]
+    assert len(ids) == len(set(ids)), "findings must not repeat"
+    blocked = [f for f in envelope["findings"] if f["id"] == "robots.ai_crawler_blocked"]
+    if blocked:
+        assert len(blocked[0]["pages"]) > 1, "one finding should carry every page it affects"
+        assert blocked[0]["pages"] == sorted(blocked[0]["pages"])
+
+
+def test_robots_is_fetched_once_for_the_whole_crawl(site):
+    site.reset_requests()
+    run_crawl(site, max_pages=20)
+    assert [p for p in site.requests_seen if p == "/robots.txt"] == ["/robots.txt"]
+
+
+# --- evidence --------------------------------------------------------------
+
+
+def test_the_site_hash_does_not_depend_on_visit_order(site):
+    first = run_crawl(site, max_pages=20, concurrency=1)
+    second = run_crawl(site, max_pages=20, concurrency=5)
+    digest = lambda result: evidence.site_digest(  # noqa: E731
+        [evidence.digest(page.doc.blocks) for page in result.ok_pages]
+    )
+    assert digest(first) == digest(second)
+
+
+def test_the_site_hash_changes_when_a_page_changes():
+    a = evidence.site_digest(["aa", "bb"])
+    b = evidence.site_digest(["aa", "cc"])
+    assert a != b
+    assert evidence.site_digest(["bb", "aa"]) == a
+
+
+# --- the command -----------------------------------------------------------
+
+
+def run_cli(args):
+    buffer = io.StringIO()
+    code = main(args + ["--json", "--quiet"], out=buffer)
+    return code, json.loads(buffer.getvalue())
+
+
+def test_the_crawl_command_reports_the_frontier(site, geo_home):
+    code, envelope = run_cli(
+        ["crawl", f"{site.url}/hub.html", "--allow-private", "--rate", "50", "--max-pages", "20"]
+    )
+    assert code == 0
+    block = envelope["crawl"]
+    assert block["pages_ok"] >= 6
+    assert block["disallowed_by_robots"]
+    assert block["seeded_from_sitemap"] == 2
+    assert block["limits"]["requests_per_second"] == 50
+    assert envelope["evidence"]["stamp"] == "PARTIAL", "the 404 and the JSON endpoint failed"
+    assert envelope["evidence"]["content_hash"]
+
+
+def test_crawl_defaults_are_the_documented_ones():
+    from geo_audit.cli import build_parser
+
+    args = build_parser().parse_args(["crawl", "https://example.com"])
+    assert args.max_pages == MAX_PAGES == 50
+    assert args.rate == REQUESTS_PER_SECOND == 1.0
+    assert args.concurrency == CONCURRENCY == 5
+    assert args.timeout == 30.0
+    assert args.no_robots is False
+    assert args.no_sitemap is False
+
+
+def test_a_partial_crawl_exits_zero_unless_asked_otherwise(site, geo_home):
+    args = ["crawl", f"{site.url}/hub.html", "--allow-private", "--rate", "50", "--max-pages", "20"]
+    assert run_cli(args)[0] == 0
+    buffer = io.StringIO()
+    assert main(args + ["--json", "--quiet", "--fail-on-partial"], out=buffer) == 5
+
+
+def test_crawl_output_carries_no_page_text(site, geo_home):
+    buffer = io.StringIO()
+    main(
+        ["crawl", f"{site.url}/hub.html", "--allow-private", "--rate", "50",
+         "--max-pages", "20", "--json", "--quiet"],
+        out=buffer,
+    )
+    raw = buffer.getvalue()
+    assert "Server-side rendering puts the full text" not in raw
+    assert "Fixture Press publishes four articles" not in raw
+    for page in json.loads(raw)["crawl"]["pages"]:
+        assert set(page) <= {
+            "url", "status", "blocks", "content_chars", "content_root",
+            "content_hash", "headings", "jsonld_types", "scorable",
+        }
