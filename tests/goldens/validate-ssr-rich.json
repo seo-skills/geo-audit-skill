@@ -1,0 +1,336 @@
+{
+  "cli_version": "0.3.0",
+  "command": "validate",
+  "completeness": {
+    "computed": 5,
+    "missing": [],
+    "total": 5
+  },
+  "data_version": "2026.09",
+  "error": null,
+  "evidence": {
+    "content_hash": "c9717fc0e3c2fc302dc88443899cf0ac44a8ceae639853a27c01cf7816bed977",
+    "normalizer_version": 1,
+    "pages_failed": [],
+    "pages_ok": 1,
+    "stamp": "CURRENT"
+  },
+  "findings": [
+    {
+      "effort": "low",
+      "excerpt": null,
+      "id": "schema.organization",
+      "pages": [
+        "http://fixture/ssr-rich.html"
+      ],
+      "points_lost": 15.0,
+      "priority": 1,
+      "remediation": "Add an Organization or Person node with name, url, logo, description and sameAs links to the profiles that identify you. sameAs is what lets an engine connect this site to the entity it already knows about.",
+      "severity": "high",
+      "title": "No machine-readable publisher identity"
+    },
+    {
+      "effort": "medium",
+      "excerpt": null,
+      "id": "schema.breadth",
+      "pages": [
+        "http://fixture/ssr-rich.html"
+      ],
+      "points_lost": 10.0,
+      "priority": 2,
+      "remediation": "Where the content fits, add FAQPage, HowTo, Product, Event or BreadcrumbList. These types map onto the shape of an answer, so an engine can lift them with no interpretation at all.",
+      "severity": "low",
+      "title": "No structured data that answers a question directly"
+    }
+  ],
+  "normalizer_version": 1,
+  "observed_at": "<volatile>",
+  "ok": true,
+  "page": {
+    "blocks": 28,
+    "bytes": 3794,
+    "cache": {
+      "etag": null,
+      "last_modified": null
+    },
+    "content_chars": 2052,
+    "content_root": "main",
+    "content_type": "text/html",
+    "elapsed_ms": "<volatile>",
+    "encoding": "utf-8",
+    "external_links": 2,
+    "final_url": "http://fixture/ssr-rich.html",
+    "headings": 5,
+    "internal_links": 0,
+    "jsonld_errors": [],
+    "jsonld_types": [
+      "Article"
+    ],
+    "peer_verified": true,
+    "redirect_chain": [],
+    "requested_url": "http://fixture/ssr-rich.html",
+    "robots": {
+      "access": [
+        {
+          "agent": "GPTBot",
+          "allowed": false,
+          "crawl_delay": null
+        },
+        {
+          "agent": "OAI-SearchBot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "ChatGPT-User",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "PerplexityBot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Perplexity-User",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "ClaudeBot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Claude-SearchBot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Claude-User",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Google-Extended",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Googlebot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Bingbot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Applebot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Applebot-Extended",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "meta-externalagent",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Amazonbot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "CCBot",
+          "allowed": true,
+          "crawl_delay": null
+        }
+      ],
+      "self_allowed": true,
+      "sitemaps": [
+        "http://fixture/sitemap.xml"
+      ],
+      "source_url": "http://fixture/robots.txt",
+      "status": 200,
+      "unavailable": false,
+      "unreachable": false
+    },
+    "status": 200
+  },
+  "run_id": "<volatile>",
+  "schema": {
+    "blocks": 1,
+    "blocks_attempted": 1,
+    "nodes": [
+      {
+        "missing_recommended": [
+          "url",
+          "logo",
+          "sameAs",
+          "description"
+        ],
+        "missing_required": [],
+        "properties": [
+          "name"
+        ],
+        "type": "Organization",
+        "valid": true
+      },
+      {
+        "missing_recommended": [
+          "url",
+          "sameAs",
+          "jobTitle"
+        ],
+        "missing_required": [],
+        "properties": [
+          "name"
+        ],
+        "type": "Person",
+        "valid": true
+      },
+      {
+        "missing_recommended": [
+          "image"
+        ],
+        "missing_required": [],
+        "properties": [
+          "author",
+          "dateModified",
+          "datePublished",
+          "headline",
+          "publisher"
+        ],
+        "type": "Article",
+        "valid": true
+      }
+    ],
+    "parse_errors": [],
+    "suggestion": {
+      "needed": false,
+      "note": "The page already declares a publisher and an article."
+    },
+    "types": [
+      "Article",
+      "Organization",
+      "Person"
+    ],
+    "unrecognised_types": [],
+    "valid": true,
+    "verdict": "valid"
+  },
+  "schema_version": 1,
+  "scores": {
+    "categories": {
+      "schema": 73
+    },
+    "composite": 73,
+    "tier": "good",
+    "tier_meaning": "Most passages are quotable as-is; a few sections still need context to stand alone."
+  },
+  "scoring_version": "1.0",
+  "signals": [
+    {
+      "class": "deterministic",
+      "detail": {
+        "blocks": 1,
+        "blocks_attempted": 1,
+        "types": [
+          "Article",
+          "Organization",
+          "Person"
+        ],
+        "unparseable_blocks": 0
+      },
+      "id": "schema.presence",
+      "max": 30,
+      "page": "http://fixture/ssr-rich.html",
+      "value": 30.0
+    },
+    {
+      "class": "deterministic",
+      "detail": {
+        "checked": 3,
+        "missing_required": [],
+        "parse_errors": []
+      },
+      "id": "schema.validity",
+      "max": 25,
+      "page": "http://fixture/ssr-rich.html",
+      "value": 25.0
+    },
+    {
+      "class": "deterministic",
+      "detail": {
+        "missing": [
+          "description",
+          "logo",
+          "sameAs",
+          "url"
+        ],
+        "present": [
+          "name"
+        ],
+        "same_as_count": 0,
+        "types": [
+          "Organization",
+          "Person"
+        ]
+      },
+      "id": "schema.organization",
+      "max": 20,
+      "page": "http://fixture/ssr-rich.html",
+      "value": 5.0
+    },
+    {
+      "class": "deterministic",
+      "detail": {
+        "missing": [
+          "image"
+        ],
+        "present": [
+          "author",
+          "dateModified",
+          "datePublished",
+          "headline"
+        ],
+        "types": [
+          "Article"
+        ]
+      },
+      "id": "schema.article",
+      "max": 15,
+      "page": "http://fixture/ssr-rich.html",
+      "value": 13.0
+    },
+    {
+      "class": "heuristic",
+      "detail": {
+        "answer_types_found": [],
+        "answer_types_known": [
+          "BreadcrumbList",
+          "Event",
+          "FAQPage",
+          "HowTo",
+          "LocalBusiness",
+          "Product",
+          "QAPage",
+          "Recipe",
+          "SoftwareApplication",
+          "VideoObject"
+        ],
+        "full_marks_at": 2
+      },
+      "id": "schema.breadth",
+      "max": 10,
+      "page": "http://fixture/ssr-rich.html",
+      "value": 0.0
+    }
+  ]
+}

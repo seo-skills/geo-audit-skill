@@ -10,6 +10,8 @@ import pytest
 from geo_audit._version import NORMALIZER_VERSION, SCHEMA_VERSION, SCORING_VERSION
 from geo_audit.cli import main
 from geo_audit.data import data_version
+from pathlib import Path
+
 from tests.golden import assert_matches
 
 ENVELOPE_KEYS = [
@@ -100,6 +102,96 @@ def test_golden_fetch_ssr_rich(site, geo_home):
 def test_golden_score_weak_prose(site, geo_home):
     _, envelope = run(["score", f"{site.url}/weak-prose.html", "--allow-private", "--no-render"])
     assert_matches("score-weak-prose", envelope, site.url)
+
+
+def test_golden_crawl(site, geo_home):
+    _, envelope = run(["crawl", f"{site.url}/hub.html", "--allow-private", "--rate", "50",
+                       "--max-pages", "8"])
+    assert_matches("crawl-hub", envelope, site.url)
+
+
+def test_golden_audit(site, geo_home):
+    _, envelope = run(["audit", f"{site.url}/hub.html", "--allow-private", "--rate", "50",
+                       "--max-pages", "8"])
+    assert_matches("audit-hub", envelope, site.url)
+
+
+def test_golden_validate(site, geo_home):
+    _, envelope = run(["validate", f"{site.url}/ssr-rich.html", "--allow-private", "--suggest"])
+    assert_matches("validate-ssr-rich", envelope, site.url)
+
+
+def test_golden_llmstxt(site, geo_home):
+    _, envelope = run(["llmstxt", f"{site.url}/hub.html", "--allow-private", "--rate", "50",
+                       "--max-pages", "8", "--generate"])
+    assert_matches("llmstxt-hub", envelope, site.url)
+
+
+def test_golden_scan(site, geo_home, monkeypatch):
+    from geo_audit.commands import scan as scan_cmd
+
+    monkeypatch.setattr(
+        scan_cmd,
+        "_platforms",
+        lambda: {
+            "wikipedia": {
+                "label": "Wikipedia",
+                "url": f"{site.url}/not-html?q={{query}}",
+                "docs": "https://example.test/docs",
+                "needs_key": None,
+            }
+        },
+    )
+    _, envelope = run(["scan", "Acme", "--allow-private"])
+    assert_matches("scan-acme", envelope, site.url)
+
+
+def test_golden_compare(site, geo_home):
+    crawl = ["--allow-private", "--rate", "50", "--max-pages", "8"]
+    run(["audit", f"{site.url}/hub.html", *crawl])
+    run(["audit", f"{site.url}/hub.html", *crawl])
+    _, envelope = run(["compare", f"{site.url}/hub.html"])
+    assert_matches("compare-hub", envelope, site.url)
+
+
+def test_golden_report(site, geo_home):
+    crawl = ["--allow-private", "--rate", "50", "--max-pages", "8"]
+    run(["audit", f"{site.url}/hub.html", *crawl])
+    _, envelope = run(["report", f"{site.url}/hub.html"])
+    assert_matches("report-hub", envelope, site.url)
+
+
+def test_golden_prune(site, geo_home):
+    crawl = ["--allow-private", "--rate", "50", "--max-pages", "8"]
+    run(["audit", f"{site.url}/hub.html", *crawl])
+    _, envelope = run(["prune", "--dry-run", "--keep", "1"])
+    assert_matches("prune-dry-run", envelope, site.url)
+
+
+def test_doctor_has_a_stable_shape_rather_than_a_golden(geo_home):
+    """Doctor reports on this machine, so its values are not comparable.
+
+    The check ids and the status vocabulary are, and those are the contract a
+    caller depends on.
+    """
+    _, envelope = run(["doctor"])
+    ids = [check["id"] for check in envelope["checks"]]
+    assert ids == sorted(set(ids)) or len(ids) == len(set(ids)), "check ids must be unique"
+    assert {check["status"] for check in envelope["checks"]} <= {"ok", "warn", "fail"}
+    assert {"python", "cli_version", "data_files", "state_writable"} <= set(ids)
+
+
+def test_every_command_has_golden_or_shape_coverage():
+    """A command with neither is a command whose output nobody is watching."""
+    from geo_audit.cli import COMMANDS
+
+    source = Path(__file__).read_text(encoding="utf-8")
+    uncovered = [
+        name
+        for name in COMMANDS
+        if f'"{name}' not in source and f"test_golden_{name}" not in source
+    ]
+    assert not uncovered, f"no envelope coverage for: {sorted(uncovered)}"
 
 
 def test_two_runs_of_the_same_page_differ_only_in_volatile_fields(site, geo_home):

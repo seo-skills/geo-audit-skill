@@ -1,0 +1,89 @@
+{
+  "cli_version": "0.3.0",
+  "command": "report",
+  "completeness": {
+    "categories": {
+      "computed": [
+        "citability",
+        "content",
+        "platform",
+        "schema",
+        "technical"
+      ],
+      "declared": [
+        "citability",
+        "content",
+        "platform",
+        "schema",
+        "technical"
+      ],
+      "missing": [],
+      "weights_used": {
+        "citability": 25,
+        "content": 20,
+        "platform": 10,
+        "schema": 10,
+        "technical": 15
+      }
+    },
+    "computed": 24,
+    "missing": [
+      "citability.render_parity",
+      "platform.hreflang"
+    ],
+    "total": 26
+  },
+  "data_version": "2026.09",
+  "error": null,
+  "evidence": {
+    "content_hash": "7dbcfb495b0a226e12fa4afe86ea427fb1458fbf12d96627619cfc034b4fcd88",
+    "normalizer_version": 1,
+    "pages_failed": [
+      {
+        "reason": "not_found",
+        "status": 404,
+        "url": "http://fixture/gone"
+      }
+    ],
+    "pages_ok": 7,
+    "stamp": "PARTIAL"
+  },
+  "findings": [],
+  "normalizer_version": 1,
+  "observed_at": "<volatile>",
+  "ok": true,
+  "report": {
+    "advisory_answered": [],
+    "brand": {
+      "attribution": true,
+      "customised": false,
+      "name": null,
+      "source": null,
+      "warnings": []
+    },
+    "bytes": 30123,
+    "from_run": "<volatile>",
+    "mode": "client",
+    "observed_at": "<volatile>",
+    "path": "<volatile>",
+    "pdf_path": null,
+    "pdf_skipped": null,
+    "site": "127.0.0.1"
+  },
+  "run_id": "<volatile>",
+  "schema_version": 1,
+  "scores": {
+    "categories": {
+      "citability": 54,
+      "content": 34,
+      "platform": 16,
+      "schema": 24,
+      "technical": 80
+    },
+    "composite": 45,
+    "tier": "weak",
+    "tier_meaning": "Answers exist on the page but are buried in context that does not travel."
+  },
+  "scoring_version": "1.0",
+  "signals": []
+}

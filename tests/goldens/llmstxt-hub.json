@@ -1,0 +1,126 @@
+{
+  "cli_version": "0.3.0",
+  "command": "llmstxt",
+  "completeness": null,
+  "data_version": "2026.09",
+  "error": null,
+  "evidence": null,
+  "findings": [
+    {
+      "effort": "low",
+      "excerpt": "output_demand, override, role_assertion, role_marker",
+      "id": "content.instruction_like",
+      "pages": [
+        "http://fixture/injection.html"
+      ],
+      "points_lost": 0.0,
+      "priority": 1,
+      "remediation": "Find and remove it. Text shaped like an instruction - a fake system prompt, a demand to ignore earlier instructions, a fabricated end-of-output marker - is either an attempt to steer models reading your site, or user-generated content nobody reviewed. Either way it is on your domain and it is what an engine quotes when it cites you.",
+      "severity": "high",
+      "title": "A page contains text addressed to an AI system"
+    },
+    {
+      "effort": "low",
+      "excerpt": null,
+      "id": "llmstxt.missing",
+      "pages": [
+        "http://fixture/llms.txt"
+      ],
+      "points_lost": 0.0,
+      "priority": 2,
+      "remediation": "Add /llms.txt: one H1 title, a blockquote summary, then H2 sections of markdown links to the pages worth reading. It is a convention rather than a standard, and no engine is known to require it, which is why this is medium rather than high - but it costs an afternoon and it states your own priorities in your own words.",
+      "severity": "medium",
+      "title": "The site publishes no llms.txt"
+    }
+  ],
+  "llmstxt": {
+    "crawl": {
+      "pages_crawled": 8,
+      "pages_ok": 7,
+      "stopped_because": "max_pages"
+    },
+    "generated": {
+      "bytes": 1159,
+      "excluded": [
+        {
+          "patterns": [
+            "output_demand",
+            "override",
+            "role_assertion",
+            "role_marker"
+          ],
+          "reason": "instruction_like",
+          "url": "http://fixture/injection.html"
+        }
+      ],
+      "pages_listed": 6,
+      "pages_optional": 1,
+      "parsed": {
+        "bytes": 1159,
+        "has_optional_section": true,
+        "link_count": 6,
+        "links": [
+          {
+            "description": "Index of the fixture site.",
+            "title": "Fixture Press: everything we have published",
+            "url": "http://fixture/hub.html"
+          },
+          {
+            "description": "The Fixture Plan costs 49 dollars per month and includes 10 seats, 100 GB of storage and unlimited projects. Annual billing removes two months from the total.",
+            "title": "Pricing that does not add up",
+            "url": "http://fixture/schema-broken.html"
+          },
+          {
+            "description": "A deployment checklist reduces incident rate by forcing the same verification steps on every release. This checklist covers the four steps that catch most regr…",
+            "title": "Deployment checklist",
+            "url": "http://fixture/schema-none.html"
+          },
+          {
+            "description": "Most AI crawlers do not execute JavaScript. This page explains what that means for content delivery.",
+            "title": "How server-side rendering affects AI crawlers",
+            "url": "http://fixture/ssr-rich.html"
+          },
+          {
+            "description": "In this article we are going to look at a few of the things that we have been thinking about lately, and why they matter to us as a team and to the people we w…",
+            "title": "Some thoughts on our approach",
+            "url": "http://fixture/weak-prose.html"
+          },
+          {
+            "description": null,
+            "title": "Fixture App",
+            "url": "http://fixture/csr-shell.html"
+          }
+        ],
+        "problems": [],
+        "sections": [
+          "Pages",
+          "Optional"
+        ],
+        "summary": "Index of the fixture site.",
+        "title": "Fixture Press: everything we have published",
+        "valid": true
+      },
+      "text": "# Fixture Press: everything we have published\n\n> Index of the fixture site.\n\n## Pages\n\n- [Fixture Press: everything we have published](http://fixture/hub.html): Index of the fixture site.\n- [Pricing that does not add up](http://fixture/schema-broken.html): The Fixture Plan costs 49 dollars per month and includes 10 seats, 100 GB of storage and unlimited projects. Annual billing removes two months from the total.\n- [Deployment checklist](http://fixture/schema-none.html): A deployment checklist reduces incident rate by forcing the same verification steps on every release. This checklist covers the four steps that catch most regr…\n- [How server-side rendering affects AI crawlers](http://fixture/ssr-rich.html): Most AI crawlers do not execute JavaScript. This page explains what that means for content delivery.\n- [Some thoughts on our approach](http://fixture/weak-prose.html): In this article we are going to look at a few of the things that we have been thinking about lately, and why they matter to us as a team and to the people we w…\n\n## Optional\n\n- [Fixture App](http://fixture/csr-shell.html)\n"
+    },
+    "llms_full_txt": {
+      "present": false,
+      "status": 404,
+      "url": "http://fixture/llms-full.txt"
+    },
+    "llms_txt": {
+      "error": null,
+      "present": false,
+      "status": 404,
+      "url": "http://fixture/llms.txt"
+    },
+    "site": "127.0.0.1"
+  },
+  "normalizer_version": 1,
+  "observed_at": "<volatile>",
+  "ok": true,
+  "run_id": "<volatile>",
+  "schema_version": 1,
+  "scores": null,
+  "scoring_version": "1.0",
+  "signals": []
+}

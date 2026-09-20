@@ -1,0 +1,136 @@
+{
+  "cli_version": "0.3.0",
+  "command": "compare",
+  "compare": {
+    "categories": {
+      "citability": {
+        "after": 54,
+        "before": 54,
+        "delta": 0
+      },
+      "content": {
+        "after": 34,
+        "before": 34,
+        "delta": 0
+      },
+      "platform": {
+        "after": 16,
+        "before": 16,
+        "delta": 0
+      },
+      "schema": {
+        "after": 24,
+        "before": 24,
+        "delta": 0
+      },
+      "technical": {
+        "after": 80,
+        "before": 80,
+        "delta": 0
+      }
+    },
+    "composite_delta": 0,
+    "findings": {
+      "introduced": [],
+      "introduced_titles": [],
+      "persisting": [
+        "citability.answer_first",
+        "citability.attribution",
+        "citability.evidence_density",
+        "citability.extractability",
+        "citability.self_containment",
+        "citability.structure",
+        "content.depth",
+        "content.expertise",
+        "content.freshness",
+        "content.readability",
+        "fetch.not_found",
+        "platform.feeds",
+        "platform.llms_txt",
+        "platform.social_cards",
+        "schema.article",
+        "schema.breadth",
+        "schema.organization",
+        "schema.presence",
+        "schema.validity",
+        "technical.metadata",
+        "technical.status_health",
+        "technical.transport_security"
+      ],
+      "resolved": [],
+      "resolved_titles": []
+    },
+    "from": {
+      "composite": 45,
+      "observed_at": "<volatile>",
+      "pages_ok": 7,
+      "run_id": "<volatile>",
+      "tier": "weak"
+    },
+    "pages": {
+      "added": [],
+      "changed": [],
+      "removed": [],
+      "unchanged": 8
+    },
+    "signals": [],
+    "tier_changed": false,
+    "to": {
+      "composite": 45,
+      "observed_at": "<volatile>",
+      "pages_ok": 7,
+      "run_id": "<volatile>",
+      "tier": "weak"
+    },
+    "versions": {
+      "from": {
+        "data_version": "2026.09",
+        "normalizer_version": 1,
+        "scoring_version": "1.0"
+      },
+      "to": {
+        "data_version": "2026.09",
+        "normalizer_version": 1,
+        "scoring_version": "1.0"
+      }
+    }
+  },
+  "completeness": null,
+  "data_version": "2026.09",
+  "error": null,
+  "evidence": {
+    "content_hash": "7dbcfb495b0a226e12fa4afe86ea427fb1458fbf12d96627619cfc034b4fcd88",
+    "normalizer_version": 1,
+    "pages_failed": [
+      {
+        "reason": "not_found",
+        "status": 404,
+        "url": "http://fixture/gone"
+      }
+    ],
+    "pages_ok": 7,
+    "stamp": "PARTIAL"
+  },
+  "findings": [],
+  "normalizer_version": 1,
+  "observed_at": "<volatile>",
+  "ok": true,
+  "run_id": "<volatile>",
+  "schema_version": 1,
+  "scores": {
+    "categories": {
+      "citability": 54,
+      "content": 34,
+      "platform": 16,
+      "schema": 24,
+      "technical": 80
+    },
+    "composite": 45,
+    "tier": "weak",
+    "tier_meaning": "Answers exist on the page but are buried in context that does not travel."
+  },
+  "scoring_version": "1.0",
+  "signals": [],
+  "site": "127.0.0.1",
+  "url": "http://fixture/hub.html"
+}

@@ -62,6 +62,30 @@ Derived signals, counts, and length-capped excerpts. **No raw HTML is written to
 disk.** An audit record is roughly the size of the envelope you saw, which is a few
 kilobytes, not a page.
 
+## Validating an envelope
+
+The envelope shape is published as a JSON Schema and shipped inside the package, so a
+consumer validates against the version they installed rather than against `main`:
+
+```python
+import json
+from importlib import resources
+from jsonschema import Draft202012Validator
+
+schema = json.loads(
+    resources.files("geo_audit.assets").joinpath("envelope.schema.json").read_text()
+)
+Draft202012Validator(schema).validate(envelope)
+```
+
+`additionalProperties: false` at the top level is what makes `schema_version` a
+promise rather than a label: a new top-level key fails validation, so adding one is a
+deliberate edit to the schema with a version decision attached. Additive changes
+*inside* the nested objects do not bump `schema_version`; removing or renaming a
+top-level key does, and is announced two releases ahead.
+
+Every command's output is validated against it in CI, including a failing run.
+
 ## Purity
 
 `score(snapshot, scoring_version, data_version)` is a pure function. Reproducibility

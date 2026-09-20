@@ -1,0 +1,248 @@
+{
+  "cli_version": "0.3.0",
+  "command": "crawl",
+  "completeness": null,
+  "crawl": {
+    "disallowed_by_robots": [
+      "http://fixture/private/secret.html"
+    ],
+    "discovered": 6,
+    "elapsed_ms": "<volatile>",
+    "limits": {
+      "concurrency": 5,
+      "max_pages": 8,
+      "requests_per_second": 50.0,
+      "robots_respected": true,
+      "sitemap_used": true,
+      "timeout": 30.0
+    },
+    "pages": [
+      {
+        "blocks": 1,
+        "content_chars": 11,
+        "content_hash": "21500a700a0d22ae086663584ec8d05da742ecb4ccb1b4097a752a939c0ec423",
+        "content_root": "body",
+        "headings": 0,
+        "jsonld_types": [],
+        "scorable": true,
+        "status": 200,
+        "url": "http://fixture/csr-shell.html"
+      },
+      {
+        "blocks": 0,
+        "content_chars": 0,
+        "content_hash": null,
+        "content_root": null,
+        "headings": 0,
+        "jsonld_types": [],
+        "scorable": false,
+        "status": 404,
+        "url": "http://fixture/gone"
+      },
+      {
+        "blocks": 20,
+        "content_chars": 663,
+        "content_hash": "27e1bd00fa757d5446f563e261ee01dcb3c6467dd1f7787c55d434f70d9844fa",
+        "content_root": "main",
+        "headings": 4,
+        "jsonld_types": [],
+        "scorable": true,
+        "status": 200,
+        "url": "http://fixture/hub.html"
+      },
+      {
+        "blocks": 8,
+        "content_chars": 824,
+        "content_hash": "dbc512c698c2c0864ce89f224bfef27c8cdc0d5759ad88c3384293fdd27aef1a",
+        "content_root": "main",
+        "headings": 3,
+        "jsonld_types": [],
+        "scorable": true,
+        "status": 200,
+        "url": "http://fixture/injection.html"
+      },
+      {
+        "blocks": 9,
+        "content_chars": 703,
+        "content_hash": "59f3790111a86c0d28f56915f2bd9a6901730eb4b6ed4467974427db34bee393",
+        "content_root": "main",
+        "headings": 4,
+        "jsonld_types": [],
+        "scorable": true,
+        "status": 200,
+        "url": "http://fixture/schema-broken.html"
+      },
+      {
+        "blocks": 9,
+        "content_chars": 705,
+        "content_hash": "5c3d36e477baf409262a07cb992ab55ece183c0e1567eece3a83b0439be27548",
+        "content_root": "main",
+        "headings": 4,
+        "jsonld_types": [],
+        "scorable": true,
+        "status": 200,
+        "url": "http://fixture/schema-none.html"
+      },
+      {
+        "blocks": 28,
+        "content_chars": 2052,
+        "content_hash": "c9717fc0e3c2fc302dc88443899cf0ac44a8ceae639853a27c01cf7816bed977",
+        "content_root": "main",
+        "headings": 5,
+        "jsonld_types": [
+          "Article"
+        ],
+        "scorable": true,
+        "status": 200,
+        "url": "http://fixture/ssr-rich.html"
+      },
+      {
+        "blocks": 8,
+        "content_chars": 1187,
+        "content_hash": "2858bc950bf075d22ee993243db8ed80c938ed3f25d4a9f23dcee931efc3e0d8",
+        "content_root": "body",
+        "headings": 2,
+        "jsonld_types": [],
+        "scorable": true,
+        "status": 200,
+        "url": "http://fixture/weak-prose.html"
+      }
+    ],
+    "pages_crawled": 8,
+    "pages_ok": 7,
+    "robots": {
+      "access": [
+        {
+          "agent": "GPTBot",
+          "allowed": false,
+          "crawl_delay": null
+        },
+        {
+          "agent": "OAI-SearchBot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "ChatGPT-User",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "PerplexityBot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Perplexity-User",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "ClaudeBot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Claude-SearchBot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Claude-User",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Google-Extended",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Googlebot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Bingbot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Applebot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Applebot-Extended",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "meta-externalagent",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Amazonbot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "CCBot",
+          "allowed": true,
+          "crawl_delay": null
+        }
+      ],
+      "self_allowed": true,
+      "sitemaps": [
+        "http://fixture/sitemap.xml"
+      ],
+      "source_url": "http://fixture/robots.txt",
+      "status": 200,
+      "unavailable": false,
+      "unreachable": false
+    },
+    "seeded_from_sitemap": 2,
+    "site": "127.0.0.1",
+    "start_url": "http://fixture/hub.html",
+    "stopped_because": "max_pages"
+  },
+  "data_version": "2026.09",
+  "error": null,
+  "evidence": {
+    "content_hash": "7dbcfb495b0a226e12fa4afe86ea427fb1458fbf12d96627619cfc034b4fcd88",
+    "normalizer_version": 1,
+    "pages_failed": [
+      {
+        "reason": "not_found",
+        "status": 404,
+        "url": "http://fixture/gone"
+      }
+    ],
+    "pages_ok": 7,
+    "stamp": "PARTIAL"
+  },
+  "findings": [
+    {
+      "effort": "low",
+      "excerpt": "HTTP 404",
+      "id": "fetch.not_found",
+      "pages": [
+        "http://fixture/gone"
+      ],
+      "points_lost": 0.0,
+      "priority": 1,
+      "remediation": "Fix the link or remove it. A crawler that follows it spends part of its budget on a 404, and an engine that followed it from a citation sends the reader nowhere.",
+      "severity": "high",
+      "title": "A link points at a page that does not exist"
+    }
+  ],
+  "normalizer_version": 1,
+  "observed_at": "<volatile>",
+  "ok": true,
+  "run_id": "<volatile>",
+  "schema_version": 1,
+  "scores": null,
+  "scoring_version": "1.0",
+  "signals": []
+}

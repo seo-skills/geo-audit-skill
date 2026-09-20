@@ -26,7 +26,19 @@ from geo_audit._version import (
 
 # Values that differ between two otherwise identical runs. Golden tests replace
 # them rather than pretending runs are reproducible byte-for-byte end to end.
-VOLATILE_FIELDS = ("run_id", "observed_at", "elapsed_ms", "log", "peer_address", "record")
+VOLATILE_FIELDS = (
+    "run_id",
+    "observed_at",
+    "elapsed_ms",
+    "log",
+    "peer_address",
+    "record",
+    # A recorded run's own timestamp, and the report file named after it.
+    "oldest_kept",
+    "from_run",
+    "path",
+    "pdf_path",
+)
 
 
 def now_iso() -> str:

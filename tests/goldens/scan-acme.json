@@ -1,0 +1,132 @@
+{
+  "cli_version": "0.3.0",
+  "command": "scan",
+  "completeness": {
+    "computed": 1,
+    "missing": [
+      "brand.community",
+      "brand.consistency",
+      "brand.video"
+    ],
+    "total": 4
+  },
+  "data_version": "2026.09",
+  "error": null,
+  "evidence": null,
+  "findings": [
+    {
+      "effort": "high",
+      "excerpt": null,
+      "id": "brand.encyclopedic",
+      "pages": [
+        "Acme"
+      ],
+      "points_lost": 35.0,
+      "priority": 1,
+      "remediation": "A Wikipedia article and a Wikidata item are how an engine turns a name into an entity it can reason about. Neither can be created to order, and writing your own is against Wikipedia's conflict-of-interest guidance. What you can do is earn the independent coverage those pages require, and make sure the facts an editor would need are easy to find on your own site.",
+      "severity": "high",
+      "title": "The brand has no encyclopedic entity to resolve to"
+    }
+  ],
+  "normalizer_version": 1,
+  "observed_at": "<volatile>",
+  "ok": true,
+  "run_id": "<volatile>",
+  "scan": {
+    "brand": "Acme",
+    "manual_checks": [
+      {
+        "how": "Search LinkedIn for the brand and note whether a company page exists and is complete.",
+        "label": "LinkedIn",
+        "why": "no public search API; scraping it breaks their terms"
+      },
+      {
+        "how": "Search for the brand name and note whether people outside the company discuss it.",
+        "label": "X",
+        "why": "search requires a paid API tier"
+      },
+      {
+        "how": "Check whether a profile exists and how many reviews it carries; these pages are frequently cited in comparison answers.",
+        "label": "G2 and Capterra",
+        "why": "no free API"
+      }
+    ],
+    "platforms": [
+      {
+        "checked": true,
+        "docs": "https://example.test/docs",
+        "examples": [],
+        "label": "Wikipedia",
+        "observed_at": "<volatile>",
+        "platform": "wikipedia",
+        "results": 0,
+        "status": 200
+      }
+    ],
+    "platforms_checked": 1,
+    "platforms_total": 1,
+    "same_as": null,
+    "site": null,
+    "total_results": 0
+  },
+  "schema_version": 1,
+  "scores": {
+    "categories": {
+      "brand": 0
+    },
+    "composite": 0,
+    "tier": "poor",
+    "tier_meaning": "There is little here an engine can quote without inventing the surrounding meaning."
+  },
+  "scoring_version": "1.0",
+  "signals": [
+    {
+      "class": "live",
+      "detail": {
+        "breakdown": {
+          "wikidata": 15,
+          "wikipedia": 20
+        },
+        "wikidata_results": null,
+        "wikipedia_results": 0
+      },
+      "id": "brand.encyclopedic",
+      "max": 35,
+      "page": null,
+      "value": 0.0
+    },
+    {
+      "class": "live",
+      "detail": {
+        "reason": "not checked"
+      },
+      "id": "brand.community",
+      "max": 25,
+      "page": null,
+      "skipped_reason": "not checked",
+      "value": null
+    },
+    {
+      "class": "live",
+      "detail": {
+        "reason": "not checked"
+      },
+      "id": "brand.video",
+      "max": 20,
+      "page": null,
+      "skipped_reason": "not checked",
+      "value": null
+    },
+    {
+      "class": "heuristic",
+      "detail": {
+        "reason": "no --site was given, so nothing to compare"
+      },
+      "id": "brand.consistency",
+      "max": 20,
+      "page": null,
+      "skipped_reason": "no --site was given, so nothing to compare",
+      "value": null
+    }
+  ]
+}

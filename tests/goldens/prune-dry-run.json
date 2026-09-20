@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.3.0",
+  "command": "prune",
+  "completeness": null,
+  "data_version": "2026.09",
+  "error": null,
+  "evidence": null,
+  "findings": [],
+  "normalizer_version": 1,
+  "observed_at": "<volatile>",
+  "ok": true,
+  "prune": {
+    "applied": false,
+    "bytes_reclaimed": 0,
+    "home": "<home>",
+    "limits": {
+      "keep_days": 365,
+      "keep_runs": 1,
+      "max_project_bytes": 10485760
+    },
+    "projects": [
+      {
+        "bytes_after": 25230,
+        "bytes_before": 25230,
+        "damaged_lines_discarded": 0,
+        "dropped_by": {},
+        "oldest_kept": "<volatile>",
+        "project": "127-0-0-1",
+        "runs_before": 1,
+        "runs_dropped": 0,
+        "runs_kept": 1
+      }
+    ],
+    "runs_dropped": 0
+  },
+  "run_id": "<volatile>",
+  "schema_version": 1,
+  "scores": null,
+  "scoring_version": "1.0",
+  "signals": []
+}

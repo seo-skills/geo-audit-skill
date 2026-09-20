@@ -29,7 +29,7 @@ dependencies = [
 
 [project.optional-dependencies]
 browser = ["playwright>=1.44"]
-dev = ["pytest>=8.0"]
+dev = ["pytest>=8.0", "jsonschema>=4.21"]
 
 [project.scripts]
 geo = "geo_audit.cli:main"

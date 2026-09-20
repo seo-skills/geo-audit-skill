@@ -160,6 +160,7 @@ where an outside practitioner would send at least four of five reports unedited.
 * [Quickstart](docs/quickstart.md) · [Practitioner eval](tests/evals/README.md)
 * [Command reference](docs/commands.md) (generated from the parser)
 * [Signals](docs/concepts/signals.md) · [Evidence](docs/concepts/evidence.md) · [Scoring methodology](docs/concepts/scoring-methodology.md) · [Score divergence](docs/concepts/score-divergence.md)
+* [Envelope JSON Schema](src/geo_audit/assets/envelope.schema.json) — every command's output validates against it in CI
 * [Troubleshooting](docs/troubleshooting.md) — every exit code and `GEO_E_*` code mapped to a fix
 * [Contributing](CONTRIBUTING.md)
 
