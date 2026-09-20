@@ -51,6 +51,12 @@ def render(envelope: dict, out: TextIO | None = None) -> None:
         _render_crawl(envelope, out, style)
     elif command == "audit":
         _render_audit(envelope, out, style)
+    elif command == "validate":
+        _render_validate(envelope, out, style)
+    elif command == "llmstxt":
+        _render_llmstxt(envelope, out, style)
+    elif command == "prune":
+        _render_prune(envelope, out, style)
     elif command == "doctor":
         _render_doctor(envelope, out, style)
     else:  # pragma: no cover - every command registers a renderer
@@ -352,6 +358,168 @@ def _render_crawl(envelope: dict, out: TextIO, style: Style) -> None:
         copytext.NEXT_COMMAND.format(command=f"geo audit {block.get('start_url', '')}"),
         file=out,
     )
+
+
+def _render_validate(envelope: dict, out: TextIO, style: Style) -> None:
+    report = envelope.get("schema")
+    page = envelope.get("page") or {}
+    scores = envelope.get("scores") or {}
+
+    if report is None:
+        print(
+            f"Nothing to validate: {page.get('final_url')} returned {page.get('status')}.",
+            file=out,
+        )
+        _render_findings(envelope, out, style)
+        return
+
+    headline = {
+        "absent": "No structured data on",
+        "valid": "Structured data valid on",
+        "invalid": "Structured data has problems on",
+    }[report["verdict"]]
+    print(
+        style.bold(
+            f"{headline} {page.get('final_url')} - "
+            f"{report['blocks']} parsed block(s), schema score {scores.get('composite')}/100."
+        ),
+        file=out,
+    )
+    if report["parse_errors"]:
+        print(style.dim(f"  JSON errors: {'; '.join(report['parse_errors'])}"), file=out)
+    if report["unrecognised_types"]:
+        print(
+            style.dim(f"  Types with no requirements on file: {', '.join(report['unrecognised_types'])}"),
+            file=out,
+        )
+
+    if report["nodes"]:
+        print(file=out)
+        print(style.bold("Nodes"), file=out)
+        for node in report["nodes"]:
+            mark = "ok  " if node["valid"] else "FAIL"
+            print(f"  [{mark}] {node['type']}", file=out)
+            if node["missing_required"]:
+                print(style.dim(f"         missing required: {', '.join(node['missing_required'])}"), file=out)
+            if node["missing_recommended"]:
+                print(
+                    style.dim(f"         missing recommended: {', '.join(node['missing_recommended'])}"),
+                    file=out,
+                )
+    else:
+        print(style.dim("  No recognised schema.org types on the page."), file=out)
+
+    suggestion = report.get("suggestion")
+    if suggestion and suggestion.get("needed"):
+        print(file=out)
+        print(style.bold("Suggested JSON-LD"), file=out)
+        for line in suggestion["script"].splitlines():
+            print(f"  {line}", file=out)
+        if suggestion["fill_in"]:
+            print(style.dim(f"  Fill in: {', '.join(suggestion['fill_in'])}"), file=out)
+
+    _render_findings(envelope, out, style)
+    print(file=out)
+    print(copytext.NEXT_COMMAND.format(command=f"geo audit {page.get('final_url', '')}"), file=out)
+
+
+def _render_llmstxt(envelope: dict, out: TextIO, style: Style) -> None:
+    block = envelope.get("llmstxt") or {}
+    existing = block.get("llms_txt") or {}
+    generated = block.get("generated")
+
+    if existing.get("present"):
+        verdict = "valid" if existing.get("valid") else "has problems"
+        print(
+            style.bold(
+                f"{block.get('site')} publishes an llms.txt and it is {verdict} - "
+                f"{existing.get('link_count', 0)} links across "
+                f"{len(existing.get('sections') or [])} section(s)."
+            ),
+            file=out,
+        )
+        if existing.get("problems"):
+            for problem in existing["problems"]:
+                print(style.dim(f"  - {problem}"), file=out)
+    else:
+        print(
+            style.bold(f"{block.get('site')} publishes no llms.txt ({existing.get('url')})."),
+            file=out,
+        )
+    if (block.get("llms_full_txt") or {}).get("present"):
+        print(style.dim("  An llms-full.txt is published too."), file=out)
+
+    if generated:
+        print(file=out)
+        print(
+            style.bold(
+                f"Proposed llms.txt - {generated['pages_listed']} pages "
+                f"({generated['pages_optional']} marked optional), {generated['bytes']} bytes"
+            ),
+            file=out,
+        )
+        for line in generated["text"].splitlines()[:24]:
+            print(f"  {line}", file=out)
+        if len(generated["text"].splitlines()) > 24:
+            print(style.dim("  ... full text in the JSON output"), file=out)
+        if generated.get("written_to"):
+            print(style.dim(f"  Written to {generated['written_to']}"), file=out)
+        for entry in generated.get("excluded") or []:
+            print(
+                style.dim(
+                    f"  Left out: {entry['url']} - its own title or summary is "
+                    f"addressed to an AI system ({', '.join(entry['patterns'])})."
+                ),
+                file=out,
+            )
+
+    _render_findings(envelope, out, style)
+    print(file=out)
+    command = (
+        f"geo llmstxt {envelope.get('llmstxt', {}).get('site', '')}"
+        if generated
+        else "geo llmstxt <url> --generate"
+    )
+    print(copytext.NEXT_COMMAND.format(command=command), file=out)
+
+
+def _render_prune(envelope: dict, out: TextIO, style: Style) -> None:
+    block = envelope.get("prune") or {}
+    projects = block.get("projects") or []
+    verb = "Removed" if block.get("applied") else "Would remove"
+
+    print(
+        style.bold(
+            f"{verb} {block.get('runs_dropped', 0)} run(s) across {len(projects)} "
+            f"project(s) in {block.get('home')}."
+        ),
+        file=out,
+    )
+    limits = block.get("limits") or {}
+    print(
+        style.dim(
+            f"  Keeping at most {limits.get('keep_runs')} runs per project, "
+            f"nothing older than {limits.get('keep_days')} days, "
+            f"{limits.get('max_project_bytes', 0) // 1024} KiB per project."
+        ),
+        file=out,
+    )
+    if projects:
+        print(file=out)
+        width = max(len(p["project"]) for p in projects)
+        for project in projects:
+            reasons = ", ".join(f"{count} by {why}" for why, count in sorted(project["dropped_by"].items()))
+            tail = f"  ({reasons})" if reasons else ""
+            print(
+                f"  {project['project']:<{width}}  {project['runs_kept']:>4} kept  "
+                f"{project['runs_dropped']:>4} dropped{tail}",
+                file=out,
+            )
+    if not block.get("applied"):
+        print(file=out)
+        print(style.dim("  Nothing was changed. Drop --dry-run to apply."), file=out)
+    print(file=out)
+    print(copytext.NEXT_COMMAND.format(command="geo doctor"), file=out)
 
 
 def _render_doctor(envelope: dict, out: TextIO, style: Style) -> None:

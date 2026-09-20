@@ -79,9 +79,22 @@ def _nodes_of(doc: Document, wanted: set[str]) -> list[dict]:
 
 
 def presence(doc: Document) -> tuple[float | None, dict]:
-    count = len(doc.jsonld)
-    points = 30.0 if count else 0.0
-    return points, {"blocks": count, "types": sorted(types_in(doc))}
+    """Did the page try to describe itself in JSON-LD?
+
+    A block that fails to parse still counts as present. Scoring it as absent
+    produced two contradictory findings on the same page - "carries no
+    structured data" next to "structured data is malformed" - when only the
+    second was true. Whether the attempt succeeded is `validity`'s question.
+    """
+    parsed = len(doc.jsonld)
+    attempted = parsed + len(doc.jsonld_errors)
+    points = 30.0 if attempted else 0.0
+    return points, {
+        "blocks": parsed,
+        "blocks_attempted": attempted,
+        "unparseable_blocks": len(doc.jsonld_errors),
+        "types": sorted(types_in(doc)),
+    }
 
 
 def validity(doc: Document) -> tuple[float | None, dict]:

@@ -26,6 +26,9 @@ from geo_audit._version import (
 from geo_audit.commands import audit as audit_cmd
 from geo_audit.commands import crawl as crawl_cmd
 from geo_audit.commands import doctor as doctor_cmd
+from geo_audit.commands import llmstxt as llmstxt_cmd
+from geo_audit.commands import prune as prune_cmd
+from geo_audit.commands import validate as validate_cmd
 from geo_audit.commands import fetch as fetch_cmd
 from geo_audit.commands import score as score_cmd
 from geo_audit.data import data_version
@@ -40,6 +43,9 @@ COMMANDS = {
     "crawl": crawl_cmd.run,
     "audit": audit_cmd.run,
     "score": score_cmd.run,
+    "validate": validate_cmd.run,
+    "llmstxt": llmstxt_cmd.run,
+    "prune": prune_cmd.run,
     "doctor": doctor_cmd.run,
 }
 
@@ -206,6 +212,53 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-render",
         action="store_true",
         help="skip JavaScript rendering even when Playwright is installed",
+    )
+
+    validate = subparsers.add_parser(
+        "validate",
+        parents=[parent],
+        help="check the structured data on one page",
+        description="Report the JSON-LD on a page node by node: what types it "
+        "declares, which required and recommended properties are missing, and "
+        "whether it parses at all.",
+    )
+    _page_flags(validate)
+    validate.add_argument(
+        "--suggest",
+        action="store_true",
+        help="emit JSON-LD built from what the page already states",
+    )
+
+    llmstxt = subparsers.add_parser(
+        "llmstxt",
+        parents=[parent],
+        help="check for an llms.txt, or build one from the site",
+        description="Look for /llms.txt and /llms-full.txt and check their "
+        "structure against the llmstxt.org format. With --generate, crawl the "
+        "site and build one from the pages that were actually fetched.",
+    )
+    _page_flags(llmstxt)
+    _crawl_flags(llmstxt)
+    llmstxt.add_argument(
+        "--generate",
+        action="store_true",
+        help="crawl the site and propose an llms.txt",
+    )
+
+    prune = subparsers.add_parser(
+        "prune",
+        parents=[parent],
+        help="apply the retention rules to recorded history",
+        description="Trim the append-only audit history by count, age and size. "
+        "Reports what it would remove before removing it.",
+    )
+    prune.add_argument("--project", metavar="SLUG", help="one project instead of all of them")
+    prune.add_argument("--keep", type=int, metavar="N", help="keep at most N runs per project")
+    prune.add_argument(
+        "--older-than", type=int, metavar="DAYS", help="drop runs older than DAYS"
+    )
+    prune.add_argument(
+        "--dry-run", action="store_true", help="report the plan and change nothing"
     )
 
     subparsers.add_parser(

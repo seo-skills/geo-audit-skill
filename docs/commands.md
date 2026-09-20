@@ -13,6 +13,9 @@ positional arguments:
     crawl     map what a crawler can reach on a site
     audit     crawl a site and score every category over it
     score     score the citability of one page
+    validate  check the structured data on one page
+    llmstxt   check for an llms.txt, or build one from the site
+    prune     apply the retention rules to recorded history
     doctor    check this installation and its environment
 
 options:
@@ -170,6 +173,109 @@ options:
   --no-robots        skip the robots.txt lookup
   --no-render        skip JavaScript rendering even when Playwright is
                      installed
+```
+
+## `geo validate`
+
+Report the JSON-LD on a page node by node: what types it declares, which required and recommended properties are missing, and whether it parses at all.
+
+```
+usage: geo validate [-h] [--json] [--out PATH] [--config PATH] [--no-input]
+                    [--quiet] [--verbose] [--allow-private]
+                    [--fail-on-partial] [--timeout SECONDS]
+                    [--max-bytes BYTES] [--no-robots] [--suggest]
+                    url
+
+Report the JSON-LD on a page node by node: what types it declares, which
+required and recommended properties are missing, and whether it parses at all.
+
+positional arguments:
+  url                an absolute http:// or https:// URL
+
+options:
+  -h, --help         show this help message and exit
+  --json             force JSON output
+  --out PATH         also write the JSON envelope here
+  --config PATH      JSON file of default flag values
+  --no-input         never prompt (reserved: this release never prompts)
+  --quiet            suppress progress on stderr
+  --verbose          more progress on stderr
+  --allow-private    permit a private, loopback or link-local start URL
+  --fail-on-partial  exit 5 when the result is PARTIAL
+  --timeout SECONDS
+  --max-bytes BYTES
+  --no-robots        skip the robots.txt lookup
+  --suggest          emit JSON-LD built from what the page already states
+```
+
+## `geo llmstxt`
+
+Look for /llms.txt and /llms-full.txt and check their structure against the llmstxt.org format. With --generate, crawl the site and build one from the pages that were actually fetched.
+
+```
+usage: geo llmstxt [-h] [--json] [--out PATH] [--config PATH] [--no-input]
+                   [--quiet] [--verbose] [--allow-private] [--fail-on-partial]
+                   [--timeout SECONDS] [--max-bytes BYTES] [--no-robots]
+                   [--max-pages N] [--rate PER_SECOND] [--concurrency N]
+                   [--no-sitemap] [--generate]
+                   url
+
+Look for /llms.txt and /llms-full.txt and check their structure against the
+llmstxt.org format. With --generate, crawl the site and build one from the
+pages that were actually fetched.
+
+positional arguments:
+  url                an absolute http:// or https:// URL
+
+options:
+  -h, --help         show this help message and exit
+  --json             force JSON output
+  --out PATH         also write the JSON envelope here
+  --config PATH      JSON file of default flag values
+  --no-input         never prompt (reserved: this release never prompts)
+  --quiet            suppress progress on stderr
+  --verbose          more progress on stderr
+  --allow-private    permit a private, loopback or link-local start URL
+  --fail-on-partial  exit 5 when the result is PARTIAL
+  --timeout SECONDS
+  --max-bytes BYTES
+  --no-robots        skip the robots.txt lookup
+  --max-pages N      stop after N pages (default 50)
+  --rate PER_SECOND  requests per second across the whole crawl, not per
+                     worker (default 1)
+  --concurrency N    pages in flight at once (default 5); the rate limit still
+                     governs throughput
+  --no-sitemap       do not seed the frontier from the sitemaps robots.txt
+                     advertises
+  --generate         crawl the site and propose an llms.txt
+```
+
+## `geo prune`
+
+Trim the append-only audit history by count, age and size. Reports what it would remove before removing it.
+
+```
+usage: geo prune [-h] [--json] [--out PATH] [--config PATH] [--no-input]
+                 [--quiet] [--verbose] [--allow-private] [--fail-on-partial]
+                 [--project SLUG] [--keep N] [--older-than DAYS] [--dry-run]
+
+Trim the append-only audit history by count, age and size. Reports what it
+would remove before removing it.
+
+options:
+  -h, --help         show this help message and exit
+  --json             force JSON output
+  --out PATH         also write the JSON envelope here
+  --config PATH      JSON file of default flag values
+  --no-input         never prompt (reserved: this release never prompts)
+  --quiet            suppress progress on stderr
+  --verbose          more progress on stderr
+  --allow-private    permit a private, loopback or link-local start URL
+  --fail-on-partial  exit 5 when the result is PARTIAL
+  --project SLUG     one project instead of all of them
+  --keep N           keep at most N runs per project
+  --older-than DAYS  drop runs older than DAYS
+  --dry-run          report the plan and change nothing
 ```
 
 ## `geo doctor`

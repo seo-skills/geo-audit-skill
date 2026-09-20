@@ -1,0 +1,6 @@
+{
+  "comment": "Defaults for `geo prune`. History is evidence, so the defaults are generous: a year, a hundred runs per project, ten megabytes. The point of pruning is that an append-only file does not grow without bound, not that old audits are worthless.",
+  "keep_runs": 100,
+  "keep_days": 365,
+  "max_project_bytes": 10485760
+}

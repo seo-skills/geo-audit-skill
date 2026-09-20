@@ -140,6 +140,24 @@
       "effort": "low",
       "title": "A link points at a page that does not exist",
       "remediation": "Fix the link or remove it. A crawler that follows it spends part of its budget on a 404, and an engine that followed it from a citation sends the reader nowhere."
+    },
+    "llmstxt.missing": {
+      "severity": "medium",
+      "effort": "low",
+      "title": "The site publishes no llms.txt",
+      "remediation": "Add /llms.txt: one H1 title, a blockquote summary, then H2 sections of markdown links to the pages worth reading. It is a convention rather than a standard, and no engine is known to require it, which is why this is medium rather than high - but it costs an afternoon and it states your own priorities in your own words."
+    },
+    "llmstxt.invalid": {
+      "severity": "low",
+      "effort": "low",
+      "title": "The llms.txt does not follow the documented structure",
+      "remediation": "Give the file exactly one H1, a blockquote summary under it, and H2 sections containing markdown links. A file that does not parse is read as prose, which is the one thing the format exists to avoid."
+    },
+    "content.instruction_like": {
+      "severity": "high",
+      "effort": "low",
+      "title": "A page contains text addressed to an AI system",
+      "remediation": "Find and remove it. Text shaped like an instruction - a fake system prompt, a demand to ignore earlier instructions, a fabricated end-of-output marker - is either an attempt to steer models reading your site, or user-generated content nobody reviewed. Either way it is on your domain and it is what an engine quotes when it cites you."
     }
   }
 }
