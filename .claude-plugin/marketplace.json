@@ -1,0 +1,25 @@
+{
+  "$schema": "https://code.claude.com/schemas/marketplace.json",
+  "name": "seo-skills",
+  "owner": {
+    "name": "seo-skills",
+    "url": "https://github.com/seo-skills"
+  },
+  "metadata": {
+    "description": "GEO and SEO audit tooling for Claude Code",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "geo",
+      "source": "./",
+      "description": "Deterministic GEO audits. Scores are computed by a Python CLI and explained by the model, never the other way round.",
+      "version": "0.1.0",
+      "author": {
+        "name": "seo-skills"
+      },
+      "keywords": ["geo", "seo", "ai-search", "audit"],
+      "category": "workflow"
+    }
+  ]
+}

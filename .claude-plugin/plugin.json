@@ -1,0 +1,13 @@
+{
+  "name": "geo",
+  "description": "Deterministic GEO (Generative Engine Optimization) audits for Claude Code. Thin skills over a Python CLI: every number traces to recorded evidence.",
+  "version": "0.1.0",
+  "author": {
+    "name": "seo-skills"
+  },
+  "homepage": "https://github.com/seo-skills/geo-audit-skill",
+  "repository": "https://github.com/seo-skills/geo-audit-skill",
+  "license": "MIT",
+  "keywords": ["geo", "seo", "ai-search", "audit", "citability", "llms-txt"],
+  "skills": ["./skills/citability"]
+}
