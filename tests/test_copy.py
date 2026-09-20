@@ -68,6 +68,43 @@ def test_partial_state_names_how_many_pages_were_scored(site, geo_home):
     assert "Scores reflect the 41 pages only." in text
 
 
+def test_a_finding_with_no_points_to_recover_does_not_advertise_zero(site, geo_home):
+    """robots and fetch findings are not scored signals.
+
+    Printing "+0 points available" beside a critical finding reads as "fixing
+    this gains you nothing", which is the opposite of what it means.
+    """
+    _, output = render(["score", f"{site.url}/private/secret.html", "--allow-private", "--no-render"])
+    assert "blocks crawlers that AI answers depend on" in output
+    assert "+0 points available" not in output
+    assert "critical \u00b7 low effort" in output
+
+
+def test_a_scored_finding_still_shows_what_it_recovers(site, geo_home):
+    _, output = render(["score", f"{site.url}/weak-prose.html", "--allow-private", "--no-render"])
+    assert "points available" in output
+
+
+def test_the_recorded_path_is_one_a_user_can_open(site, geo_home):
+    import io as _io
+    import json as _json
+
+    from geo_audit import state
+    from geo_audit.cli import main as _main
+
+    buffer = _io.StringIO()
+    _main(
+        ["score", f"{site.url}/ssr-rich.html", "--allow-private", "--quiet", "--no-render", "--json"],
+        out=buffer,
+    )
+    record = _json.loads(buffer.getvalue())["page"]["record"]
+    assert record.startswith(state.display_home())
+    assert record.endswith("audits.jsonl")
+    from pathlib import Path
+
+    assert Path(record.replace(state.display_home(), str(state.geo_home()), 1)).is_file()
+
+
 def test_doctor_headline_counts_checks(geo_home):
     _, output = render(["doctor"])
     assert "geo-audit-cli" in output

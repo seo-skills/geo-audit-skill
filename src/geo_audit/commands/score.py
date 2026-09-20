@@ -86,6 +86,7 @@ def _record(page, result: dict) -> None:
     slug = project_slug(result["page"]["final_url"])
     path = state.append_audit(slug, result)
     try:
-        result["page"]["record"] = str(path.relative_to(state.geo_home().parent))
+        inside = path.relative_to(state.geo_home()).as_posix()
+        result["page"]["record"] = f"{state.display_home()}/{inside}"
     except ValueError:
         result["page"]["record"] = str(path)

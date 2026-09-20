@@ -75,13 +75,10 @@ def _render_findings(envelope: dict, out: TextIO, style: Style, limit: int = 3) 
     for finding in findings[:limit]:
         mark = _SEVERITY_MARK.get(finding["severity"], "  ")
         print(f"  {mark} {finding['title']}", file=out)
-        print(
-            style.dim(
-                f"      {finding['severity']} · {finding['effort']} effort · "
-                f"+{finding['points_lost']:g} points available"
-            ),
-            file=out,
-        )
+        meta = f"{finding['severity']} · {finding['effort']} effort"
+        if finding["points_lost"] > 0:
+            meta += f" · +{finding['points_lost']:g} points available"
+        print(style.dim(f"      {meta}"), file=out)
         print(f"      {finding['remediation']}", file=out)
     if len(findings) > limit:
         print(style.dim(f"  {len(findings) - limit} more in the JSON output."), file=out)
