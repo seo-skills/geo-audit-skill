@@ -7,6 +7,72 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-20
+
+The audit itself: a crawler, four scored categories, and five more skills.
+
+### Added
+
+- **`geo crawl`** - maps what a crawler can reach. The rate limit is global rather
+  than per worker, because five workers at one request per second each is five
+  requests per second at the site. robots.txt governs discovery, not the URL you
+  typed: a disallowed page is never requested, and the fixture server's request log
+  proves it rather than proving only that no result came back. Sitemaps seed the
+  frontier; tracking-parameter variants and fragments collapse to one page.
+- **`geo audit`** - crawls, scores every category over every page, and weights them
+  into one number. Per-page signals roll up as a mean over the pages where they were
+  measured, carrying the spread and the worst page. A detail that is identical on
+  every page survives aggregation, so a site-level fact like which crawler tokens are
+  blocked is not replaced by an average.
+- **`geo audit --rescore <run_id>`** - recomputes from a stored record with no network
+  at all. Rescoring twice is byte-identical, and a test asserts the server sees no
+  requests during one. It reports the recorded versions against the current ones, so a
+  rescore after a data update says plainly that the number is not the one recorded.
+- **`geo audit --only`** and **`--brand`** - a category the run's inputs cannot reach
+  is out of scope rather than missing, and `--only schema` scores out of schema alone.
+- **Technical category** (weight 15): crawler access against the AI crawler tokens,
+  indexability, metadata, status health, transport security, URL structure. Training
+  tokens and search tokens are scored separately.
+- **Schema category** (weight 10): presence, validity against schema.org-derived
+  requirements, publisher identity, article properties, and types that answer a
+  question directly.
+- **Brand category** (weight 20): Wikipedia, Wikidata, Reddit and YouTube through
+  their documented public APIs, plus whether the site links itself to those profiles.
+- **`geo validate`** - reports JSON-LD node by node, with `--suggest` building a block
+  from what the page already states rather than a template to fill in.
+- **`geo llmstxt`** - checks /llms.txt against the llmstxt.org structure, and with
+  `--generate` builds one from pages that were actually fetched.
+- **`geo scan`** - brand presence. Platforms with no usable API are listed as manual
+  checks and never emitted as results.
+- **`geo prune`** - count, age and size limits over the append-only history.
+- **Five skills**: `geo:audit`, `geo:technical`, `geo:schema`, `geo:llmstxt`,
+  `geo:brand`, each carrying the shared response contract byte-identically.
+- **Instruction-shaped text detection.** Pages whose own title or summary is addressed
+  to an AI system are excluded from a generated llms.txt and reported as a finding.
+  That file gets published and read as authoritative; copying a page's own "ignore
+  previous instructions" into it would hand the attack a better delivery mechanism
+  than the page had.
+
+### Changed
+
+- Connections are kept alive rather than closed per request. A crawl of fifty pages
+  costs one connection, not fifty handshakes.
+- A 404 reached by following a link is its own finding. It is a broken link, not a
+  server error, and the fix is different.
+- A page that returned no markup is *not measured* on markup signals rather than
+  scored zero, so one 404 is not counted twice.
+- `schema.presence` means "did the page attempt JSON-LD", which stops a page with
+  broken markup receiving two contradictory findings at once.
+- Findings repeated across pages merge into one finding carrying every page it
+  affects.
+
+### Fixed
+
+- Structured data that is absent is no longer reported as valid.
+- A finding with no points to recover no longer advertises `+0 points available`.
+- An empty page reports the one finding that explains the absence instead of six that
+  presuppose content it does not have.
+
 ## [0.1.0] - 2026-09-20
 
 The walking skeleton: three commands with the full safety, evidence and exit-code
@@ -62,5 +128,6 @@ contract behind them, and one skill end to end.
   composite is taken over the signals that were computed; a signal that was not
   measured is never scored as a failure.
 
-[Unreleased]: https://github.com/seo-skills/geo-audit-skill/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/seo-skills/geo-audit-skill/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.2.0
 [0.1.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.1.0

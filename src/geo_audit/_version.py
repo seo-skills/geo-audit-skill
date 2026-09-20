@@ -13,7 +13,7 @@ appears in every envelope, audit record and report footer:
 * normalizer_version content extraction, and therefore evidence hash identity
 """
 
-CLI_VERSION = "0.1.0"
+CLI_VERSION = "0.2.0"
 
 SCHEMA_VERSION = 1
 SCORING_VERSION = "1.0"

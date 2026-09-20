@@ -7,18 +7,23 @@
   },
   "metadata": {
     "description": "GEO and SEO audit tooling for Claude Code",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "plugins": [
     {
       "name": "geo",
       "source": "./",
       "description": "Deterministic GEO audits. Scores are computed by a Python CLI and explained by the model, never the other way round.",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "author": {
         "name": "seo-skills"
       },
-      "keywords": ["geo", "seo", "ai-search", "audit"],
+      "keywords": [
+        "geo",
+        "seo",
+        "ai-search",
+        "audit"
+      ],
       "category": "workflow"
     }
   ]

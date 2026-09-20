@@ -1,6 +1,6 @@
 # Command reference
 
-Generated from the argument parser at version 0.1.0. Do not edit by hand; run `python tools/gen_docs.py`.
+Generated from the argument parser at version 0.2.0. Do not edit by hand; run `python tools/gen_docs.py`.
 
 ```
 usage: geo [-h] [--version] COMMAND ...

@@ -122,3 +122,121 @@ def test_known_keys_covers_every_emitted_signal_and_error():
     keys = lint_skills.known_keys()
     assert set(ERRORS) <= keys
     assert set(data.weights()["citability"]["signals"]) <= keys
+
+
+# --- the key manifest is checked against real envelopes --------------------
+
+
+def emitted_key_paths(envelope: dict) -> set[str]:
+    """Every `parent.child` path a real envelope contains."""
+    paths: set[str] = set()
+
+    def walk(node, parent: str = "") -> None:
+        if isinstance(node, dict):
+            for key, value in node.items():
+                if parent:
+                    paths.add(f"{parent}.{key}")
+                paths.add(key)
+                # Signal and finding identifiers are values, not keys, and they
+                # are exactly what the skills name.
+                if key == "id" and isinstance(value, str):
+                    paths.add(value)
+                walk(value, key)
+        elif isinstance(node, list):
+            for item in node:
+                walk(item, parent)
+
+    walk(envelope)
+    return paths
+
+
+def skill_identifiers() -> dict[str, set[str]]:
+    """Every backticked identifier each skill mentions."""
+    found: dict[str, set[str]] = {}
+    for name in lint_skills.EXPECTED_SKILLS:
+        directory = ROOT / "skills" / name
+        text = (directory / "SKILL.md").read_text(encoding="utf-8")
+        for section in sorted((directory / "sections").glob("*.md")):
+            text += section.read_text(encoding="utf-8")
+        found[name] = set(lint_skills.IDENTIFIER.findall(text))
+    return found
+
+
+def test_every_identifier_a_skill_mentions_appears_in_a_real_envelope(site, geo_home, monkeypatch):
+    """The lint's offline key list must not be fiction.
+
+    The lint is a fast approximation so it can run without a network. This
+    test is the ground truth: it runs every command and checks that each
+    identifier the skills name is one the CLI actually emitted.
+    """
+    import io
+    import json
+
+    from geo_audit.cli import main
+    from geo_audit.commands import scan as scan_cmd
+    from geo_audit.errors import ERRORS
+    from tests.fixture_server import Reply
+
+    monkeypatch.setenv("GEO_YOUTUBE_API_KEY", "test-key")
+    stub = serve_stub(site)
+    monkeypatch.setattr(scan_cmd, "_platforms", lambda: stub)
+
+    out = ["--json", "--quiet"]
+    crawl = ["--allow-private", "--rate", "50", "--max-pages", "10"]
+    page = ["--allow-private"]
+    invocations = [
+        ["fetch", f"{site.url}/ssr-rich.html", *page],
+        ["crawl", f"{site.url}/hub.html", *crawl],
+        ["audit", f"{site.url}/hub.html", "--brand", "Acme", *crawl],
+        ["score", f"{site.url}/ssr-rich.html", "--no-render", *page],
+        ["validate", f"{site.url}/schema-none.html", "--suggest", *page],
+        ["llmstxt", f"{site.url}/hub.html", "--generate", *crawl],
+        ["scan", "Acme", "--allow-private"],
+        ["prune", "--dry-run"],
+        ["doctor"],
+    ]
+
+    emitted: set[str] = set(ERRORS)
+    for invocation in invocations:
+        buffer = io.StringIO()
+        code = main(invocation + out, out=buffer)
+        assert code == 0, f"{invocation[0]} exited {code}: {buffer.getvalue()[:300]}"
+        emitted |= emitted_key_paths(json.loads(buffer.getvalue()))
+
+    # One failing run, so the error block is covered. Skills are told to relay
+    # `error.message` and `error.hint`, which never appear on a success.
+    buffer = io.StringIO()
+    assert main(["score", "not-a-url"] + out, out=buffer) == 2
+    emitted |= emitted_key_paths(json.loads(buffer.getvalue()))
+
+    # Run one rescore so the rescore block is covered too.
+    buffer = io.StringIO()
+    main(["audit", f"{site.url}/hub.html", *crawl] + out, out=buffer)
+    run_id = json.loads(buffer.getvalue())["run_id"]
+    buffer = io.StringIO()
+    main(["audit", f"{site.url}/hub.html", "--rescore", run_id] + out, out=buffer)
+    emitted |= emitted_key_paths(json.loads(buffer.getvalue()))
+
+    missing: dict[str, set[str]] = {}
+    for skill, identifiers in skill_identifiers().items():
+        unseen = {
+            identifier
+            for identifier in identifiers
+            if identifier not in emitted and identifier.split(".")[-1] not in emitted
+        }
+        if unseen:
+            missing[skill] = unseen
+    assert not missing, f"skills name identifiers no command emitted: {missing}"
+
+
+def serve_stub(site):
+    """Point the brand platforms at the fixture server."""
+    return {
+        name: {
+            "label": name.title(),
+            "url": f"{site.url}/not-html?q={{query}}&key={{key}}",
+            "docs": "https://example.test/docs",
+            "needs_key": None,
+        }
+        for name in ("wikipedia", "wikidata", "reddit", "youtube")
+    }

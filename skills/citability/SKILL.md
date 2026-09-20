@@ -1,7 +1,7 @@
 ---
 name: citability
 description: Score how quotable a single page is for AI search engines. Runs the geo CLI, explains the seven citability signals behind the number, and ranks the fixes that recover the most points. Use when asked to check, score or improve whether a page can be cited by ChatGPT, Claude, Perplexity, Gemini or AI Overviews.
-version: 0.1.0
+version: 0.2.0
 allowed-tools: Bash, Read
 ---
 
@@ -19,10 +19,10 @@ Run this first, once per session:
 geo --version
 ```
 
-Expected: `geo-audit-cli 0.1.x` or newer.
+Expected: `geo-audit-cli 0.2.x` or newer.
 
 - **Command not found** → stop and say: "The geo CLI is not installed. Install it with `uv tool install geo-audit-cli` (or `pipx install geo-audit-cli`), then run this again."
-- **Older than 0.1.0** → stop and say: "This skill needs geo-audit-cli 0.1.0 or newer. Upgrade with `uv tool upgrade geo-audit-cli`."
+- **Older than 0.2.0** → stop and say: "This skill needs geo-audit-cli 0.2.0 or newer. Upgrade with `uv tool upgrade geo-audit-cli`."
 - **Two `geo` binaries or anything else odd** → run `geo doctor` and relay what it reports.
 
 ## Run
@@ -69,7 +69,7 @@ For rewriting advice on a specific failing passage, read `sections/remediation.m
 
 ## What not to do
 
-- Do not run more than one page at a time. `geo crawl` and `geo audit` arrive in 0.2.0; until then, one URL per run.
+- Do not run more than one page at a time. For a whole site use `/geo:audit`, which crawls.
 - Do not fetch the page yourself with WebFetch or curl to "check". The CLI's normalizer defines what a content block is, and a second opinion from a different fetcher is a different measurement, not a confirmation.
 - Do not compare this score against a score from any other GEO tool. Different tools measure different things.
 - Do not spawn subagents. The CLI owns all parallelism.

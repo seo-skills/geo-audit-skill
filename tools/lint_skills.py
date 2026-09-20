@@ -40,6 +40,11 @@ from geo_audit.errors import ERRORS  # noqa: E402
 # adding a line here; that is the point.
 EXPECTED_SKILLS = {
     "citability": "M1",
+    "audit": "M2",
+    "technical": "M2",
+    "schema": "M2",
+    "llmstxt": "M2",
+    "brand": "M2",
 }
 
 CONTRACT_BEGIN = "<!-- geo:response-contract:begin -->"
@@ -100,7 +105,7 @@ def known_keys() -> set[str]:
     for parent, children in {
         "scores": ["composite", "tier", "tier_meaning", "categories"],
         "evidence": ["stamp", "content_hash", "pages_ok", "pages_failed", "normalizer_version"],
-        "completeness": ["computed", "total", "missing"],
+        "completeness": ["computed", "total", "missing", "categories"],
         "error": ["code", "message", "hint", "docs", "log"],
         "signals": ["id", "class", "value", "max", "page", "detail", "skipped_reason"],
         "findings": ["id", "severity", "effort", "priority", "points_lost", "pages",
@@ -108,13 +113,51 @@ def known_keys() -> set[str]:
         "page": ["status", "final_url", "requested_url", "content_chars", "content_root",
                  "blocks", "robots", "redirect_chain", "record", "cache",
                  "jsonld_types", "jsonld_errors"],
+        "crawl": ["start_url", "site", "pages_crawled", "pages_ok", "discovered",
+                  "seeded_from_sitemap", "disallowed_by_robots", "stopped_because",
+                  "elapsed_ms", "limits", "robots", "pages", "record"],
+        "limits": ["max_pages", "requests_per_second", "concurrency", "timeout",
+                   "robots_respected", "sitemap_used"],
+        "rescore": ["run_id", "observed_at", "recorded_versions", "current_versions",
+                    "versions_match", "recorded_composite"],
+        "schema": ["verdict", "valid", "blocks", "blocks_attempted", "types",
+                   "unrecognised_types", "parse_errors", "nodes", "suggestion"],
+        "suggestion": ["needed", "jsonld", "script", "fill_in", "note"],
+        "llmstxt": ["site", "llms_txt", "llms_full_txt", "generated", "crawl"],
+        "llms_txt": ["present", "valid", "status", "url", "title", "summary",
+                     "sections", "links", "link_count", "problems", "bytes",
+                     "has_optional_section", "error"],
+        "generated": ["text", "bytes", "pages_listed", "pages_optional", "excluded",
+                      "parsed", "written_to"],
+        "scan": ["brand", "site", "platforms", "platforms_checked", "platforms_total",
+                 "total_results", "manual_checks", "same_as"],
+        "platforms": ["platform", "label", "checked", "status", "results", "examples",
+                      "docs", "observed_at", "reason"],
+        "prune": ["home", "applied", "limits", "projects", "runs_dropped",
+                  "bytes_reclaimed"],
+        "checks": ["id", "status", "detail", "hint"],
+        # Signal detail keys the skills are allowed to name. They are part of the
+        # documented surface, and `test_skills_lint.py` checks every one of these
+        # against a real envelope rather than trusting this list.
+        "detail": ["blocked_critical", "blocked_training_only", "robots_status",
+                   "pages_measured", "pages_total", "mean", "min", "max",
+                   "worst_page", "worst_example", "worst_section", "breakdown",
+                   "reason", "ratio", "checks", "present", "missing",
+                   "candidate_blocks", "self_contained", "sections", "answer_first",
+                   "prose_blocks", "blocks_with_facts", "external_domains",
+                   "content_chars", "content_ratio", "js_required_notice",
+                   "framework_root_chars", "empty_framework_root",
+                   "capped_thin_or_js_gated", "static_chars", "rendered_chars",
+                   "jsonld_types", "same_as_count", "linked_hosts",
+                   "links_to_encyclopedic", "wikipedia_results", "wikidata_results",
+                   "reddit_results", "youtube_results", "missing_required",
+                   "parse_errors", "checked", "answer_types_found"],
     }.items():
         keys |= {f"{parent}.{child}" for child in children}
         keys |= {f"{parent}[].{child}" for child in children}
     keys |= top
     # Signal detail keys are part of the documented surface too.
     keys |= {
-        "detail.breakdown", "detail.worst_example", "detail.worst_section",
         "breakdown.single_h1", "breakdown.enough_h2", "breakdown.no_skipped_levels",
         "breakdown.section_length",
     }

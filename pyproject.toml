@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "geo-audit-cli"
-version = "0.1.0"
+version = "0.2.0"
 description = "Deterministic GEO (Generative Engine Optimization) audit CLI. Every number is reproducible from recorded evidence."
 readme = "README.md"
 requires-python = ">=3.11"

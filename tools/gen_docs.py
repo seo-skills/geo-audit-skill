@@ -178,7 +178,41 @@ def constants_region() -> str:
     return "\n".join(lines)
 
 
+def crawlers_region() -> str:
+    lines = [
+        "| Token | Operator | Purpose | Critical | Gates |",
+        "|---|---|---|---|---|",
+    ]
+    for entry in data.crawlers():
+        lines.append(
+            f"| `{entry['token']}` | [{entry['operator']}]({entry['docs']}) | "
+            f"{entry['purpose']} | {'**yes**' if entry['critical'] else 'no'} | "
+            f"{entry['gates']} |"
+        )
+    lines.append("")
+    lines.append(f"*Generated from `data/ai_crawlers.json` at data_version {data.data_version()}.*")
+    return "\n".join(lines)
+
+
+def schema_types_region() -> str:
+    requirements = data.load("schema_requirements")["types"]
+    lines = ["| Type | Required | Recommended |", "|---|---|---|"]
+    for name in sorted(requirements):
+        spec = requirements[name]
+        required = ", ".join(f"`{p}`" for p in spec["required"]) or "-"
+        recommended = ", ".join(f"`{p}`" for p in spec["recommended"]) or "-"
+        lines.append(f"| `{name}` | {required} | {recommended} |")
+    lines.append("")
+    lines.append(
+        f"*Generated from `data/schema_requirements.json` at data_version "
+        f"{data.data_version()}.*"
+    )
+    return "\n".join(lines)
+
+
 REGIONS = {
+    ROOT / "skills/technical/sections/crawlers.md": {"crawlers": crawlers_region},
+    ROOT / "skills/schema/sections/types.md": {"schema-types": schema_types_region},
     ROOT / "docs/concepts/signals.md": {"signals": signals_region},
     ROOT / "docs/concepts/scoring-methodology.md": {"constants": constants_region},
 }

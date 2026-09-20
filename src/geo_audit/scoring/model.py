@@ -10,6 +10,7 @@ numbers.
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 
 from geo_audit import data
@@ -188,6 +189,11 @@ def aggregate(per_page: list[list[Signal]]) -> list[Signal]:
             "max": round(max(values), 2),
             "worst_page": worst.page,
         }
+        # A detail that is identical on every page is a fact about the site,
+        # not about a page, and it survives aggregation. Without this, the
+        # actionable part of a site-level signal - which crawler tokens are
+        # blocked, say - is replaced by a mean and disappears.
+        detail.update(_shared_detail(computed))
         if worst.detail.get("worst_example"):
             detail["worst_example"] = worst.detail["worst_example"]
         out.append(
@@ -200,6 +206,36 @@ def aggregate(per_page: list[list[Signal]]) -> list[Signal]:
             )
         )
     return out
+
+
+def _shared_detail(signals: list[Signal]) -> dict:
+    """Detail entries that every page agreed on, verbatim."""
+    if not signals:
+        return {}
+    reserved = {"pages_measured", "pages_total", "mean", "min", "max", "worst_page"}
+    first = signals[0].detail
+    shared: dict = {}
+    for key, value in first.items():
+        if key in reserved:
+            continue
+        try:
+            encoded = json.dumps(value, sort_keys=True)
+        except TypeError:
+            continue
+        if all(
+            key in signal.detail
+            and _encodes_to(signal.detail[key], encoded)
+            for signal in signals[1:]
+        ):
+            shared[key] = value
+    return shared
+
+
+def _encodes_to(value, encoded: str) -> bool:
+    try:
+        return json.dumps(value, sort_keys=True) == encoded
+    except TypeError:
+        return False
 
 
 def weighted_composite(categories: dict[str, int], scores: dict[str, int]) -> tuple[int, dict]:
