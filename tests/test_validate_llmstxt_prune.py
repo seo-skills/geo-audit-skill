@@ -349,3 +349,44 @@ def test_a_size_cap_drops_by_size():
     kept, dropped = prune.plan_for(records, {"keep_runs": 100, "keep_days": 365, "max_project_bytes": 1500}, now)
     assert len(kept) < 10
     assert any(entry["reason"] == "size" for entry in dropped)
+
+
+# --- causes and consequences ----------------------------------------------
+
+
+def test_a_page_with_no_schema_gets_one_finding_not_four(site, geo_home):
+    """Found by running the tool against a real site with no structured data.
+
+    The top finding read "structured data is malformed" for a page that had
+    none. Validity scored zero for having nothing to validate, and three more
+    findings restated the same absence, pushing the one that mattered down
+    the list.
+    """
+    _, envelope = run(["validate", f"{site.url}/schema-none.html", "--allow-private"])
+    schema_findings = [f["id"] for f in envelope["findings"] if f["id"].startswith("schema.")]
+    assert schema_findings == ["schema.presence"]
+
+    validity = next(s for s in envelope["signals"] if s["id"] == "schema.validity")
+    assert validity["value"] is None, "nothing to validate is not a failed validation"
+    assert "no structured data" in validity["detail"]["reason"]
+
+
+def test_a_page_with_broken_schema_still_gets_the_real_findings(site, geo_home):
+    """Suppression must not hide problems with markup that does exist."""
+    _, envelope = run(["validate", f"{site.url}/schema-broken.html", "--allow-private"])
+    ids = {f["id"] for f in envelope["findings"]}
+    assert "schema.validity" in ids
+    assert "schema.presence" not in ids, "the page did attempt structured data"
+
+
+def test_the_consequence_map_only_names_real_signals():
+    from geo_audit import data
+
+    declared = data.load("findings").get("consequences") or {}
+    known = set(data.load("findings")["signals"])
+    for cause, rule in declared.items():
+        if not isinstance(rule, dict):
+            continue
+        assert cause in known, cause
+        for consequence in rule["suppresses"]:
+            assert consequence in known, consequence

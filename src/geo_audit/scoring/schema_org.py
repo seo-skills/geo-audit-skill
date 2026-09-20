@@ -103,7 +103,10 @@ def validity(doc: Document) -> tuple[float | None, dict]:
     if doc.jsonld_errors and not doc.jsonld:
         return 0.0, {"parse_errors": doc.jsonld_errors, "checked": 0}
     if not doc.jsonld:
-        return 0.0, {"reason": "no structured data to validate", "checked": 0}
+        # Nothing to validate is not a failed validation. `schema.presence`
+        # already reports the absence; scoring this zero as well reported a
+        # page with no structured data as having *malformed* structured data.
+        return None, {"reason": "no structured data to validate", "checked": 0}
 
     checked = 0
     missing: list[str] = []

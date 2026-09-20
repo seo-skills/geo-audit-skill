@@ -116,12 +116,34 @@ def composite(signals: list[Signal]) -> tuple[int, dict]:
     return score, completeness
 
 
+def _suppressed_by_cause(signals: list[Signal]) -> set[str]:
+    """Findings that would only restate a cause already being reported.
+
+    A page with no structured data does not also need to be told its
+    structured data is incomplete: that is the same fact four more times,
+    and it pushes the finding that matters down the list.
+    """
+    declared = data.load("findings").get("consequences") or {}
+    values = {signal.id: signal.value for signal in signals}
+    suppressed: set[str] = set()
+    for cause, rule in declared.items():
+        if not isinstance(rule, dict):
+            continue
+        value = values.get(cause)
+        if value is not None and value <= rule.get("floor", 0):
+            suppressed.update(rule.get("suppresses", []))
+    return suppressed
+
+
 def findings_for(signals: list[Signal], page: str) -> list[Finding]:
     rules = data.thresholds("findings")
     no_finding_above = rules["no_finding_above"]
     full_below = rules["full_severity_below"]
+    suppressed = _suppressed_by_cause(signals)
     out: list[Finding] = []
     for signal in signals:
+        if signal.id in suppressed:
+            continue
         ratio = signal.ratio
         if ratio is None or ratio > no_finding_above:
             continue

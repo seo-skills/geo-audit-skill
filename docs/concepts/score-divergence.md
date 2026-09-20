@@ -33,6 +33,8 @@ the numbers are not on the same scale.
 | 14 | **A platform with no usable API is a manual check, never a result.** | Estimate presence from a scrape, or omit the platform silently. | LinkedIn, X and the review sites are listed with why they cannot be queried and what to do by hand, and no signal is derived from them. | An invented number is worse than an absent one, and a silently omitted platform reads as "we checked and found nothing". |
 | 15 | **A generated llms.txt excludes pages that talk to the model.** | List every crawled page. | Pages whose own title or summary is instruction-shaped are left out and reported as a finding. | That file is published and read as authoritative. Copying a page's own "ignore previous instructions" into it hands the attack a better delivery mechanism than the page had. |
 
+| 16 | **A finding that only restates a cause is suppressed.** | Report every signal that scored below threshold. | When a cause signal scores at its floor, the findings that are merely its consequences are left out. The relation is declared in `data/findings.json`. | Found by auditing a real site with no structured data: the top finding read "structured data is malformed" for a page that had none, and three more findings restated the same absence, pushing the one that mattered down the list. |
+
 ## Parity with the reference implementation
 
 The fetch and parse layer was compared field by field against the reference

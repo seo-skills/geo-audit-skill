@@ -183,5 +183,17 @@
       "title": "A page contains text addressed to an AI system",
       "remediation": "Find and remove it. Text shaped like an instruction - a fake system prompt, a demand to ignore earlier instructions, a fabricated end-of-output marker - is either an attempt to steer models reading your site, or user-generated content nobody reviewed. Either way it is on your domain and it is what an engine quotes when it cites you."
     }
+  },
+  "consequences": {
+    "comment": "cause -> the findings that are merely its consequences. When the cause scores at or below its floor, its consequences are suppressed: a page with no structured data does not also need to be told its structured data is incomplete.",
+    "schema.presence": {
+      "floor": 0,
+      "suppresses": [
+        "schema.validity",
+        "schema.organization",
+        "schema.article",
+        "schema.breadth"
+      ]
+    }
   }
 }
