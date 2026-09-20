@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Deployment checklist</title>
+</head>
+<body>
+<main>
+<h1>Deployment checklist</h1>
+<p>A deployment checklist reduces incident rate by forcing the same verification steps on every release. This checklist covers the four steps that catch most regressions before users see them.</p>
+<h2>What runs before a deploy?</h2>
+<p>The test suite runs against the merged state, not against the branch alone. Merging first catches the 12 percent of failures that only appear after integration.</p>
+<h2>What is verified after a deploy?</h2>
+<p>Error rate and latency are compared against the previous 30 minutes. A 2x increase in either aborts the rollout automatically.</p>
+<h2>Who is notified?</h2>
+<p>The on-call engineer receives a message within 60 seconds of a rollback. Nobody else is paged during business hours.</p>
+</main>
+</body>
+</html>

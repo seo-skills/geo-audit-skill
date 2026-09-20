@@ -1,0 +1,357 @@
+{
+  "cli_version": "0.1.0",
+  "command": "score",
+  "completeness": {
+    "computed": 6,
+    "missing": [
+      "citability.render_parity"
+    ],
+    "total": 7
+  },
+  "data_version": "2026.09",
+  "error": null,
+  "evidence": {
+    "content_hash": "2858bc950bf075d22ee993243db8ed80c938ed3f25d4a9f23dcee931efc3e0d8",
+    "normalizer_version": 1,
+    "pages_failed": [],
+    "pages_ok": 1,
+    "stamp": "CURRENT"
+  },
+  "findings": [
+    {
+      "effort": "medium",
+      "excerpt": "This is something that comes up a lot. It tends to be the kind of thing that people ask about when they are getting started, and it is also the kind of thing that is easy to get wrong if you are not careful about it from the beginning.",
+      "id": "citability.self_containment",
+      "pages": [
+        "http://fixture/weak-prose.html"
+      ],
+      "points_lost": 25.0,
+      "priority": 1,
+      "remediation": "Rewrite the opening sentence of each passage so it names its own subject. An engine lifts one paragraph, not the page: a paragraph that starts with \"This also means...\" arrives at the reader with nothing to point at.",
+      "severity": "critical",
+      "title": "Passages depend on the paragraph above them"
+    },
+    {
+      "effort": "high",
+      "excerpt": null,
+      "id": "citability.extractability",
+      "pages": [
+        "http://fixture/weak-prose.html"
+      ],
+      "points_lost": 12.0,
+      "priority": 2,
+      "remediation": "Server-render the main content, or pre-render it for crawlers. Most AI crawlers do not execute JavaScript, so content that only appears after hydration does not exist to them.",
+      "severity": "critical",
+      "title": "Little usable content is present in the HTML the crawler receives"
+    },
+    {
+      "effort": "medium",
+      "excerpt": null,
+      "id": "citability.answer_first",
+      "pages": [
+        "http://fixture/weak-prose.html"
+      ],
+      "points_lost": 20.0,
+      "priority": 3,
+      "remediation": "Put the direct answer in the first sentence under each heading, then explain. Move throat-clearing openers below the answer or delete them.",
+      "severity": "high",
+      "title": "Sections build up to the answer instead of leading with it"
+    },
+    {
+      "effort": "medium",
+      "excerpt": "In this article we are going to look at a few of the things that we have been thinking about lately, and why they matter to us as a team and to the people we work with every day.",
+      "id": "citability.evidence_density",
+      "pages": [
+        "http://fixture/weak-prose.html"
+      ],
+      "points_lost": 15.0,
+      "priority": 4,
+      "remediation": "Add the specific figure, date, version or measurement to each claim, and link the primary source. Passages carrying a checkable fact are the ones engines quote.",
+      "severity": "high",
+      "title": "Claims arrive without numbers, dates or sources"
+    },
+    {
+      "effort": "low",
+      "excerpt": null,
+      "id": "citability.attribution",
+      "pages": [
+        "http://fixture/weak-prose.html"
+      ],
+      "points_lost": 10.0,
+      "priority": 5,
+      "remediation": "Add a visible byline, a published date and a last-modified date, and mirror them in Article or Organization JSON-LD. Attribution is what lets an engine decide the page is safe to quote.",
+      "severity": "medium",
+      "title": "The page does not say who wrote it or when"
+    },
+    {
+      "effort": "low",
+      "excerpt": null,
+      "id": "citability.structure",
+      "pages": [
+        "http://fixture/weak-prose.html"
+      ],
+      "points_lost": 5.0,
+      "priority": 6,
+      "remediation": "Give the page one H1 and at least three H2s, each phrased as the question its section answers. Do not skip heading levels; split any section over 400 words.",
+      "severity": "low",
+      "title": "Heading structure does not segment the page into answerable sections"
+    }
+  ],
+  "normalizer_version": 1,
+  "observed_at": "<volatile>",
+  "ok": true,
+  "page": {
+    "blocks": 8,
+    "bytes": 1380,
+    "cache": {
+      "etag": null,
+      "last_modified": null
+    },
+    "content_chars": 1187,
+    "content_root": "body",
+    "content_type": "text/html",
+    "elapsed_ms": "<volatile>",
+    "encoding": "utf-8",
+    "external_links": 0,
+    "final_url": "http://fixture/weak-prose.html",
+    "headings": 2,
+    "internal_links": 0,
+    "jsonld_errors": [],
+    "jsonld_types": [],
+    "peer_verified": true,
+    "record": "<volatile>",
+    "redirect_chain": [],
+    "requested_url": "http://fixture/weak-prose.html",
+    "robots": {
+      "access": [
+        {
+          "agent": "GPTBot",
+          "allowed": false,
+          "crawl_delay": null
+        },
+        {
+          "agent": "OAI-SearchBot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "ChatGPT-User",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "PerplexityBot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Perplexity-User",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "ClaudeBot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Claude-SearchBot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Claude-User",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Google-Extended",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Googlebot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Bingbot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Applebot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Applebot-Extended",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "meta-externalagent",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Amazonbot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "CCBot",
+          "allowed": true,
+          "crawl_delay": null
+        }
+      ],
+      "self_allowed": true,
+      "sitemaps": [
+        "/sitemap.xml"
+      ],
+      "source_url": "http://fixture/robots.txt",
+      "status": 200,
+      "unavailable": false,
+      "unreachable": false
+    },
+    "status": 200
+  },
+  "run_id": "<volatile>",
+  "schema_version": 1,
+  "scores": {
+    "categories": {
+      "citability": 13
+    },
+    "composite": 13,
+    "tier": "poor",
+    "tier_meaning": "There is little here an engine can quote without inventing the surrounding meaning."
+  },
+  "scoring_version": "1.0",
+  "signals": [
+    {
+      "class": "heuristic",
+      "detail": {
+        "candidate_blocks": 5,
+        "dangling_blocks": 4,
+        "floor_ratio": 0.3,
+        "good_ratio": 0.85,
+        "ratio": 0.2,
+        "self_contained": 1,
+        "worst_example": "This is something that comes up a lot. It tends to be the kind of thing that people ask about when they are getting started, and it is also the kind of thing that is easy to get wrong if you are not careful about it from the beginning."
+      },
+      "id": "citability.self_containment",
+      "max": 25,
+      "page": "http://fixture/weak-prose.html",
+      "value": 0.0
+    },
+    {
+      "class": "heuristic",
+      "detail": {
+        "answer_first": 0,
+        "ratio": 0.0,
+        "reason": "no headed sections with body text",
+        "sections": 0
+      },
+      "id": "citability.answer_first",
+      "max": 20,
+      "page": "http://fixture/weak-prose.html",
+      "value": 0.0
+    },
+    {
+      "class": "deterministic",
+      "detail": {
+        "breakdown": {
+          "enough_h2": 0.0,
+          "no_skipped_levels": 2.0,
+          "section_length": 4.0,
+          "single_h1": 4.0
+        },
+        "h1": 1,
+        "h2": 0,
+        "headings": 2,
+        "max_section_words": 400,
+        "oversized_sections": 0,
+        "sections": 1,
+        "skipped_levels": 1
+      },
+      "id": "citability.structure",
+      "max": 15,
+      "page": "http://fixture/weak-prose.html",
+      "value": 10.0
+    },
+    {
+      "class": "heuristic",
+      "detail": {
+        "blocks_with_facts": 0,
+        "breakdown": {
+          "facts": 0.0,
+          "outbound_citations": 0.0
+        },
+        "external_domains": 0,
+        "prose_blocks": 5,
+        "ratio": 0.0,
+        "worst_example": "In this article we are going to look at a few of the things that we have been thinking about lately, and why they matter to us as a team and to the people we work with every day."
+      },
+      "id": "citability.evidence_density",
+      "max": 15,
+      "page": "http://fixture/weak-prose.html",
+      "value": 0.0
+    },
+    {
+      "class": "deterministic",
+      "detail": {
+        "body_chars": 1164,
+        "capped_thin_or_js_gated": true,
+        "content_chars": 1187,
+        "content_ratio": 1.02,
+        "content_root": "body",
+        "empty_framework_root": false,
+        "framework_root_chars": null,
+        "js_required_notice": false,
+        "lists": 0,
+        "min_content_chars": 1200,
+        "tables": 0
+      },
+      "id": "citability.extractability",
+      "max": 15,
+      "page": "http://fixture/weak-prose.html",
+      "value": 3.0
+    },
+    {
+      "class": "deterministic",
+      "detail": {
+        "jsonld_types": [],
+        "missing": [
+          "byline",
+          "canonical",
+          "modified_date",
+          "organization_schema",
+          "published_date"
+        ],
+        "points_table": {
+          "byline": 3,
+          "canonical": 1,
+          "modified_date": 1,
+          "organization_schema": 2,
+          "published_date": 3
+        },
+        "present": []
+      },
+      "id": "citability.attribution",
+      "max": 10,
+      "page": "http://fixture/weak-prose.html",
+      "value": 0.0
+    },
+    {
+      "class": "heuristic",
+      "detail": {
+        "reason": "browser extra not installed"
+      },
+      "id": "citability.render_parity",
+      "max": 10,
+      "page": "http://fixture/weak-prose.html",
+      "skipped_reason": "browser extra not installed",
+      "value": null
+    }
+  ]
+}

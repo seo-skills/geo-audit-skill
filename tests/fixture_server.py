@@ -1,0 +1,148 @@
+"""A local HTTP server for the fixture site.
+
+Every fixture page in tests/fixtures/site was authored for this repository.
+Checking real third-party HTML into a public MIT repo would redistribute other
+people's copyrighted content, so nothing here was captured from the web.
+"""
+
+from __future__ import annotations
+
+import threading
+from dataclasses import dataclass, field
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from typing import Callable
+
+FIXTURE_DIR = Path(__file__).parent / "fixtures" / "site"
+
+DEFAULT_ROBOTS = """\
+User-agent: *
+Disallow: /private/
+Allow: /
+
+User-agent: GPTBot
+Disallow: /
+
+Sitemap: /sitemap.xml
+"""
+
+
+@dataclass
+class Reply:
+    status: int = 200
+    body: str | bytes = ""
+    content_type: str | None = "text/html; charset=utf-8"
+    headers: dict[str, str] = field(default_factory=dict)
+    raw: bool = False
+    delay: float = 0.0
+
+    def encoded(self) -> bytes:
+        return self.body if isinstance(self.body, bytes) else self.body.encode("utf-8")
+
+
+Route = Reply | Callable[[str], Reply]
+
+
+def _page(name: str) -> Reply:
+    return Reply(body=(FIXTURE_DIR / name).read_text(encoding="utf-8"))
+
+
+def site_routes() -> dict[str, Route]:
+    routes: dict[str, Route] = {
+        f"/{path.name}": _page(path.name) for path in sorted(FIXTURE_DIR.glob("*.html"))
+    }
+    routes["/robots.txt"] = Reply(body=DEFAULT_ROBOTS, content_type="text/plain; charset=utf-8")
+    routes["/bot-block"] = Reply(
+        status=403,
+        body="<html><body><h1>Access denied</h1>"
+        "<p>Enable JavaScript and cookies to continue.</p></body></html>",
+    )
+    routes["/server-error"] = Reply(status=500, body="<html><body>500</body></html>")
+    routes["/gone"] = Reply(status=404, body="<html><body>Not found</body></html>")
+    routes["/not-html"] = Reply(
+        body='{"ok": true}', content_type="application/json; charset=utf-8"
+    )
+    routes["/oversize"] = Reply(
+        body="<html><body><p>" + ("padding " * 400_000) + "</p></body></html>"
+    )
+    routes["/oversize-stream"] = Reply(
+        body="<html><body><p>" + ("padding " * 400_000) + "</p></body></html>", raw=True
+    )
+    routes["/redirect-loop"] = Reply(status=302, headers={"Location": "/redirect-loop"})
+    routes["/redirect-private"] = Reply(
+        status=302, headers={"Location": "http://127.0.0.1:1/unreachable"}
+    )
+    for hop in range(1, 4):
+        target = "/ssr-rich.html" if hop == 1 else f"/redirect/{hop - 1}"
+        routes[f"/redirect/{hop}"] = Reply(status=302, headers={"Location": target})
+    routes["/private/secret.html"] = _page("schema-none.html")
+    return routes
+
+
+class _Handler(BaseHTTPRequestHandler):
+    protocol_version = "HTTP/1.1"
+    routes: dict[str, Route] = {}
+
+    def log_message(self, *args) -> None:  # noqa: D102 - silence the test run
+        pass
+
+    def handle_one_request(self) -> None:
+        # Aborting a download mid-stream is the expected outcome of the size-cap
+        # tests. Let the connection die quietly instead of printing a traceback
+        # into every test run.
+        try:
+            super().handle_one_request()
+        except (BrokenPipeError, ConnectionResetError):
+            self.close_connection = True
+
+    def do_GET(self) -> None:  # noqa: N802 - BaseHTTPRequestHandler API
+        import time
+
+        path = self.path.split("?", 1)[0]
+        route = self.routes.get(path)
+        if route is None:
+            reply = Reply(status=404, body="<html><body>no fixture route</body></html>")
+        else:
+            reply = route(path) if callable(route) else route
+
+        if reply.delay:
+            time.sleep(reply.delay)
+
+        payload = reply.encoded()
+        self.send_response(reply.status)
+        if reply.content_type:
+            self.send_header("Content-Type", reply.content_type)
+        for key, value in reply.headers.items():
+            self.send_header(key, value)
+        if reply.raw:
+            # No Content-Length: the body ends when the connection closes, which
+            # exercises the streaming size cap rather than the declared one.
+            self.send_header("Connection", "close")
+            self.end_headers()
+            self.wfile.write(payload)
+            self.close_connection = True
+            return
+        self.send_header("Content-Length", str(len(payload)))
+        self.end_headers()
+        self.wfile.write(payload)
+
+
+class FixtureServer:
+    def __init__(self, routes: dict[str, Route]) -> None:
+        handler = type("BoundHandler", (_Handler,), {"routes": routes})
+        self._server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
+        self._thread = threading.Thread(target=self._server.serve_forever, daemon=True)
+
+    @property
+    def url(self) -> str:
+        host, port = self._server.server_address[:2]
+        return f"http://{host}:{port}"
+
+    def __enter__(self) -> "FixtureServer":
+        self._thread.start()
+        return self
+
+    def __exit__(self, *exc) -> None:
+        self._server.shutdown()
+        self._server.server_close()
+        self._thread.join(timeout=5)

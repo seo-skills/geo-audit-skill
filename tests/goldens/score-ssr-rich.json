@@ -1,0 +1,282 @@
+{
+  "cli_version": "0.1.0",
+  "command": "score",
+  "completeness": {
+    "computed": 6,
+    "missing": [
+      "citability.render_parity"
+    ],
+    "total": 7
+  },
+  "data_version": "2026.09",
+  "error": null,
+  "evidence": {
+    "content_hash": "c9717fc0e3c2fc302dc88443899cf0ac44a8ceae639853a27c01cf7816bed977",
+    "normalizer_version": 1,
+    "pages_failed": [],
+    "pages_ok": 1,
+    "stamp": "CURRENT"
+  },
+  "findings": [],
+  "normalizer_version": 1,
+  "observed_at": "<volatile>",
+  "ok": true,
+  "page": {
+    "blocks": 28,
+    "bytes": 3794,
+    "cache": {
+      "etag": null,
+      "last_modified": null
+    },
+    "content_chars": 2052,
+    "content_root": "main",
+    "content_type": "text/html",
+    "elapsed_ms": "<volatile>",
+    "encoding": "utf-8",
+    "external_links": 2,
+    "final_url": "http://fixture/ssr-rich.html",
+    "headings": 5,
+    "internal_links": 0,
+    "jsonld_errors": [],
+    "jsonld_types": [
+      "Article"
+    ],
+    "peer_verified": true,
+    "record": "<volatile>",
+    "redirect_chain": [],
+    "requested_url": "http://fixture/ssr-rich.html",
+    "robots": {
+      "access": [
+        {
+          "agent": "GPTBot",
+          "allowed": false,
+          "crawl_delay": null
+        },
+        {
+          "agent": "OAI-SearchBot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "ChatGPT-User",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "PerplexityBot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Perplexity-User",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "ClaudeBot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Claude-SearchBot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Claude-User",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Google-Extended",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Googlebot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Bingbot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Applebot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Applebot-Extended",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "meta-externalagent",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Amazonbot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "CCBot",
+          "allowed": true,
+          "crawl_delay": null
+        }
+      ],
+      "self_allowed": true,
+      "sitemaps": [
+        "/sitemap.xml"
+      ],
+      "source_url": "http://fixture/robots.txt",
+      "status": 200,
+      "unavailable": false,
+      "unreachable": false
+    },
+    "status": 200
+  },
+  "run_id": "<volatile>",
+  "schema_version": 1,
+  "scores": {
+    "categories": {
+      "citability": 94
+    },
+    "composite": 94,
+    "tier": "excellent",
+    "tier_meaning": "AI engines can lift answers from this page with almost no rewriting."
+  },
+  "scoring_version": "1.0",
+  "signals": [
+    {
+      "class": "heuristic",
+      "detail": {
+        "candidate_blocks": 9,
+        "floor_ratio": 0.3,
+        "good_ratio": 0.85,
+        "ratio": 1.0,
+        "self_contained": 9
+      },
+      "id": "citability.self_containment",
+      "max": 25,
+      "page": "http://fixture/ssr-rich.html",
+      "value": 25.0
+    },
+    {
+      "class": "heuristic",
+      "detail": {
+        "answer_first": 4,
+        "max_lead_words": 45,
+        "ratio": 1.0,
+        "sections": 4
+      },
+      "id": "citability.answer_first",
+      "max": 20,
+      "page": "http://fixture/ssr-rich.html",
+      "value": 20.0
+    },
+    {
+      "class": "deterministic",
+      "detail": {
+        "breakdown": {
+          "enough_h2": 4.0,
+          "no_skipped_levels": 3.0,
+          "section_length": 4.0,
+          "single_h1": 4.0
+        },
+        "h1": 1,
+        "h2": 4,
+        "headings": 5,
+        "max_section_words": 400,
+        "oversized_sections": 0,
+        "sections": 5,
+        "skipped_levels": 0
+      },
+      "id": "citability.structure",
+      "max": 15,
+      "page": "http://fixture/ssr-rich.html",
+      "value": 15.0
+    },
+    {
+      "class": "heuristic",
+      "detail": {
+        "blocks_with_facts": 3,
+        "breakdown": {
+          "facts": 8.33,
+          "outbound_citations": 3.33
+        },
+        "external_domains": 2,
+        "prose_blocks": 10,
+        "ratio": 0.3,
+        "worst_example": "Server-side rendering puts the full text of a page into the HTTP response, which is the only version most AI crawlers ever read. Crawlers operated by OpenAI, Anthropic and Perplexity fetch the raw response and do not run a JavaScript engine against it."
+      },
+      "id": "citability.evidence_density",
+      "max": 15,
+      "page": "http://fixture/ssr-rich.html",
+      "value": 11.67
+    },
+    {
+      "class": "deterministic",
+      "detail": {
+        "body_chars": 2154,
+        "capped_thin_or_js_gated": false,
+        "content_chars": 2052,
+        "content_ratio": 0.953,
+        "content_root": "main",
+        "empty_framework_root": false,
+        "framework_root_chars": null,
+        "js_required_notice": false,
+        "lists": 1,
+        "min_content_chars": 1200,
+        "tables": 1
+      },
+      "id": "citability.extractability",
+      "max": 15,
+      "page": "http://fixture/ssr-rich.html",
+      "value": 12.47
+    },
+    {
+      "class": "deterministic",
+      "detail": {
+        "jsonld_types": [
+          "Article",
+          "Organization",
+          "Person"
+        ],
+        "missing": [],
+        "points_table": {
+          "byline": 3,
+          "canonical": 1,
+          "modified_date": 1,
+          "organization_schema": 2,
+          "published_date": 3
+        },
+        "present": [
+          "byline",
+          "canonical",
+          "modified_date",
+          "organization_schema",
+          "published_date"
+        ]
+      },
+      "id": "citability.attribution",
+      "max": 10,
+      "page": "http://fixture/ssr-rich.html",
+      "value": 10.0
+    },
+    {
+      "class": "heuristic",
+      "detail": {
+        "reason": "browser extra not installed"
+      },
+      "id": "citability.render_parity",
+      "max": 10,
+      "page": "http://fixture/ssr-rich.html",
+      "skipped_reason": "browser extra not installed",
+      "value": null
+    }
+  ]
+}

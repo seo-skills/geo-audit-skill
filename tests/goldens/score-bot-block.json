@@ -1,0 +1,164 @@
+{
+  "cli_version": "0.1.0",
+  "command": "score",
+  "completeness": {
+    "computed": 0,
+    "missing": [],
+    "total": 0
+  },
+  "data_version": "2026.09",
+  "error": null,
+  "evidence": {
+    "content_hash": null,
+    "normalizer_version": 1,
+    "pages_failed": [
+      {
+        "reason": "bot_blocked",
+        "status": 403,
+        "url": "http://fixture/bot-block"
+      }
+    ],
+    "pages_ok": 0,
+    "stamp": "PARTIAL"
+  },
+  "findings": [
+    {
+      "effort": "medium",
+      "excerpt": "HTTP 403",
+      "id": "fetch.blocked",
+      "pages": [
+        "http://fixture/bot-block"
+      ],
+      "points_lost": 0.0,
+      "priority": 1,
+      "remediation": "Allowlist the AI crawler tokens in the bot-protection rules. Whatever blocked this request blocks them the same way.",
+      "severity": "critical",
+      "title": "The page refused an ordinary crawler request"
+    }
+  ],
+  "normalizer_version": 1,
+  "note": "The crawl found no scorable pages on 127.0.0.1. The start URL returned 403. Nothing was scored.",
+  "observed_at": "<volatile>",
+  "ok": true,
+  "page": {
+    "blocks": 0,
+    "bytes": 97,
+    "cache": {
+      "etag": null,
+      "last_modified": null
+    },
+    "content_chars": 0,
+    "content_root": null,
+    "content_type": "text/html",
+    "elapsed_ms": "<volatile>",
+    "encoding": "utf-8",
+    "external_links": 0,
+    "final_url": "http://fixture/bot-block",
+    "headings": 0,
+    "internal_links": 0,
+    "jsonld_errors": [],
+    "jsonld_types": [],
+    "peer_verified": true,
+    "record": "<volatile>",
+    "redirect_chain": [],
+    "requested_url": "http://fixture/bot-block",
+    "robots": {
+      "access": [
+        {
+          "agent": "GPTBot",
+          "allowed": false,
+          "crawl_delay": null
+        },
+        {
+          "agent": "OAI-SearchBot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "ChatGPT-User",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "PerplexityBot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Perplexity-User",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "ClaudeBot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Claude-SearchBot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Claude-User",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Google-Extended",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Googlebot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Bingbot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Applebot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Applebot-Extended",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "meta-externalagent",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Amazonbot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "CCBot",
+          "allowed": true,
+          "crawl_delay": null
+        }
+      ],
+      "self_allowed": true,
+      "sitemaps": [
+        "/sitemap.xml"
+      ],
+      "source_url": "http://fixture/robots.txt",
+      "status": 200,
+      "unavailable": false,
+      "unreachable": false
+    },
+    "status": 403
+  },
+  "run_id": "<volatile>",
+  "schema_version": 1,
+  "scores": null,
+  "scoring_version": "1.0",
+  "signals": []
+}

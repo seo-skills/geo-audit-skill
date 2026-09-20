@@ -1,0 +1,140 @@
+{
+  "cli_version": "0.1.0",
+  "command": "fetch",
+  "completeness": null,
+  "data_version": "2026.09",
+  "error": null,
+  "evidence": {
+    "content_hash": "c9717fc0e3c2fc302dc88443899cf0ac44a8ceae639853a27c01cf7816bed977",
+    "normalizer_version": 1,
+    "pages_failed": [],
+    "pages_ok": 1,
+    "stamp": "CURRENT"
+  },
+  "findings": [],
+  "normalizer_version": 1,
+  "observed_at": "<volatile>",
+  "ok": true,
+  "page": {
+    "blocks": 28,
+    "bytes": 3794,
+    "cache": {
+      "etag": null,
+      "last_modified": null
+    },
+    "content_chars": 2052,
+    "content_root": "main",
+    "content_type": "text/html",
+    "elapsed_ms": "<volatile>",
+    "encoding": "utf-8",
+    "external_links": 2,
+    "final_url": "http://fixture/ssr-rich.html",
+    "headings": 5,
+    "internal_links": 0,
+    "jsonld_errors": [],
+    "jsonld_types": [
+      "Article"
+    ],
+    "peer_verified": true,
+    "redirect_chain": [],
+    "requested_url": "http://fixture/ssr-rich.html",
+    "robots": {
+      "access": [
+        {
+          "agent": "GPTBot",
+          "allowed": false,
+          "crawl_delay": null
+        },
+        {
+          "agent": "OAI-SearchBot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "ChatGPT-User",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "PerplexityBot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Perplexity-User",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "ClaudeBot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Claude-SearchBot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Claude-User",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Google-Extended",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Googlebot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Bingbot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Applebot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Applebot-Extended",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "meta-externalagent",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "Amazonbot",
+          "allowed": true,
+          "crawl_delay": null
+        },
+        {
+          "agent": "CCBot",
+          "allowed": true,
+          "crawl_delay": null
+        }
+      ],
+      "self_allowed": true,
+      "sitemaps": [
+        "/sitemap.xml"
+      ],
+      "source_url": "http://fixture/robots.txt",
+      "status": 200,
+      "unavailable": false,
+      "unreachable": false
+    },
+    "status": 200
+  },
+  "run_id": "<volatile>",
+  "schema_version": 1,
+  "scores": null,
+  "scoring_version": "1.0",
+  "signals": []
+}
