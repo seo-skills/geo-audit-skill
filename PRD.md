@@ -495,9 +495,42 @@ own cause before guessing at a fix**, and **verify a regression test fails with
 the fix removed**. Applying the second is what identified rounds 1 and 2 as
 wrong.
 
-### Open before 0.2.0
+### M2 - Audit complete -> 0.2.0 - closed 2026-09-20
 
-1. Make the repository public, then run the plugin spike for real (D2's gate).
-2. Configure the PyPI trusted publisher and tag `v0.1.0`.
+| Gate | Result |
+|---|---|
+| `crawl`, `audit`, `scan`, `llmstxt`, `validate`, `prune` | Done. Nine commands total. |
+| `data/` files, state module, evidence stamps, robots matrix | Done in M1 and extended: `schema_requirements.json`, `brand_platforms.json`, `retention.json`. |
+| `--rescore` | Done. |
+| Skills `audit`, `technical`, `schema`, `llmstxt`, `brand` | Done. Six skills, each carrying the shared response contract byte-identically. |
+| **Rescore-twice byte identity** | **Passed.** Two rescores of one record are byte-identical after volatile fields, reproduce the recorded composite, and a test asserts the fixture server sees no requests during one. |
+| **PARTIAL labelled end to end** | **Passed.** The crawl sets the stamp, the audit carries it, and the headline sentence names how many pages were scored and why the rest were not. |
+| **Injection fixture passes** | **Passed, and extended.** Beyond the existing assertions that the payload changes neither score nor envelope shape, `geo llmstxt --generate` now excludes instruction-shaped pages from the file it produces and reports them as a finding - the one artifact this tool emits that a user publishes. |
+
+**Test suite at 0.2.0:** 430 passing, 1 skipped.
+
+**Two defects the tests found, both worth recording because neither was visible in a
+passing suite:**
+
+1. A 404 was scored zero on indexability and metadata, which pulled the site aggregate
+   below a finding threshold and produced "the page tells search engines not to index
+   it" for a site with no `noindex` anywhere. One failure was being counted twice.
+2. The key-manifest test - which runs every command and checks that each identifier a
+   skill names appears in a real envelope - found that `detail.blocked_critical` was
+   being discarded by aggregation. The technical skill's advice to read it would have
+   failed against every real audit. A detail identical on every page is a fact about
+   the site and now survives the roll-up.
+
+Both are recorded as divergences 12 and 13.
+
+### Open before the next milestone
+
+1. Configure the PyPI trusted publisher, then tag `v0.2.0`. The release workflow's
+   tag/VERSION and changelog gates pass locally.
+2. Run the plugin spike inside Claude Code: `/plugin marketplace add
+   seo-skills/geo-audit-skill` then `/plugin install geo`. Both manifests resolve
+   publicly and declare six skills.
 3. Write §1.2.
 4. Confirm the D4 copyright holder.
+5. M3: `report` (HTML and PDF, client and operator modes), `compare`, the content and
+   platform categories, and the first recorded eval.

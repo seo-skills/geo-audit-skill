@@ -99,37 +99,62 @@ def commands_doc() -> str:
     return "\n".join(lines)
 
 
+QUESTIONS = {
+    "citability.self_containment": "Does each passage name its own subject?",
+    "citability.answer_first": "Does each section lead with the answer?",
+    "citability.structure": "Do the headings segment the page into answerable parts?",
+    "citability.evidence_density": "Do claims carry numbers, dates and sources?",
+    "citability.extractability": "Is the content in the HTML a crawler receives?",
+    "citability.attribution": "Does the page say who wrote it and when?",
+    "citability.render_parity": "How much text appears only after JavaScript?",
+    "technical.crawler_access": "Can the crawlers that gate an answer surface read it?",
+    "technical.indexability": "Does the page ask not to be indexed?",
+    "technical.metadata": "Title, description, lang, one H1, Open Graph, image alt.",
+    "technical.status_health": "Does the URL return 200 directly, or via hops?",
+    "technical.transport_security": "HTTPS, and HSTS on top of it.",
+    "technical.url_structure": "Depth, length, case, separators, session identifiers.",
+    "schema.presence": "Did the page attempt JSON-LD at all?",
+    "schema.validity": "Did the attempt succeed?",
+    "schema.organization": "Is there a machine-readable publisher, with sameAs?",
+    "schema.article": "Are content pages dated and attributed?",
+    "schema.breadth": "Are there types that answer a question directly?",
+    "brand.encyclopedic": "Is there a Wikipedia article or a Wikidata item?",
+    "brand.community": "Do people discuss it anywhere public?",
+    "brand.video": "Is there video? Null without a YouTube API key.",
+    "brand.consistency": "Does the site link itself to those profiles?",
+}
+
+
 def signals_region() -> str:
-    spec = data.weights()["citability"]["signals"]
-    questions = {
-        "citability.self_containment": "Does each passage name its own subject?",
-        "citability.answer_first": "Does each section lead with the answer?",
-        "citability.structure": "Do the headings segment the page into answerable parts?",
-        "citability.evidence_density": "Do claims carry numbers, dates and sources?",
-        "citability.extractability": "Is the content in the HTML a crawler receives?",
-        "citability.attribution": "Does the page say who wrote it and when?",
-        "citability.render_parity": "How much text appears only after JavaScript?",
-    }
+    categories = data.weights()
     lines = [
         f"*Generated from `data/weights.json` at data_version {data.data_version()}.*",
         "",
-        "| Signal | Class | Max | Requires | Question |",
-        "|---|---|---|---|---|",
     ]
-    for signal_id, meta in spec.items():
-        requires = meta.get("requires", "—")
-        lines.append(
-            f"| `{signal_id}` | {meta['class']} | {meta['max']:g} | {requires} | "
-            f"{questions.get(signal_id, '')} |"
-        )
-    total = sum(m["max"] for m in spec.values())
-    always = sum(m["max"] for m in spec.values() if "requires" not in m)
+    for name in sorted(categories, key=lambda n: -categories[n]["weight"]):
+        spec = categories[name]["signals"]
+        total = sum(meta["max"] for meta in spec.values())
+        always = sum(meta["max"] for meta in spec.values() if "requires" not in meta)
+        lines += [
+            f"### {name} (category weight {categories[name]['weight']})",
+            "",
+            "| Signal | Class | Max | Requires | Question |",
+            "|---|---|---|---|---|",
+        ]
+        for signal_id, meta in spec.items():
+            lines.append(
+                f"| `{signal_id}` | {meta['class']} | {meta['max']:g} | "
+                f"{meta.get('requires', '\u2014')} | {QUESTIONS.get(signal_id, '')} |"
+            )
+        note = f"Out of **{total:g}**"
+        if always != total:
+            note += f", or **{always:g}** when the optional inputs are absent"
+        lines += ["", note + ".", ""]
+
     lines += [
-        "",
-        f"Total when every signal is computed: **{total:g}**. "
-        f"Without the browser extra: **{always:g}**. "
-        "The composite is `earned / max-of-computed * 100`, so a signal that was not "
-        "measured leaves both sides of the fraction.",
+        "The category composite is `earned / max-of-computed * 100`, and the site "
+        "composite weights the categories that were computed. A signal or a category "
+        "that was not measured leaves both sides of its fraction.",
     ]
     return "\n".join(lines)
 
