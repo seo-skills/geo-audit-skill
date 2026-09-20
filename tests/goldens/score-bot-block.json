@@ -26,6 +26,7 @@
       "effort": "medium",
       "excerpt": "HTTP 403",
       "id": "fetch.blocked",
+      "impact": null,
       "pages": [
         "http://fixture/bot-block"
       ],

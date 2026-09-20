@@ -19,35 +19,38 @@
   },
   "findings": [
     {
-      "effort": "medium",
-      "excerpt": "This is something that comes up a lot. It tends to be the kind of thing that people ask about when they are getting started, and it is also the kind of thing that is easy to get wrong if you are not careful about it from the beginning.",
-      "id": "citability.self_containment",
-      "pages": [
-        "http://fixture/weak-prose.html"
-      ],
-      "points_lost": 25.0,
-      "priority": 1,
-      "remediation": "Rewrite the opening sentence of each passage so it names its own subject. An engine lifts one paragraph, not the page: a paragraph that starts with \"This also means...\" arrives at the reader with nothing to point at.",
-      "severity": "critical",
-      "title": "Passages depend on the paragraph above them"
-    },
-    {
       "effort": "high",
       "excerpt": null,
       "id": "citability.extractability",
+      "impact": null,
       "pages": [
         "http://fixture/weak-prose.html"
       ],
       "points_lost": 12.0,
-      "priority": 2,
+      "priority": 1,
       "remediation": "Server-render the main content, or pre-render it for crawlers. Most AI crawlers do not execute JavaScript, so content that only appears after hydration does not exist to them.",
       "severity": "critical",
       "title": "Little usable content is present in the HTML the crawler receives"
     },
     {
       "effort": "medium",
+      "excerpt": "This is something that comes up a lot. It tends to be the kind of thing that people ask about when they are getting started, and it is also the kind of thing that is easy to get wrong if you are not careful about it from the beginning.",
+      "id": "citability.self_containment",
+      "impact": null,
+      "pages": [
+        "http://fixture/weak-prose.html"
+      ],
+      "points_lost": 25.0,
+      "priority": 2,
+      "remediation": "Rewrite the opening sentence of each passage so it names its own subject. An engine lifts one paragraph, not the page: a paragraph that starts with \"This also means...\" arrives at the reader with nothing to point at.",
+      "severity": "critical",
+      "title": "Passages depend on the paragraph above them"
+    },
+    {
+      "effort": "medium",
       "excerpt": null,
       "id": "citability.answer_first",
+      "impact": null,
       "pages": [
         "http://fixture/weak-prose.html"
       ],
@@ -61,6 +64,7 @@
       "effort": "medium",
       "excerpt": "In this article we are going to look at a few of the things that we have been thinking about lately, and why they matter to us as a team and to the people we work with every day.",
       "id": "citability.evidence_density",
+      "impact": null,
       "pages": [
         "http://fixture/weak-prose.html"
       ],
@@ -74,6 +78,7 @@
       "effort": "low",
       "excerpt": null,
       "id": "citability.attribution",
+      "impact": null,
       "pages": [
         "http://fixture/weak-prose.html"
       ],
@@ -87,6 +92,7 @@
       "effort": "low",
       "excerpt": null,
       "id": "citability.structure",
+      "impact": null,
       "pages": [
         "http://fixture/weak-prose.html"
       ],

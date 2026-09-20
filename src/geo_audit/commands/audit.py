@@ -30,6 +30,8 @@ from geo_audit.scoring import (
 from geo_audit.scoring.model import (
     Signal,
     aggregate,
+    apply_impact,
+    demote,
     composite,
     findings_for,
     merge,
@@ -99,6 +101,22 @@ def _site_facts(result, args) -> dict:
     return facts
 
 
+_SEVERITY_RANK = ("critical", "high", "medium", "low")
+
+
+def _at_most(severity: str, ceiling: str) -> str:
+    return severity if _SEVERITY_RANK.index(severity) >= _SEVERITY_RANK.index(ceiling) else ceiling
+
+
+def _forced(signal: Signal) -> Signal:
+    """A copy scored at zero, so `findings_for` produces the finding's copy.
+
+    The severity and the points are overwritten by the caller; this exists only
+    to reach the template without duplicating the lookup.
+    """
+    return Signal(id=signal.id, cls=signal.cls, max=signal.max, value=0.0, detail=signal.detail)
+
+
 def _score_page(page, robots, categories: tuple[str, ...], site_facts: dict | None = None) -> dict[str, list[Signal]]:
     scored: dict[str, list[Signal]] = {}
     if "citability" in categories and page.doc is not None:
@@ -143,11 +161,29 @@ def run(args, run_id: str) -> dict:
 
     per_category: dict[str, list[list[Signal]]] = {name: [] for name in categories}
     findings = []
+    # Which pages are actually below the line for each signal. The finding's
+    # severity and value come from the site, but the page list has to come from
+    # the pages, or "8 pages" and "the one bad page" look identical.
+    offenders: dict[str, list[str]] = {}
+    severe: dict[str, list[str]] = {}
+    rules = data.thresholds("findings")
+    ceiling = rules["no_finding_above"]
+    floor = rules["full_severity_below"]
+
     for page in result.pages:
         scored = _score_page(page, result.robots, categories, site_facts)
+        url = page.result.final_url if page.result else page.url
+        for signals in scored.values():
+            for signal in signals:
+                ratio = signal.ratio
+                if ratio is None:
+                    continue
+                if ratio <= ceiling:
+                    offenders.setdefault(signal.id, []).append(url)
+                if ratio < floor:
+                    severe.setdefault(signal.id, []).append(url)
         for name, signals in scored.items():
             per_category[name].append(signals)
-            findings.extend(findings_for(signals, page.result.final_url if page.result else page.url))
         findings.extend(page.findings)
 
     advisory = content_scorer.advisory_signals() if "content" in categories else []
@@ -188,6 +224,8 @@ def run(args, run_id: str) -> dict:
         record=True,
         available=available,
         advisory=advisory,
+        offenders=offenders,
+        severe=severe,
         extra=extra,
     )
 
@@ -204,14 +242,18 @@ def _assemble(
     record: bool,
     available: tuple[str, ...] | None = None,
     advisory: list[Signal] | None = None,
+    offenders: dict[str, list[str]] | None = None,
+    severe: dict[str, list[str]] | None = None,
     extra: dict | None = None,
 ) -> dict:
     weights = data.weights()
     available = available or categories
+    severe = severe or {}
     category_scores: dict[str, int] = {}
     category_completeness: dict[str, dict] = {}
     all_signals: list[Signal] = []
 
+    site = (crawl_block or {}).get("site") or start_url
     for name in categories:
         pages = per_category.get(name) or []
         if not pages:
@@ -221,6 +263,45 @@ def _assemble(
         category_scores[name] = score
         category_completeness[name] = completeness
         all_signals.extend(rolled)
+        # Generated from the rolled-up signal: a site does not have a problem
+        # because one of its forty pages does.
+        if offenders is not None:
+            reported = set()
+            for finding in findings_for(rolled, site):
+                finding.pages = sorted(set(offenders.get(finding.id) or []))
+                reported.add(finding.id)
+                findings.append(finding)
+
+            # A site can be healthy on average and still have a handful of
+            # pages that are not. Those are worth naming - "two pages return
+            # almost nothing to a crawler" is the specific, actionable half of
+            # a report - but they are demoted, because a minority of pages is
+            # not the site's problem, and their impact comes from the site
+            # signal, so they rank below the site-wide items rather than above
+            # them.
+            for signal in rolled:
+                if signal.id in reported or signal.ratio is None:
+                    continue
+                pages = sorted(set(severe.get(signal.id) or []))
+                if not pages:
+                    continue
+                blocking = set(
+                    (data.load("findings").get("blocking") or {}).get("ids") or []
+                )
+                for finding in findings_for([_forced(signal)], site):
+                    # A minority of bad pages is not a site-severity problem.
+                    # Capped at medium unless the finding is a blocker, which
+                    # is ordered ahead of everything regardless: two of eight
+                    # pages a crawler cannot read still stops the site being
+                    # cited from those two.
+                    finding.severity = (
+                        finding.severity
+                        if finding.id in blocking
+                        else _at_most(demote(finding.severity), "medium")
+                    )
+                    finding.pages = pages
+                    finding.points_lost = signal.max - (signal.value or 0.0)
+                    findings.append(finding)
 
     # Only the categories this run could reach: a category the inputs cannot
     # feed is out of scope, not missing.
@@ -247,7 +328,13 @@ def _assemble(
     # reach a number by any path.
     all_signals.extend(advisory or [])
 
-    ranked = prioritize(merge(findings))
+    ranked = prioritize(
+        apply_impact(
+            merge(findings),
+            all_signals,
+            {name: weights[name]["weight"] for name in weights},
+        )
+    )
     result = envelope.build(
         "audit",
         ok=True,
@@ -318,9 +405,7 @@ def rescore(args, run_id: str) -> dict:
         by_category.setdefault(name, [[]])[0].append(signal)
 
     categories = tuple(name for name in CATEGORIES if name in by_category)
-    findings = []
-    for name in categories:
-        findings.extend(findings_for(by_category[name][0], record.get("crawl", {}).get("start_url", "")))
+    findings: list = []
 
     current = {
         "scoring_version": envelope.SCORING_VERSION,
@@ -347,6 +432,10 @@ def rescore(args, run_id: str) -> dict:
         categories=categories,
         per_category={name: by_category[name] for name in categories},
         findings=findings,
+        offenders={
+            finding["id"]: finding.get("pages") or []
+            for finding in record.get("findings") or []
+        },
         crawl_block=record.get("crawl", {}),
         evidence=record.get("evidence") or {},
         record=False,

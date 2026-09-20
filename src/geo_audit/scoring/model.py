@@ -70,6 +70,11 @@ class Finding:
     pages: list[str] = field(default_factory=list)
     excerpt: str | None = None
     points_lost: float = 0.0
+    # What fixing this is worth on the 0-100 composite. `points_lost` is on the
+    # category's own scale, so 30 points of schema (weight 10) and 30 points of
+    # citability (weight 25) are not the same size of win - and ranking by the
+    # raw number puts them in the wrong order.
+    impact: float | None = None
     priority: int = 0
 
     def to_dict(self) -> dict:
@@ -79,6 +84,7 @@ class Finding:
             "effort": self.effort,
             "priority": self.priority,
             "points_lost": round(self.points_lost, 2),
+            "impact": None if self.impact is None else round(self.impact, 2),
             "pages": self.pages,
             "title": self.title,
             "remediation": self.remediation,
@@ -305,6 +311,8 @@ def merge(findings: list[Finding]) -> list[Finding]:
             if page not in existing.pages:
                 existing.pages.append(page)
         existing.points_lost = max(existing.points_lost, finding.points_lost)
+        if finding.impact is not None:
+            existing.impact = max(existing.impact or 0.0, finding.impact)
         if _SEVERITY_ORDER.index(finding.severity) < _SEVERITY_ORDER.index(existing.severity):
             existing.severity = finding.severity
         existing.excerpt = existing.excerpt or finding.excerpt
@@ -313,18 +321,67 @@ def merge(findings: list[Finding]) -> list[Finding]:
     return list(merged.values())
 
 
-def prioritize(findings: list[Finding]) -> list[Finding]:
-    """Deterministic order: severity, then effort, then points recovered, then id.
+def apply_impact(
+    findings: list[Finding], signals: list[Signal], category_weights: dict[str, int]
+) -> list[Finding]:
+    """Express each finding's value on the composite scale.
 
-    Sorting by id last is what makes two runs over the same snapshot produce
-    byte-identical output when everything else ties.
+    A category is scored out of the signals that were computed in it, and then
+    weighted. So the composite points a fix recovers are
+    `points_lost / available_in_category * category_weight`.
     """
+    available: dict[str, float] = {}
+    for signal in signals:
+        if not signal.computed or signal.cls not in SCORED_CLASSES:
+            continue
+        category = signal.id.split(".", 1)[0]
+        available[category] = available.get(category, 0.0) + signal.max
+
+    for finding in findings:
+        category = finding.id.split(".", 1)[0]
+        weight = category_weights.get(category)
+        total = available.get(category)
+        if weight and total:
+            finding.impact = finding.points_lost / total * weight
+    return findings
+
+
+def prioritize(findings: list[Finding]) -> list[Finding]:
+    """Blockers, then severity, then what the fix is worth on the composite.
+
+    Two things here were provably wrong before and are fixed; a third is a
+    judgement call and is deliberately left alone.
+
+    Fixed: ranking used `points_lost`, which is on the category's own scale.
+    Thirty points of schema (weight 10) outranked twenty-five of citability
+    (weight 25) while being worth less - 3.0 composite against 6.25. Ranking
+    now uses `impact`, which is the same number expressed on the 0-100 scale
+    the reader actually sees.
+
+    Fixed: blocking findings come first whatever the arithmetic says, because
+    prose on a page no crawler can fetch recovers nothing. Which findings block
+    is declared in `data/findings.json` rather than inferred from severity.
+
+    Left alone: whether a cheap medium-severity win should outrank an expensive
+    high-severity one. Ordering by value-per-effort was tried and put "add a
+    modified date" first on five sites out of five - defensible arithmetic,
+    and a report that reads like a checklist. That is a taste call about
+    audits, not a bug, so it belongs to the practitioner eval rather than to
+    whoever last edited this function.
+
+    Sorting by id last keeps two runs over one snapshot byte-identical.
+    """
+    blocking = set((data.load("findings").get("blocking") or {}).get("ids") or [])
+
+    def value(finding: Finding) -> float:
+        return finding.impact if finding.impact is not None else finding.points_lost
+
     ordered = sorted(
         findings,
         key=lambda f: (
+            0 if f.id in blocking else 1,
             _SEVERITY_ORDER.index(f.severity),
-            _EFFORT_ORDER.index(f.effort),
-            -f.points_lost,
+            -value(f),
             f.id,
         ),
     )

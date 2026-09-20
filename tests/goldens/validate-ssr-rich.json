@@ -20,6 +20,7 @@
       "effort": "low",
       "excerpt": null,
       "id": "schema.organization",
+      "impact": null,
       "pages": [
         "http://fixture/ssr-rich.html"
       ],
@@ -33,6 +34,7 @@
       "effort": "medium",
       "excerpt": null,
       "id": "schema.breadth",
+      "impact": null,
       "pages": [
         "http://fixture/ssr-rich.html"
       ],

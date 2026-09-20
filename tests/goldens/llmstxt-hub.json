@@ -10,6 +10,7 @@
       "effort": "low",
       "excerpt": "output_demand, override, role_assertion, role_marker",
       "id": "content.instruction_like",
+      "impact": null,
       "pages": [
         "http://fixture/injection.html"
       ],
@@ -23,6 +24,7 @@
       "effort": "low",
       "excerpt": null,
       "id": "llmstxt.missing",
+      "impact": null,
       "pages": [
         "http://fixture/llms.txt"
       ],

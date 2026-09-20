@@ -1,10 +1,10 @@
 {
-  "comment": "The five sites for the practitioner eval. Replace these with sites the practitioner knows well; they are a starting shape, not a recommendation. Keep max_pages modest and the rate at the default: the harness is a guest on someone else's server. Each entry may carry `args` for extra CLI flags, and `brand` for a brand file.",
+  "comment": "Five real sites for the practitioner eval. Chosen for shape diversity and for being sites whose operators plainly would not mind a polite 8-page crawl at one request per second. Replace them with sites your practitioner knows well: the point is judgement from someone who can disagree with the tool about a site they understand.",
   "sites": [
-    { "url": "https://example.com", "shape": "placeholder", "max_pages": 10, "brand": null },
-    { "url": "https://example.org", "shape": "placeholder", "max_pages": 10, "brand": null },
-    { "url": "https://example.net", "shape": "placeholder", "max_pages": 10, "brand": null },
-    { "url": "https://example.edu", "shape": "placeholder", "max_pages": 10, "brand": null },
-    { "url": "https://example.io", "shape": "placeholder", "max_pages": 10, "brand": null }
+    { "url": "https://llmstxt.org",        "shape": "spec site, tiny",                 "max_pages": 8, "brand": null },
+    { "url": "https://www.sqlite.org",     "shape": "large documentation, plain HTML", "max_pages": 8, "brand": null },
+    { "url": "https://astro.build",        "shape": "modern marketing + docs, JS framework", "max_pages": 8, "brand": null },
+    { "url": "https://jsonapi.org",        "shape": "specification",                   "max_pages": 8, "brand": null },
+    { "url": "https://blog.rust-lang.org", "shape": "publisher, dated posts",          "max_pages": 8, "brand": null }
   ]
 }

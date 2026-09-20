@@ -41,7 +41,9 @@ header.masthead .meta { opacity: 0.85; font-size: 0.9rem; margin: 0; }
   font-size: 1.1rem; font-weight: 600; border: 2px solid currentColor;
   border-radius: 999px; padding: 0.15rem 0.8rem;
 }
-.verdict-meaning { color: var(--muted); margin: 0 0 1.5rem; font-size: 1.05rem; }
+.verdict-meaning { color: var(--muted); margin: 0 0 0.75rem; font-size: 1.05rem; }
+.caveat { color: var(--muted); margin: 0 0 1.5rem; font-size: 0.92rem;
+  border-left: 3px solid var(--rule); padding-left: 0.75rem; }
 
 h2 { font-size: 1.25rem; margin: 2.5rem 0 0.75rem; padding-bottom: 0.4rem; border-bottom: 2px solid var(--rule); }
 h3 { font-size: 1.05rem; margin: 1.5rem 0 0.35rem; }

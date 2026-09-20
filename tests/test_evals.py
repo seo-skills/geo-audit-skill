@@ -20,11 +20,21 @@ def test_the_protocol_states_the_1_0_gate():
     assert "does not work on this tool" in readme
 
 
-def test_the_shipped_site_list_is_a_placeholder_not_a_recommendation():
+def test_the_site_list_is_five_sites_of_stated_shapes():
+    """Shapes are stated because the point is variety, not a score.
+
+    Five sites of one kind produce five similar reports, which tells you
+    nothing about whether the tool generalises. The first recorded eval ran
+    five technical and specification sites and said so in its own findings.
+    """
     config = json.loads((ROOT / "tests" / "evals" / "sites.json").read_text(encoding="utf-8"))
     assert len(config["sites"]) == 5
-    assert all(entry["shape"] == "placeholder" for entry in config["sites"])
-    assert "Replace these" in config["comment"]
+    for entry in config["sites"]:
+        assert entry["shape"], entry["url"]
+        assert entry["url"].startswith("https://"), entry["url"]
+        assert 1 <= entry["max_pages"] <= 50, "be a polite guest"
+    assert len({entry["shape"] for entry in config["sites"]}) > 1, "shapes must vary"
+    assert "Replace them" in config["comment"]
 
 
 def test_dry_run_audits_nothing(tmp_path):
@@ -89,13 +99,42 @@ def test_the_form_never_contains_an_answer(site, geo_home, tmp_path):
             assert cells == ["", ""], f"the harness pre-filled an answer: {row}"
 
 
-def test_no_eval_result_is_recorded_yet():
-    """A reminder, not a rule.
+def recorded_evals() -> list[Path]:
+    return sorted((ROOT / "tests" / "evals" / "results").glob("eval-*.md"))
 
-    When the first eval is recorded this test changes to assert its shape.
-    Until then it states plainly that the 1.0 gate is unmet.
+
+def test_at_least_one_eval_is_recorded():
+    assert recorded_evals(), "no eval has been run"
+
+
+@pytest.mark.parametrize("path", [p.name for p in recorded_evals()])
+def test_a_recorded_eval_answers_both_questions_for_every_site(path):
+    text = (ROOT / "tests" / "evals" / "results" / path).read_text(encoding="utf-8")
+    sites = text.count("## https://")
+    assert sites >= 1
+    assert text.count("1. Are these the right three?") == sites
+    assert text.count("2. Would you send this unedited?") == sites
+    assert "Tool " in text and "scoring " in text, "must record the versions it judged"
+
+
+@pytest.mark.parametrize("path", [p.name for p in recorded_evals()])
+def test_a_recorded_eval_states_what_changed_because_of_it(path):
+    text = (ROOT / "tests" / "evals" / "results" / path).read_text(encoding="utf-8")
+    assert "Changes made as a result" in text
+
+
+def test_the_1_0_gate_is_open_until_a_practitioner_answers():
+    """The gate is the practitioner column, not the maintainer's.
+
+    Every recorded eval so far leaves it open on purpose: the protocol asks
+    for someone who does not work on the tool, and the person who wrote it
+    cannot supply that. When a practitioner fills one in, this test changes to
+    count how many they would send unedited.
     """
-    recorded = sorted((ROOT / "tests" / "evals" / "results").glob("eval-*.md"))
-    if recorded:
-        pytest.skip(f"{len(recorded)} eval(s) recorded; update this test to check their shape")
-    assert True, "the practitioner eval has not been run; the 1.0 gate is open"
+    open_columns = sum(
+        path.read_text(encoding="utf-8").count("| _open_ |") for path in recorded_evals()
+    )
+    assert open_columns, (
+        "a practitioner column has been filled in; update this test to check the "
+        "1.0 gate - four of five sent unedited, twice running"
+    )

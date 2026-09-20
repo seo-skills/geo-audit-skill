@@ -20,6 +20,19 @@ from geo_audit._version import PRODUCT_NAME
 from geo_audit.report.advisory import merge as advisory_merge
 from geo_audit.report.brand import Brand
 
+# On page one, under the number. Buried in an appendix it does not travel, and
+# the eval showed exactly what that costs: sqlite.org scores 44 with twenty of
+# its fifty-six missing points coming from absent metadata alone, while its
+# documentation is among the most-cited technical writing on the web. Both
+# facts are true. A report that states only the first one will be argued with.
+SCORE_CAVEAT = (
+    "This measures how readable and attributable these pages are to a machine: "
+    "what a crawler can fetch, quote and attribute. It is not a measure of how "
+    "often the site is cited today. A well-known site with sparse metadata will "
+    "score below its reputation, and the categories below show where the "
+    "difference sits."
+)
+
 CATEGORY_BLURB = {
     "citability": "Whether a passage can be lifted from the page and used as an answer.",
     "technical": "Whether a crawler can reach, read and index the page at all.",
@@ -66,6 +79,7 @@ class ClientContext:
     composite: int | None
     tier: str | None
     tier_meaning: str | None
+    score_caveat: str
     pages_scored: int
     evidence_stamp: str
     evidence_note: str | None
@@ -172,6 +186,7 @@ def build(
         composite=scores.get("composite"),
         tier=(scores.get("tier") or "").capitalize() or None,
         tier_meaning=scores.get("tier_meaning"),
+        score_caveat=SCORE_CAVEAT,
         pages_scored=evidence.get("pages_ok", 0),
         evidence_stamp=evidence.get("stamp", "CURRENT"),
         evidence_note=_evidence_note(envelope),

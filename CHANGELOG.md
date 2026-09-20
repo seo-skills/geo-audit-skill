@@ -7,6 +7,38 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed — from the first practitioner eval
+
+The eval was run against five real sites. It found four defects that the test
+suite could not, because they are about whether the advice is *right*, not whether
+the code works.
+
+- **Findings are ranked by what they are worth to the composite, not by category
+  points.** Thirty points of schema (category weight 10) outranked twenty-five of
+  citability (weight 25) while being worth 3.0 against 6.25 — the ranking was
+  backwards across categories. Findings now carry `impact` on the 0-100 scale.
+- **Site findings come from the site-level signal.** A single bad page used to
+  produce a site-level finding at full severity: llmstxt.org scored 22.16/25 across
+  the site on `self_containment` — healthy — and one page still made it the number
+  one recommendation, marked critical. Page-level outliers are still reported, with
+  their pages named, but capped at medium unless they block.
+- **Blocking findings are ordered ahead of the arithmetic**, declared in
+  `data/findings.json` rather than inferred from severity, because prose on a page
+  no crawler can fetch recovers nothing.
+- **`content.expertise` was retitled** *Authorship is not machine-readable*. It
+  previously said nothing on the page identified the author, on pages that name
+  their author in prose.
+- **The report says what the score measures, on page one.** Previously only in the
+  appendix. This is what made the sqlite.org verdict indefensible: 44/100 *Weak*,
+  with twenty of the fifty-six missing points coming from absent metadata alone,
+  on a site whose documentation is among the most-cited technical writing there is.
+
+One question was deliberately **not** settled: whether a cheap medium-severity win
+should outrank an expensive high-severity one. Ordering by value-per-effort was
+tried and put *add a modified date* first on five sites out of five. That is a taste
+call about what an audit is for, and it belongs to the practitioner rather than to
+whoever last edited the sort.
+
 ## [0.4.0] - 2026-09-20
 
 No new features. The envelope contract stops being a promise in prose and becomes

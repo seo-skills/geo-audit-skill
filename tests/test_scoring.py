@@ -252,15 +252,71 @@ def test_a_middling_signal_is_demoted_one_step():
 
 
 def test_priority_is_a_deterministic_total_order():
+    """Ties break on id, so two runs over one snapshot agree."""
     findings = [
         Finding("b", "high", "low", "t", "r", points_lost=5),
-        Finding("a", "critical", "high", "t", "r", points_lost=1),
         Finding("c", "high", "low", "t", "r", points_lost=5),
-        Finding("d", "medium", "low", "t", "r", points_lost=20),
+        Finding("a", "high", "low", "t", "r", points_lost=5),
     ]
-    order = [f.id for f in prioritize(findings)]
-    assert order == ["a", "b", "c", "d"]
-    assert [f.priority for f in prioritize(findings)] == [1, 2, 3, 4]
+    assert [f.id for f in prioritize(findings)] == ["a", "b", "c"]
+    assert [f.priority for f in prioritize(findings)] == [1, 2, 3]
+
+
+def test_within_a_severity_the_bigger_composite_win_comes_first():
+    """The eval's finding: ranking used category points, not composite points."""
+    smaller = Finding("a.smaller", "high", "medium", "t", "r", points_lost=2, impact=1.0)
+    bigger = Finding("z.bigger", "high", "medium", "t", "r", points_lost=2, impact=6.0)
+    assert [f.id for f in prioritize([smaller, bigger])] == ["z.bigger", "a.smaller"]
+
+
+def test_severity_still_leads_within_the_non_blocking_tier():
+    """Deliberately unchanged, and recorded as a question for the eval.
+
+    Ordering by value-per-effort instead was tried and put "add a modified
+    date" first on five sites out of five. Defensible arithmetic, and a report
+    that reads like a checklist - a taste call about audits, not a bug.
+    """
+    cheap_medium = Finding("z.cheap", "medium", "low", "t", "r", points_lost=20, impact=5.0)
+    dear_high = Finding("a.dear", "high", "high", "t", "r", points_lost=2, impact=1.0)
+    assert [f.id for f in prioritize([cheap_medium, dear_high])] == ["a.dear", "z.cheap"]
+
+
+def test_a_blocker_comes_first_however_the_arithmetic_falls():
+    """Prose on a page no crawler can fetch recovers nothing."""
+    from geo_audit import data
+
+    blocking_id = (data.load("findings")["blocking"]["ids"])[0]
+    blocker = Finding(blocking_id, "critical", "high", "t", "r", points_lost=1)
+    bigger = Finding("z.other", "medium", "low", "t", "r", points_lost=40)
+    assert [f.id for f in prioritize([bigger, blocker])] == [blocking_id, "z.other"]
+
+
+def test_every_blocking_id_is_a_real_finding():
+    from geo_audit import data
+
+    templates = data.load("findings")
+    known = set(templates["signals"]) | set(templates["checks"])
+    for blocking_id in templates["blocking"]["ids"]:
+        assert blocking_id in known, blocking_id
+
+
+def test_impact_converts_category_points_into_composite_points():
+    """30 points of schema (weight 10) is a smaller win than 25 of citability (25)."""
+    from geo_audit.scoring.model import Signal, apply_impact
+
+    signals = [
+        Signal(id="schema.presence", cls="deterministic", max=100, value=70),
+        Signal(id="citability.self_containment", cls="heuristic", max=100, value=75),
+    ]
+    findings = [
+        Finding("schema.presence", "high", "medium", "t", "r", points_lost=30),
+        Finding("citability.self_containment", "high", "medium", "t", "r", points_lost=25),
+    ]
+    apply_impact(findings, signals, {"schema": 10, "citability": 25})
+    by_id = {f.id: f for f in findings}
+    assert by_id["schema.presence"].impact == pytest.approx(3.0)
+    assert by_id["citability.self_containment"].impact == pytest.approx(6.25)
+    assert [f.id for f in prioritize(findings)][0] == "citability.self_containment"
 
 
 def test_every_finding_template_has_remediation_copy():

@@ -142,8 +142,8 @@
     "content.expertise": {
       "severity": "high",
       "effort": "medium",
-      "title": "Nothing on the page says who is qualified to have written it",
-      "remediation": "Give the author a named byline linked to a page that says what they have done, and mirror it in Person JSON-LD with jobTitle, description and sameAs. Anonymous advice is the first thing an engine discounts when it has to choose between two sources."
+      "title": "Authorship is not machine-readable",
+      "remediation": "A byline in prose is invisible to a parser. Give the author a named byline linked to a page that says what they have done, and mirror it in Person JSON-LD with jobTitle, description and sameAs. This finding fires even on pages that do name their author in the text, because that is not the form an engine reads."
     },
     "content.freshness": {
       "severity": "medium",
@@ -243,5 +243,17 @@
         "schema.breadth"
       ]
     }
+  },
+  "blocking": {
+    "comment": "Findings that gate everything downstream. Prose on a page no crawler can fetch recovers nothing, so these are ordered before the rest whatever the arithmetic says. Everything else is ordered by what it recovers per unit of effort.",
+    "ids": [
+      "technical.crawler_access",
+      "technical.indexability",
+      "citability.extractability",
+      "robots.ai_crawler_blocked",
+      "robots.unreachable",
+      "fetch.blocked",
+      "fetch.server_error"
+    ]
   }
 }

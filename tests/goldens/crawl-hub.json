@@ -232,6 +232,7 @@
       "effort": "low",
       "excerpt": "HTTP 404",
       "id": "fetch.not_found",
+      "impact": null,
       "pages": [
         "http://fixture/gone"
       ],
