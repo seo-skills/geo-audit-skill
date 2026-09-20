@@ -87,3 +87,14 @@ def canonical(envelope: dict) -> dict:
         return node
 
     return scrub(envelope)
+
+
+__all__ = [
+    "SCHEMA_VERSION",
+    "SCORING_VERSION",
+    "NORMALIZER_VERSION",
+    "build",
+    "canonical",
+    "dumps",
+    "now_iso",
+]

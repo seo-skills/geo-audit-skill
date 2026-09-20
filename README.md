@@ -7,9 +7,9 @@ Python CLI, plus thin skills that narrate what it computes.
 The CLI computes; the model explains and prioritizes. No score is ever produced by
 an LLM doing arithmetic in prose.
 
-> **Status: 0.1.0, the walking skeleton.** `fetch`, `score` and `doctor` work end to
-> end with the full safety, evidence and exit-code contract behind them. `crawl`,
-> `audit`, `report` and the rest land in 0.2.0 and 0.3.0. See [the roadmap](#roadmap).
+> **Status: 0.2.0 in progress.** `fetch`, `crawl`, `score`, `audit` and `doctor` work
+> end to end with the full safety, evidence and exit-code contract behind them.
+> `report`, `compare` and the agency kit are still ahead. See [the roadmap](#roadmap).
 
 ## Install
 
@@ -27,12 +27,20 @@ Python 3.11 or newer. No browser required.
 ```bash
 geo doctor
 geo score https://example.com/pricing
-geo score https://example.com/pricing --json > score.json
+geo audit https://example.com
 ```
 
-That is the whole first run: one page, no crawl, no browser, no Claude Code.
-`geo score` prints a citability score out of 100 with its tier label, the signals
-behind it, and the fixes ranked by what they recover.
+`geo score` is the first success: one page, no crawl, no browser, no Claude Code,
+under thirty seconds. It prints a citability score out of 100 with its tier label,
+the signals behind it, and the fixes ranked by what they recover.
+
+`geo audit` crawls the site and scores every category over it. It respects
+robots.txt for the links it discovers, holds to one request per second across the
+whole crawl, and records the result so you can reproduce the number later:
+
+```bash
+geo audit https://example.com --rescore <run_id>   # recomputes, no network
+```
 
 Output is JSON whenever stdout is not a terminal, so the second command needs no
 flag in a pipeline. Progress goes to stderr, always.
@@ -50,7 +58,7 @@ never see raw page text.
 
 ## What it measures today
 
-`geo score` computes seven citability signals over one page:
+**Citability** (weight 25) - seven signals over a page:
 
 | Signal | Class | Max | Question |
 |---|---|---|---|
@@ -62,9 +70,18 @@ never see raw page text.
 | `citability.attribution` | deterministic | 10 | Does the page say who wrote it and when? |
 | `citability.render_parity` | heuristic | 10 | How much text appears only after JavaScript? |
 
+**Technical** (weight 15) - crawler access against the AI crawler tokens in
+robots.txt, indexability, metadata, status health, transport security, URL
+structure.
+
+**Schema** (weight 10) - presence, validity against schema.org requirements,
+publisher identity, article properties, and types that answer a question directly.
+
 `render_parity` needs the optional browser extra. Without it that signal is **null**,
-`completeness` reports 6 of 7 signals computed, and the score is taken over the six
-that were. A signal that could not be measured is never scored as a failure.
+`completeness` reports 6 of 7 citability signals computed, and the score is taken
+over the six that were. **A signal that could not be measured is never scored as a
+failure** - and the same rule applies one level up: `geo audit --only schema` scores
+out of schema, not out of schema plus two zeroes.
 
 Full definitions, thresholds and rationale: [docs/concepts/signals.md](docs/concepts/signals.md).
 
@@ -115,8 +132,8 @@ would abort exactly the sites that most need a report.
 | Release | Adds |
 |---|---|
 | 0.1.0 | `fetch`, `score`, `doctor`; evidence model; safety guards; `geo:citability` |
-| 0.2.0 | `crawl`, `audit`, `scan`, `llmstxt`, `validate`, `prune`; `--rescore`; five more skills |
-| 0.3.0 | `report` (HTML and PDF, client and operator modes), `compare`, full docs |
+| 0.2.0 | `crawl`, `audit` with rescoring, the technical and schema categories; then `scan`, `llmstxt`, `validate`, `prune` and five more skills |
+| 0.3.0 | reports in HTML and PDF with client and operator modes, run comparison, full docs |
 | 1.0.0 | envelope `schema_version` frozen |
 
 ## Docs

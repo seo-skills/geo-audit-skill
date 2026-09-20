@@ -49,6 +49,8 @@ def render(envelope: dict, out: TextIO | None = None) -> None:
         _render_fetch(envelope, out, style)
     elif command == "crawl":
         _render_crawl(envelope, out, style)
+    elif command == "audit":
+        _render_audit(envelope, out, style)
     elif command == "doctor":
         _render_doctor(envelope, out, style)
     else:  # pragma: no cover - every command registers a renderer
@@ -194,6 +196,98 @@ def _render_fetch(envelope: dict, out: TextIO, style: Style) -> None:
     )
     _render_findings(envelope, out, style)
     print(copytext.NEXT_COMMAND.format(command=f"geo score {page.get('final_url', '')}"), file=out)
+
+
+def _render_audit(envelope: dict, out: TextIO, style: Style) -> None:
+    """Reader order, not audit-decomposition order: where do I stand, then what do I do."""
+    scores = envelope.get("scores") or {}
+    evidence = envelope.get("evidence") or {}
+    block = envelope.get("crawl") or {}
+    rescored = envelope.get("rescore")
+
+    print(
+        style.bold(
+            f"GEO score {scores.get('composite')}/100 "
+            f"({scores.get('tier', '').capitalize()}) for {block.get('site')} - "
+            f"{evidence.get('pages_ok', 0)} pages, evidence {evidence.get('stamp')}."
+        ),
+        file=out,
+    )
+    print(style.dim(f"  {scores.get('tier_meaning', '')}"), file=out)
+
+    failed = evidence.get("pages_failed") or []
+    if failed:
+        reasons: dict[str, int] = {}
+        for entry in failed:
+            reasons[entry["reason"]] = reasons.get(entry["reason"], 0) + 1
+        summary = ", ".join(f"{count} {reason}" for reason, count in sorted(reasons.items()))
+        print(
+            style.dim(
+                f"  PARTIAL: {evidence.get('pages_ok', 0)} of "
+                f"{block.get('pages_crawled', 0)} pages scored. {len(failed)} could not "
+                f"be evaluated ({summary}). Scores reflect the "
+                f"{evidence.get('pages_ok', 0)} pages only."
+            ),
+            file=out,
+        )
+
+    completeness = envelope.get("completeness") or {}
+    if completeness.get("missing"):
+        print(
+            style.dim(
+                f"  Computed on {completeness['computed']} of {completeness['total']} "
+                f"signals. Not measured: {', '.join(completeness['missing'])}."
+            ),
+            file=out,
+        )
+    if rescored:
+        print(
+            style.dim(
+                f"  Recomputed from run {rescored['run_id']} recorded "
+                f"{rescored['observed_at']}. No network was used."
+            ),
+            file=out,
+        )
+        if not rescored.get("versions_match"):
+            print(
+                style.dim(
+                    "  Versions have moved since that run, so this number is not the "
+                    "one that was recorded."
+                ),
+                file=out,
+            )
+
+    categories = scores.get("categories") or {}
+    if categories:
+        print(file=out)
+        print(style.bold("Category scores"), file=out)
+        width = max(len(name) for name in categories)
+        weights = (completeness.get("categories") or {}).get("weights_used") or {}
+        for name, value in sorted(categories.items(), key=lambda pair: -pair[1]):
+            weight = weights.get(name)
+            label = f" (weight {weight})" if weight else ""
+            print(f"  {name:<{width}}  {value:>3}/100  {style.dim(label.strip())}", file=out)
+
+    _render_findings(envelope, out, style, limit=5)
+
+    print(file=out)
+    print(
+        style.dim(
+            f"Evidence {evidence.get('stamp')} - site hash "
+            f"{(evidence.get('content_hash') or '')[:8]} - scoring "
+            f"{envelope['scoring_version']} - data {envelope['data_version']} - "
+            f"run {envelope['run_id']}"
+        ),
+        file=out,
+    )
+    if block.get("record"):
+        print(style.dim(f"Recorded in {block['record']}"), file=out)
+    print(
+        copytext.NEXT_COMMAND.format(
+            command=f"geo audit {block.get('start_url', '')} --rescore {envelope['run_id']}"
+        ),
+        file=out,
+    )
 
 
 def _render_crawl(envelope: dict, out: TextIO, style: Style) -> None:

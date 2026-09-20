@@ -1,0 +1,24 @@
+{
+  "comment": "Properties schema.org marks required or strongly recommended for the types that matter to AI answers. Sourced from schema.org type pages and Google's structured data documentation; the check is presence, not value validation.",
+  "types": {
+    "Organization":      { "required": ["name"], "recommended": ["url", "logo", "sameAs", "description"] },
+    "LocalBusiness":     { "required": ["name", "address"], "recommended": ["telephone", "openingHours", "url", "geo"] },
+    "Person":            { "required": ["name"], "recommended": ["url", "sameAs", "jobTitle"] },
+    "Article":           { "required": ["headline"], "recommended": ["author", "datePublished", "dateModified", "image", "publisher"] },
+    "BlogPosting":       { "required": ["headline"], "recommended": ["author", "datePublished", "dateModified", "publisher"] },
+    "NewsArticle":       { "required": ["headline"], "recommended": ["author", "datePublished", "dateModified", "publisher"] },
+    "Product":           { "required": ["name"], "recommended": ["offers", "image", "description", "brand", "aggregateRating"] },
+    "FAQPage":           { "required": ["mainEntity"], "recommended": [] },
+    "HowTo":             { "required": ["name", "step"], "recommended": ["totalTime", "supply", "tool"] },
+    "BreadcrumbList":    { "required": ["itemListElement"], "recommended": [] },
+    "WebSite":           { "required": ["name"], "recommended": ["url", "potentialAction"] },
+    "WebPage":           { "required": [], "recommended": ["name", "description", "speakable"] },
+    "SoftwareApplication": { "required": ["name"], "recommended": ["applicationCategory", "offers", "operatingSystem"] },
+    "Event":             { "required": ["name", "startDate"], "recommended": ["location", "endDate", "offers"] },
+    "Recipe":            { "required": ["name"], "recommended": ["recipeIngredient", "recipeInstructions", "image"] },
+    "VideoObject":       { "required": ["name"], "recommended": ["description", "thumbnailUrl", "uploadDate"] }
+  },
+  "answer_types": ["FAQPage", "HowTo", "QAPage", "BreadcrumbList", "Product", "Event", "Recipe", "VideoObject", "SoftwareApplication", "LocalBusiness"],
+  "entity_types": ["Organization", "LocalBusiness", "NewsMediaOrganization", "Person"],
+  "article_types": ["Article", "BlogPosting", "NewsArticle", "TechArticle", "ScholarlyArticle", "Report"]
+}

@@ -49,6 +49,7 @@ KEEP_HEADERS = (
     "last-modified",
     "cache-control",
     "x-robots-tag",
+    "strict-transport-security",
     "server",
     "location",
     "vary",

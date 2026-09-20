@@ -143,6 +143,84 @@ def findings_for(signals: list[Signal], page: str) -> list[Finding]:
     return out
 
 
+def aggregate(per_page: list[list[Signal]]) -> list[Signal]:
+    """Roll per-page signals up to one site-level signal each.
+
+    The site value is the mean over the pages where the signal was computed.
+    A signal computed on no page stays `None` rather than becoming zero, and
+    the detail carries the spread and the worst page, because "62 on average"
+    and "62 everywhere" call for different work.
+    """
+    order: list[str] = []
+    grouped: dict[str, list[Signal]] = {}
+    for signals in per_page:
+        for signal in signals:
+            if signal.id not in grouped:
+                grouped[signal.id] = []
+                order.append(signal.id)
+            grouped[signal.id].append(signal)
+
+    out: list[Signal] = []
+    for signal_id in order:
+        group = grouped[signal_id]
+        first = group[0]
+        computed = [s for s in group if s.computed]
+        if not computed:
+            out.append(
+                Signal(
+                    id=signal_id,
+                    cls=first.cls,
+                    max=first.max,
+                    value=None,
+                    detail={"reason": first.skipped_reason or "not measured on any page"},
+                    skipped_reason=first.skipped_reason or "not measured on any page",
+                )
+            )
+            continue
+
+        values = [s.value or 0.0 for s in computed]
+        worst = min(computed, key=lambda s: s.value if s.value is not None else 0.0)
+        detail = {
+            "pages_measured": len(computed),
+            "pages_total": len(group),
+            "mean": round(sum(values) / len(values), 2),
+            "min": round(min(values), 2),
+            "max": round(max(values), 2),
+            "worst_page": worst.page,
+        }
+        if worst.detail.get("worst_example"):
+            detail["worst_example"] = worst.detail["worst_example"]
+        out.append(
+            Signal(
+                id=signal_id,
+                cls=first.cls,
+                max=first.max,
+                value=sum(values) / len(values),
+                detail=detail,
+            )
+        )
+    return out
+
+
+def weighted_composite(categories: dict[str, int], scores: dict[str, int]) -> tuple[int, dict]:
+    """Combine category scores by weight, over the categories actually computed.
+
+    Same rule as a null signal: a category that was not computed leaves both
+    sides of the fraction rather than scoring zero.
+    """
+    computed = {name: value for name, value in scores.items() if value is not None}
+    total_weight = sum(categories[name] for name in computed if name in categories)
+    if not total_weight:
+        return 0, {"computed": [], "declared": sorted(categories), "missing": sorted(categories)}
+    earned = sum(categories[name] * computed[name] for name in computed if name in categories)
+    return int(round(earned / total_weight)), {
+        "computed": sorted(computed),
+        "declared": sorted(categories),
+        "missing": sorted(set(categories) - set(computed)),
+        "weights_used": {name: categories[name] for name in sorted(computed) if name in categories},
+    }
+
+
 def merge(findings: list[Finding]) -> list[Finding]:
     """Collapse the same finding seen on several pages into one.
 

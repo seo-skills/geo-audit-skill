@@ -42,6 +42,72 @@
       "effort": "high",
       "title": "Much of the visible text only appears after JavaScript runs",
       "remediation": "Move the text that appears only after hydration into the server response. Compare the two yourself with `curl` and your browser's view-source."
+    },
+    "technical.crawler_access": {
+      "severity": "critical",
+      "effort": "low",
+      "title": "robots.txt blocks crawlers that AI answers depend on",
+      "remediation": "Allow the listed tokens in robots.txt. Training tokens and search tokens are separate decisions: refusing GPTBot while allowing OAI-SearchBot is a coherent position, but blocking the search tokens is a decision to be absent from that engine's answers."
+    },
+    "technical.indexability": {
+      "severity": "critical",
+      "effort": "low",
+      "title": "Pages are not cleanly indexable",
+      "remediation": "Check three things per page: no `noindex` in the meta robots tag or the X-Robots-Tag header, no blanket `nofollow`, and a self-referencing canonical. A page excluded from the index cannot be the source of an answer, and one without a canonical competes with its own variants."
+    },
+    "technical.metadata": {
+      "severity": "medium",
+      "effort": "low",
+      "title": "Page metadata is missing or the wrong length",
+      "remediation": "Give every page one H1, a title of 15 to 65 characters, a meta description of 70 to 160, a lang attribute, Open Graph tags and alt text on images. These are what a snippet is built from when an engine does not quote the body."
+    },
+    "technical.status_health": {
+      "severity": "high",
+      "effort": "medium",
+      "title": "Pages do not return 200 directly",
+      "remediation": "Return 200 on the canonical URL instead of redirecting to it. Every hop costs crawl budget and some crawlers stop following after one."
+    },
+    "technical.transport_security": {
+      "severity": "high",
+      "effort": "low",
+      "title": "The site is not served securely",
+      "remediation": "Serve everything over HTTPS and send a Strict-Transport-Security header. Engines discount, and some browsers block, content served over plain HTTP."
+    },
+    "technical.url_structure": {
+      "severity": "low",
+      "effort": "medium",
+      "title": "URLs are harder to read than they need to be",
+      "remediation": "Keep paths under four segments and 100 characters, lowercase, hyphen-separated, with no session identifiers in the query. This is a readability convention rather than a ranking rule, which is why it is weighted lowest here."
+    },
+    "schema.presence": {
+      "severity": "high",
+      "effort": "medium",
+      "title": "The page carries no structured data",
+      "remediation": "Add JSON-LD describing what the page is. Structured data is the only part of a page an engine does not have to interpret, which makes it the cheapest way to be understood correctly."
+    },
+    "schema.validity": {
+      "severity": "high",
+      "effort": "low",
+      "title": "Structured data is malformed or missing required properties",
+      "remediation": "Fix the JSON syntax and add the required properties for each declared type. A block that does not parse is worth exactly as much as no block at all."
+    },
+    "schema.organization": {
+      "severity": "high",
+      "effort": "low",
+      "title": "No machine-readable publisher identity",
+      "remediation": "Add an Organization or Person node with name, url, logo, description and sameAs links to the profiles that identify you. sameAs is what lets an engine connect this site to the entity it already knows about."
+    },
+    "schema.article": {
+      "severity": "medium",
+      "effort": "low",
+      "title": "Content pages are not described as articles",
+      "remediation": "Add Article or BlogPosting with headline, author, datePublished, dateModified and image. This is how an engine decides a page is datable, attributable content rather than a landing page."
+    },
+    "schema.breadth": {
+      "severity": "low",
+      "effort": "medium",
+      "title": "No structured data that answers a question directly",
+      "remediation": "Where the content fits, add FAQPage, HowTo, Product, Event or BreadcrumbList. These types map onto the shape of an answer, so an engine can lift them with no interpretation at all."
     }
   },
   "checks": {

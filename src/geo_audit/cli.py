@@ -23,6 +23,7 @@ from geo_audit._version import (
     SCHEMA_VERSION,
     SCORING_VERSION,
 )
+from geo_audit.commands import audit as audit_cmd
 from geo_audit.commands import crawl as crawl_cmd
 from geo_audit.commands import doctor as doctor_cmd
 from geo_audit.commands import fetch as fetch_cmd
@@ -37,6 +38,7 @@ from geo_audit.lib.ids import new_run_id
 COMMANDS = {
     "fetch": fetch_cmd.run,
     "crawl": crawl_cmd.run,
+    "audit": audit_cmd.run,
     "score": score_cmd.run,
     "doctor": doctor_cmd.run,
 }
@@ -172,6 +174,27 @@ def build_parser() -> argparse.ArgumentParser:
     _page_flags(crawl)
     _crawl_flags(crawl)
 
+    audit = subparsers.add_parser(
+        "audit",
+        parents=[parent],
+        help="crawl a site and score every category over it",
+        description="Crawl a site and score citability, technical and schema over "
+        "every page. The composite weights the categories that were computed; one "
+        "that was not leaves both sides of the fraction rather than scoring zero.",
+    )
+    _page_flags(audit)
+    _crawl_flags(audit)
+    audit.add_argument(
+        "--only",
+        metavar="CATEGORY[,CATEGORY]",
+        help=f"score only these categories ({', '.join(audit_cmd.CATEGORIES)})",
+    )
+    audit.add_argument(
+        "--rescore",
+        metavar="RUN_ID",
+        help="recompute from a recorded audit instead of crawling; no network is used",
+    )
+
     score = subparsers.add_parser(
         "score",
         parents=[parent],
@@ -217,7 +240,7 @@ def _apply_config(args: argparse.Namespace) -> None:
 
 def _validate_url(args: argparse.Namespace) -> None:
     url = getattr(args, "url", None)
-    if url is None:
+    if url is None or (getattr(args, "rescore", None) and url == "-"):
         return
     if "://" not in url:
         raise GeoError(
