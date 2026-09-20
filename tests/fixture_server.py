@@ -35,6 +35,9 @@ class Reply:
     headers: dict[str, str] = field(default_factory=dict)
     raw: bool = False
     delay: float = 0.0
+    # Reply without a Connection header and close anyway, reproducing a server
+    # that drops an idle keep-alive connection without notice.
+    silent_close: bool = False
 
     def encoded(self) -> bytes:
         return self.body if isinstance(self.body, bytes) else self.body.encode("utf-8")
@@ -68,18 +71,27 @@ def site_routes() -> dict[str, Route]:
     routes["/oversize-stream"] = Reply(
         body="<html><body><p>" + ("padding " * 400_000) + "</p></body></html>", raw=True
     )
-    routes["/redirect-loop"] = Reply(status=302, headers={"Location": "/redirect-loop"})
+    moved = "<html><body><h1>302 Found</h1><p>The document has moved.</p></body></html>"
+    routes["/redirect-loop"] = Reply(
+        status=302, body=moved, headers={"Location": "/redirect-loop"}
+    )
     routes["/redirect-private"] = Reply(
-        status=302, headers={"Location": "http://127.0.0.1:1/unreachable"}
+        status=302, body=moved, headers={"Location": "http://127.0.0.1:1/unreachable"}
     )
     for hop in range(1, 4):
         target = "/ssr-rich.html" if hop == 1 else f"/redirect/{hop - 1}"
-        routes[f"/redirect/{hop}"] = Reply(status=302, headers={"Location": target})
+        routes[f"/redirect/{hop}"] = Reply(
+            status=302, body=moved, headers={"Location": target}
+        )
     routes["/private/secret.html"] = _page("schema-none.html")
     return routes
 
 
 class _Server(ThreadingHTTPServer):
+    # Counts accepted TCP connections, so a test can tell connection reuse from
+    # a fresh handshake per request.
+    connections = 0
+
     # The stdlib default is 5. The socket starts listening in the constructor
     # but nothing accepts until the serving thread is scheduled, so a burst
     # arriving in that window fills the queue and the kernel refuses it.
@@ -93,6 +105,10 @@ class _Handler(BaseHTTPRequestHandler):
 
     def log_message(self, *args) -> None:  # noqa: D102 - silence the test run
         pass
+
+    def setup(self) -> None:
+        super().setup()
+        self.server.connections += 1
 
     def handle_one_request(self) -> None:
         # Aborting a download mid-stream is the expected outcome of the size-cap
@@ -120,12 +136,20 @@ class _Handler(BaseHTTPRequestHandler):
         self.send_response(reply.status)
         if reply.content_type:
             self.send_header("Content-Type", reply.content_type)
+        if reply.silent_close:
+            # Close without announcing it: the shape that broke CI. The client
+            # keeps the socket in its pool and the next request on it fails
+            # with RemoteDisconnected.
+            self.close_connection = True
+        elif self.headers.get("Connection", "").strip().lower() == "close":
+            # http.server honours a client's `Connection: close` internally but
+            # never says so on the wire. Echo it, the way a real server does.
+            self.send_header("Connection", "close")
         for key, value in reply.headers.items():
             self.send_header(key, value)
         if reply.raw:
             # No Content-Length: the body ends when the connection closes, which
             # exercises the streaming size cap rather than the declared one.
-            self.send_header("Connection", "close")
             self.end_headers()
             self.wfile.write(payload)
             self.close_connection = True
@@ -140,6 +164,13 @@ class FixtureServer:
         handler = type("BoundHandler", (_Handler,), {"routes": routes})
         self._server = _Server(("127.0.0.1", 0), handler)
         self._thread = threading.Thread(target=self._server.serve_forever, daemon=True)
+
+    @property
+    def connection_count(self) -> int:
+        return self._server.connections
+
+    def reset_connection_count(self) -> None:
+        self._server.connections = 0
 
     @property
     def url(self) -> str:

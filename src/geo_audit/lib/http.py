@@ -23,6 +23,8 @@ from dataclasses import dataclass, field
 from urllib.parse import urljoin, urlsplit
 
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 from geo_audit.errors import GeoError
 from geo_audit.lib import net
@@ -87,6 +89,25 @@ class FetchResult:
 def new_session() -> requests.Session:
     session = requests.Session()
     session.trust_env = True
+    # Keep-alive brings one race with it: a server may close an idle pooled
+    # connection between our last response and our next request, which surfaces
+    # as "closed the connection before sending a response". One immediate retry
+    # is the standard remedy, and GET is idempotent so replaying it is safe.
+    # Redirects stay off: this module follows them by hand so each hop is
+    # revalidated.
+    retry = Retry(
+        total=1,
+        connect=1,
+        read=1,
+        status=0,
+        redirect=False,
+        backoff_factor=0,
+        allowed_methods=frozenset({"GET", "HEAD"}),
+        raise_on_status=False,
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
     # `session.max_redirects` is deliberately left at the library default.
     # Every request here sets allow_redirects=False, but requests still peeks
     # one hop ahead to populate `response._next`, and that peek raises
@@ -143,40 +164,6 @@ def _connection_reason(exc: Exception) -> str:
     if "too many open" in lowered or "cannot assign" in lowered:
         return "this machine ran out of sockets"
     return "the connection failed"
-
-
-def _hard_close(response: requests.Response) -> None:
-    """Close the socket so a half-read response cannot be pooled.
-
-    `Response.close()` *releases* a streaming connection back to the pool. If
-    the body was not fully read, the next request on that pool picks up the
-    previous response's leftover bytes. Aborting a download is exactly when
-    that happens, so those connections are closed rather than released.
-    """
-    raw = getattr(response, "raw", None)
-    for target in (getattr(raw, "_connection", None), raw):
-        try:
-            if target is not None:
-                target.close()
-        except Exception:  # noqa: BLE001 - teardown must not mask the real error
-            pass
-
-
-def _drain(response: requests.Response, limit: int) -> None:
-    """Read and discard a body so the connection closes with FIN, not RST.
-
-    Redirect bodies are normally a few bytes, and abandoning them mid-response
-    resets the socket. The limit is still honoured: an abusive server that
-    attaches a huge body to a 302 gets reset, which is the correct outcome.
-    """
-    read = 0
-    try:
-        for chunk in response.iter_content(chunk_size=8192):
-            read += len(chunk)
-            if read > limit:
-                return
-    except requests.RequestException:
-        return
 
 
 def _decode(raw: bytes, content_type: str | None) -> tuple[str, str]:
@@ -292,15 +279,12 @@ def fetch(
                     f"{_connection_reason(exc)}.",
                 ) from exc
 
-            drained = False
-            try:
+            with response:
                 peer, verified = _verify_peer(response, current, allow_private)
                 status = response.status_code
                 location = response.headers.get("location")
 
                 if status in _REDIRECT_STATUSES and location:
-                    _drain(response, max_bytes)
-                    drained = True
                     chain.append(Hop(url=current, status=status, location=location))
                     current = urljoin(current, location)
                     continue
@@ -338,7 +322,6 @@ def fetch(
                             f"downloading.",
                         )
 
-                drained = True
                 body, encoding = _decode(bytes(buffer), kept.get("content-type"))
                 return FetchResult(
                     requested_url=url,
@@ -353,10 +336,6 @@ def fetch(
                     peer_verified=verified,
                     chain=chain,
                 )
-            finally:
-                if not drained:
-                    _hard_close(response)
-                response.close()
 
         raise GeoError(
             "GEO_E_TOO_MANY_REDIRECTS",
