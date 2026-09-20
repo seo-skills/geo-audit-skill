@@ -146,6 +146,13 @@ ERRORS: dict[str, ErrorSpec] = {
             "GEO_HOME could not be written. Check disk space and permissions, "
             "then run `geo doctor`.",
         ),
+        _spec(
+            "GEO_E_INCOMPARABLE",
+            EXIT_USAGE,
+            "These runs were scored by different rules, so the difference between "
+            "them would measure the tool rather than the site. Re-run the older URL "
+            "to get a comparable pair.",
+        ),
         # --- partial (5) ------------------------------------------------
         _spec(
             "GEO_E_PARTIAL",

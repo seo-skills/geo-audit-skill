@@ -26,6 +26,7 @@ from geo_audit._version import (
     SCORING_VERSION,
 )
 from geo_audit.commands import audit as audit_cmd
+from geo_audit.commands import compare as compare_cmd
 from geo_audit.commands import crawl as crawl_cmd
 from geo_audit.commands import doctor as doctor_cmd
 from geo_audit.commands import llmstxt as llmstxt_cmd
@@ -45,6 +46,7 @@ COMMANDS = {
     "fetch": fetch_cmd.run,
     "crawl": crawl_cmd.run,
     "audit": audit_cmd.run,
+    "compare": compare_cmd.run,
     "score": score_cmd.run,
     "validate": validate_cmd.run,
     "llmstxt": llmstxt_cmd.run,
@@ -222,6 +224,19 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="skip JavaScript rendering even when Playwright is installed",
     )
+
+    compare = subparsers.add_parser(
+        "compare",
+        parents=[parent],
+        help="what changed between two recorded audits",
+        description="Subtract one recorded audit from another: composite and "
+        "category movement, which findings were resolved or introduced, and which "
+        "pages changed. No network is used. Refuses to compare runs scored under "
+        "different rules.",
+    )
+    compare.add_argument("url", help="the site whose history to compare")
+    compare.add_argument("--from", dest="from_run", metavar="RUN_ID", help="the earlier run")
+    compare.add_argument("--to", dest="to_run", metavar="RUN_ID", help="the later run")
 
     validate = subparsers.add_parser(
         "validate",

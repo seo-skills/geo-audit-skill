@@ -52,6 +52,8 @@ def render(envelope: dict, out: TextIO | None = None) -> None:
         _render_crawl(envelope, out, style)
     elif command == "audit":
         _render_audit(envelope, out, style)
+    elif command == "compare":
+        _render_compare(envelope, out, style)
     elif command == "validate":
         _render_validate(envelope, out, style)
     elif command == "llmstxt":
@@ -295,6 +297,109 @@ def _render_audit(envelope: dict, out: TextIO, style: Style) -> None:
         copytext.NEXT_COMMAND.format(
             command=f"geo audit {block.get('start_url', '')} --rescore {envelope['run_id']}"
         ),
+        file=out,
+    )
+
+
+def _arrow(delta: float | None) -> str:
+    if delta is None:
+        return "  "
+    if delta > 0:
+        return "up"
+    if delta < 0:
+        return "dn"
+    return "--"
+
+
+def _render_compare(envelope: dict, out: TextIO, style: Style) -> None:
+    block = envelope.get("compare") or {}
+    before, after = block.get("from") or {}, block.get("to") or {}
+    delta = block.get("composite_delta")
+
+    direction = "unchanged"
+    if delta and delta > 0:
+        direction = f"up {delta:g}"
+    elif delta and delta < 0:
+        direction = f"down {abs(delta):g}"
+
+    print(
+        style.bold(
+            f"GEO score {before.get('composite')} -> {after.get('composite')} "
+            f"({direction}) for {envelope.get('site')}."
+        ),
+        file=out,
+    )
+    if block.get("tier_changed"):
+        print(
+            style.dim(
+                f"  Tier moved from {before.get('tier')} to {after.get('tier')}."
+            ),
+            file=out,
+        )
+    print(
+        style.dim(
+            f"  {before.get('observed_at')} ({before.get('pages_ok')} pages) -> "
+            f"{after.get('observed_at')} ({after.get('pages_ok')} pages)"
+        ),
+        file=out,
+    )
+
+    categories = block.get("categories") or {}
+    if categories:
+        print(file=out)
+        print(style.bold("Categories"), file=out)
+        width = max(len(name) for name in categories)
+        for name, entry in sorted(categories.items(), key=lambda kv: (kv[1]["delta"] or 0)):
+            move = entry["delta"]
+            shown = "no change" if move in (None, 0) else f"{move:+g}"
+            print(
+                f"  {_arrow(move)} {name:<{width}}  {entry['before']} -> {entry['after']}  "
+                f"{style.dim(shown)}",
+                file=out,
+            )
+
+    findings = block.get("findings") or {}
+    if findings.get("resolved_titles"):
+        print(file=out)
+        print(style.bold(f"Resolved ({len(findings['resolved_titles'])})"), file=out)
+        for title in findings["resolved_titles"][:5]:
+            print(f"  + {title}", file=out)
+    if findings.get("introduced_titles"):
+        print(file=out)
+        print(style.bold(f"New ({len(findings['introduced_titles'])})"), file=out)
+        for title in findings["introduced_titles"][:5]:
+            print(f"  - {title}", file=out)
+    if findings.get("persisting"):
+        print(
+            style.dim(f"\n  {len(findings['persisting'])} finding(s) unchanged since last time."),
+            file=out,
+        )
+
+    pages = block.get("pages") or {}
+    print(file=out)
+    print(
+        style.bold(
+            f"Pages: {len(pages.get('changed') or [])} changed, "
+            f"{len(pages.get('added') or [])} added, "
+            f"{len(pages.get('removed') or [])} gone, "
+            f"{pages.get('unchanged', 0)} untouched"
+        ),
+        file=out,
+    )
+    for url in (pages.get("changed") or [])[:5]:
+        print(style.dim(f"  changed  {url}"), file=out)
+
+    print(file=out)
+    versions = (block.get("versions") or {}).get("to") or {}
+    print(
+        style.dim(
+            f"Both runs scored at scoring {versions.get('scoring_version')} - "
+            f"data {versions.get('data_version')}"
+        ),
+        file=out,
+    )
+    print(
+        copytext.NEXT_COMMAND.format(command=f"geo audit {envelope.get('url', '')}"),
         file=out,
     )
 

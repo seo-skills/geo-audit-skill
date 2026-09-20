@@ -14,6 +14,7 @@ positional arguments:
     crawl     map what a crawler can reach on a site
     audit     crawl a site and score every category over it
     score     score the citability of one page
+    compare   what changed between two recorded audits
     validate  check the structured data on one page
     llmstxt   check for an llms.txt, or build one from the site
     scan      check whether a brand exists as a lookupable entity
@@ -177,6 +178,37 @@ options:
   --no-robots        skip the robots.txt lookup
   --no-render        skip JavaScript rendering even when Playwright is
                      installed
+```
+
+## `geo compare`
+
+Subtract one recorded audit from another: composite and category movement, which findings were resolved or introduced, and which pages changed. No network is used. Refuses to compare runs scored under different rules.
+
+```
+usage: geo compare [-h] [--json] [--out PATH] [--config PATH] [--no-input]
+                   [--quiet] [--verbose] [--allow-private] [--fail-on-partial]
+                   [--from RUN_ID] [--to RUN_ID]
+                   url
+
+Subtract one recorded audit from another: composite and category movement,
+which findings were resolved or introduced, and which pages changed. No
+network is used. Refuses to compare runs scored under different rules.
+
+positional arguments:
+  url                the site whose history to compare
+
+options:
+  -h, --help         show this help message and exit
+  --json             force JSON output
+  --out PATH         also write the JSON envelope here
+  --config PATH      JSON file of default flag values
+  --no-input         never prompt (reserved: this release never prompts)
+  --quiet            suppress progress on stderr
+  --verbose          more progress on stderr
+  --allow-private    permit a private, loopback or link-local start URL
+  --fail-on-partial  exit 5 when the result is PARTIAL
+  --from RUN_ID      the earlier run
+  --to RUN_ID        the later run
 ```
 
 ## `geo validate`
@@ -358,6 +390,7 @@ options:
 | `GEO_E_BLOCKED_SCHEME` | 2 | Only http:// and https:// are fetched. file://, data://, ftp:// and the rest are refused by design. |
 | `GEO_E_CONNECT` | 3 | The message names which connection failure it was. Check the URL, the port, and any proxy or VPN on this machine. |
 | `GEO_E_DNS` | 3 | The hostname did not resolve. Check for a typo, or whether the domain is reachable from this machine. |
+| `GEO_E_INCOMPARABLE` | 2 | These runs were scored by different rules, so the difference between them would measure the tool rather than the site. Re-run the older URL to get a comparable pair. |
 | `GEO_E_INTERNAL` | 1 | This is a bug in seomator-geo-audit. The log names the failing step; please open an issue with it. |
 | `GEO_E_PARTIAL` | 5 | Some pages could not be evaluated. Drop --fail-on-partial to accept a partial result, or fix the blocked pages listed in the findings. |
 | `GEO_E_PRIVATE_ADDRESS` | 2 | This host resolves to a private, loopback or link-local address. Auditing localhost or a staging host is legitimate: re-run with --allow-private to opt in. |

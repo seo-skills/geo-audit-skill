@@ -136,6 +136,8 @@ def known_keys() -> set[str]:
                       "docs", "observed_at", "reason"],
         "prune": ["home", "applied", "limits", "projects", "runs_dropped",
                   "bytes_reclaimed"],
+        "compare": ["from", "to", "composite_delta", "tier_changed", "categories",
+                    "signals", "findings", "pages", "versions"],
         "checks": ["id", "status", "detail", "hint"],
         # Signal detail keys the skills are allowed to name. They are part of the
         # documented surface, and `test_skills_lint.py` checks every one of these
