@@ -108,6 +108,27 @@ def test_ci_runs_every_gate_this_project_claims():
         assert platform in text
 
 
+def test_ci_installs_the_python_version_it_claims_to_test():
+    """The matrix was decorative on the first run.
+
+    Nothing installed the requested interpreter, so every job used whatever
+    the runner shipped: two matrix entries, one Python. The assertion in the
+    workflow itself is the real guard; this checks the guard is still wired.
+    """
+    text = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+    assert "actions/setup-python" in text
+    assert "python-version: ${{ matrix.python }}" in text
+    assert "assert sys.version.startswith" in text
+
+
+def test_ci_does_not_install_into_an_externally_managed_interpreter():
+    """PEP 668: the Ubuntu and macOS runners refuse `pip --system` installs."""
+    for workflow in ("ci.yml", "release.yml"):
+        body = (ROOT / ".github/workflows" / workflow).read_text(encoding="utf-8")
+        body = body.split("jobs:", 1)[1]
+        assert "--system" not in body, f"{workflow} installs into a managed interpreter"
+
+
 def test_release_is_gated_on_the_tag_matching_version():
     text = (ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
     assert "VERSION" in text
