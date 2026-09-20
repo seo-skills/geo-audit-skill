@@ -1,0 +1,90 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: test ${{ matrix.os }} / py${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: install
+        run: uv pip install --system -e ".[dev]"
+      - name: pytest
+        run: python -m pytest -q
+
+  lint:
+    name: skill lint and docs freshness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: install
+        run: uv pip install --system -e ".[dev]"
+      - name: skill contracts
+        run: python tools/lint_skills.py
+      - name: generated docs are current
+        run: python tools/gen_docs.py --check
+
+  quickstart:
+    name: quickstart from a built wheel
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: build the wheel
+        run: uv build --wheel
+      - name: install the wheel, not the source tree
+        shell: bash
+        run: |
+          uv pip install --system dist/*.whl
+          uv pip install --system pytest
+      - name: the shipped artifact answers
+        run: geo --version
+      - name: README quickstart against the fixture server
+        run: python -m pytest tests/test_quickstart.py -q -s
+
+  package:
+    name: package metadata
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: build
+        run: uv build
+      - name: check
+        run: |
+          uv pip install --system twine
+          twine check dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
