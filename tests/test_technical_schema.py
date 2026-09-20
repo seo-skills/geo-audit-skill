@@ -20,6 +20,7 @@ class FakeResult:
     status: int = 200
     headers: dict = None
     chain: tuple = ()
+    body: str = ""
 
     def __post_init__(self):
         self.headers = self.headers or {}

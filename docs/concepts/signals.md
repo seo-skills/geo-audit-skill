@@ -80,6 +80,17 @@ Out of **100**.
 
 Out of **100**.
 
+### platform (category weight 10)
+
+| Signal | Class | Max | Requires | Question |
+|---|---|---|---|---|
+| `platform.llms_txt` | deterministic | 35 | — |  |
+| `platform.social_cards` | deterministic | 30 | — |  |
+| `platform.feeds` | deterministic | 20 | — |  |
+| `platform.hreflang` | deterministic | 15 | more than one language |  |
+
+Out of **100**, or **85** when the optional inputs are absent.
+
 The category composite is `earned / max-of-computed * 100`, and the site composite weights the categories that were computed. A signal or a category that was not measured leaves both sides of its fraction.
 <!-- generated:signals:end -->
 

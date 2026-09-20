@@ -144,7 +144,7 @@ options:
                         advertises
   --only CATEGORY[,CATEGORY]
                         score only these categories (citability, technical,
-                        schema, content, brand)
+                        schema, content, platform, brand)
   --brand NAME          also score brand presence for this name, folding it
                         into the composite
   --rescore RUN_ID      recompute from a recorded audit instead of crawling;

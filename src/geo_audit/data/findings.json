@@ -156,6 +156,30 @@
       "effort": "medium",
       "title": "Sentences are long enough to be hard to quote",
       "remediation": "Break sentences over about thirty-five words. A long sentence carries several claims at once, so an engine lifting it takes claims it did not want and a reader gets a paragraph where they asked for a fact."
+    },
+    "platform.llms_txt": {
+      "severity": "medium",
+      "effort": "low",
+      "title": "The site publishes no llms.txt",
+      "remediation": "Add /llms.txt: one H1, a blockquote summary, then sections of markdown links to the pages worth reading. It is a convention rather than a standard, which is why this is medium - but it is the only place you get to state your own priorities in your own words, and `geo llmstxt --generate` writes a first draft from your own pages."
+    },
+    "platform.social_cards": {
+      "severity": "medium",
+      "effort": "low",
+      "title": "Pages have no preview card",
+      "remediation": "Add og:title, og:description and og:image to every page. Engines and the apps around them build the link preview from these; without them the preview falls back to whatever the page happens to start with, which is usually navigation."
+    },
+    "platform.feeds": {
+      "severity": "low",
+      "effort": "low",
+      "title": "The site is hard to discover in bulk",
+      "remediation": "Advertise a sitemap in robots.txt and, if the site publishes regularly, link an RSS or Atom feed from the head. Both are how a crawler finds pages nothing links to yet."
+    },
+    "platform.hreflang": {
+      "severity": "medium",
+      "effort": "medium",
+      "title": "Language variants are not declared",
+      "remediation": "Add reciprocal hreflang annotations to each language variant, including an x-default. Without them an engine has to guess which variant answers a question, and it guesses by traffic rather than by language."
     }
   },
   "checks": {

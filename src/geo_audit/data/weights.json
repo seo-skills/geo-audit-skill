@@ -149,13 +149,32 @@
           ]
         }
       }
+    },
+    "platform": {
+      "weight": 10,
+      "comment": "Deliberately narrow. Anything already scored elsewhere is left out: crawler access is technical, answer-shaped types are schema.breadth, and content quality is content. What remains is the per-surface plumbing nothing else looks at.",
+      "signals": {
+        "platform.llms_txt": {
+          "max": 35,
+          "class": "deterministic"
+        },
+        "platform.social_cards": {
+          "max": 30,
+          "class": "deterministic"
+        },
+        "platform.feeds": {
+          "max": 20,
+          "class": "deterministic"
+        },
+        "platform.hreflang": {
+          "max": 15,
+          "class": "deterministic",
+          "requires": "more than one language"
+        }
+      }
     }
   },
   "planned_categories": {
-    "comment": "Declared so the divergence table can reference them before they ship. Absent from every computation until their milestone lands.",
-    "platform": {
-      "weight": 10,
-      "milestone": "M3"
-    }
+    "comment": "Declared so the divergence table can reference them before they ship. Absent from every computation until their milestone lands."
   }
 }

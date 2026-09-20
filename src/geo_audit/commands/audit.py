@@ -20,7 +20,13 @@ from geo_audit.errors import GeoError
 from geo_audit.lib import crawl as crawl_lib
 from geo_audit.lib.ids import is_run_id
 from geo_audit.lib.slug import host_of, project_slug
-from geo_audit.scoring import citability, content as content_scorer, schema_org, technical
+from geo_audit.scoring import (
+    citability,
+    content as content_scorer,
+    platform as platform_scorer,
+    schema_org,
+    technical,
+)
 from geo_audit.scoring.model import (
     Signal,
     aggregate,
@@ -34,7 +40,7 @@ from geo_audit.scoring.model import (
 # What an audit can compute from a URL alone. `brand` needs a name, so it
 # joins the run only when --brand is given: a category the inputs cannot
 # reach is not "missing", it is out of scope for that run.
-SITE_CATEGORIES = ("citability", "technical", "schema", "content")
+SITE_CATEGORIES = ("citability", "technical", "schema", "content", "platform")
 CATEGORIES = SITE_CATEGORIES + ("brand",)
 
 
@@ -66,7 +72,34 @@ def parse_only(value: str | None, available: tuple[str, ...] = CATEGORIES) -> tu
     return chosen
 
 
-def _score_page(page, robots, categories: tuple[str, ...]) -> dict[str, list[Signal]]:
+def _site_facts(result, args) -> dict:
+    """What is true of the site rather than of any one page.
+
+    Fetched once per run. Identical on every page, so `aggregate` carries it up
+    to the site-level signal verbatim instead of averaging it away.
+    """
+    from geo_audit.commands import llmstxt as llmstxt_cmd
+    from geo_audit.commands.common import Options
+
+    facts: dict = {
+        "sitemaps": list(result.robots.sitemaps) if result.robots else [],
+        "languages": {page.doc.lang for page in result.ok_pages if page.doc and page.doc.lang},
+        "llms_present": None,
+        "llms_valid": None,
+    }
+    options = Options(allow_private=args.allow_private, timeout=args.timeout)
+    from urllib.parse import urlsplit
+
+    parts = urlsplit(args.url)
+    found = llmstxt_cmd._fetch_optional(
+        f"{parts.scheme}://{parts.netloc}{llmstxt_cmd.CANONICAL_PATH}", options
+    )
+    facts["llms_present"] = bool(found.get("present"))
+    facts["llms_valid"] = bool(found.get("valid")) if found.get("present") else None
+    return facts
+
+
+def _score_page(page, robots, categories: tuple[str, ...], site_facts: dict | None = None) -> dict[str, list[Signal]]:
     scored: dict[str, list[Signal]] = {}
     if "citability" in categories and page.doc is not None:
         # An audit never opens a browser: fifty pages through Chromium is a
@@ -78,6 +111,8 @@ def _score_page(page, robots, categories: tuple[str, ...]) -> dict[str, list[Sig
         scored["schema"] = schema_org.score(page)
     if "content" in categories and page.doc is not None:
         scored["content"] = content_scorer.score(page)
+    if "platform" in categories:
+        scored["platform"] = platform_scorer.score(page, site_facts or {})
     return scored
 
 
@@ -104,11 +139,12 @@ def run(args, run_id: str) -> dict:
             )
 
     result = crawl_lib.crawl(args.url, options, progress=progress)
+    site_facts = _site_facts(result, args) if "platform" in categories else {}
 
     per_category: dict[str, list[list[Signal]]] = {name: [] for name in categories}
     findings = []
     for page in result.pages:
-        scored = _score_page(page, result.robots, categories)
+        scored = _score_page(page, result.robots, categories, site_facts)
         for name, signals in scored.items():
             per_category[name].append(signals)
             findings.extend(findings_for(signals, page.result.final_url if page.result else page.url))
