@@ -1,0 +1,7 @@
+* text=auto eol=lf
+
+# Fixtures are byte-exact inputs to hash-stability tests. Never normalize them.
+tests/fixtures/** -text -diff linguist-vendored
+
+# Generated regions: diff them, but do not let merge tools reflow them.
+docs/commands.md linguist-generated=true

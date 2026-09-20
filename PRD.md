@@ -1,0 +1,487 @@
+# PRD: geo-audit-skill
+
+| | |
+|---|---|
+| **Project** | `geo-audit-skill` — open-source GEO (Generative Engine Optimization) + SEO audit toolkit for Claude Code |
+| **Repo** | `github.com/seo-skills/geo-audit-skill` (new, public; name verified free 2026-09-20) |
+| **License** | MIT (default — see D4) |
+| **Status** | Canonical, consolidated. Satisfies the R-E1 hard gate. |
+| **Supersedes** | `PRD-geo-skill-rewrite.md` — now the *review record only* (4 gstack review passes, 63 accepted requirements). Where the two disagree, this file wins. §9 maps every one of the 63 requirements to its disposition here. |
+| **Derived from** | `zubair-trabzada/geo-seo-claude` (MIT, © 2026 Zubair Trabzada), referred to below as **upstream**. Reuse of upstream's structure and prompts is covered by a direct agreement between the maintainer and upstream's author (D1). All `file:line` citations in §1 point at upstream @ `4d3da26`. |
+
+---
+
+## 0. Decisions for the maintainer
+
+This PRD is written under the **recommended default** for each. Every default is cheap to reverse before M1; the cost of reversing is stated.
+
+| # | Decision | Default used in this PRD | If you choose otherwise |
+|---|---|---|---|
+| **D1** | How does the new repo relate to upstream legally? | **Resolved 2026-09-20: derivative, by written agreement.** The maintainer confirmed the agreement with upstream's author (a) covers the Python scripts as well as structure and prompts, (b) waives attribution and/or permits relicensing, and (c) is in writing. Porting is unrestricted; clean-room is not needed. Standalone repo, not a GitHub fork (forks are excluded from default code search and carry a permanent "forked from" banner). | Nothing left to decide here. One check at M0: (b) was asked as a compound question, so read the written text before finalizing `LICENSE` — *waiving the notice* and *permitting a different license* are separate grants, and D4 depends on which you have. |
+| **D2** | How do users install the skills? | **Claude Code plugin** (`/plugin marketplace add seo-skills/geo-audit-skill` → `/plugin install geo`). Skills are namespaced `/geo:audit`, `/geo:citability`, … The CLI installs separately from PyPI. | Keep shell installers: R-E8 (copy + hash manifest, ownership-gated) and R-X10 (non-interactive flags, Windows parity job) return exactly as written in the review record, plus a router skill. |
+| **D3** | Is the agency kit (CRM, web UI, proposals) part of this project? | **In scope, but last (M4) and behind a go/no-go gate.** The project is named geo-*audit*-skill; both CEO review voices questioned the kit; upstream's own enum break (§1 item 6) is evidence nobody round-trips the CRM. Sequencing it last loses nothing and lets evidence decide. | Cut it: delete §3.11 and M4; drop Flask, rich, portalocker. Or promote it: move M4 before M3. |
+| **D4** | License and copyright line | **MIT, `© 2026 <you or your company>`** — placeholder, fill in at M0. The upstream copyright line is no longer required (D1). **Recommended anyway:** one README credit line to geo-seo-claude, if its author wants it — it is accurate, costs nothing, and pre-empts "isn't this a copy of…" issues. | A different license (e.g. Apache-2.0 for its patent grant) is possible only if the agreement permits relicensing, not merely notice removal. Decide at M0: changing license is trivial before the first outside contribution and needs every contributor's consent after it. |
+
+---
+
+## 1. Problem statement
+
+Upstream works as a demo but fails as infrastructure. An audit of the repo found:
+
+1. **Prompt-driven orchestration over dead code.** Only 2 of 21 prompt files invoke an analysis script at all (`skills/geo-schema/SKILL.md:31`, `agents/geo-schema.md:19`, both `fetch_page.py`). Everything else tells Claude to WebFetch/curl and judge. `citability_scorer.py`, `brand_scanner.py` and `llmstxt_generator.py` are effectively dead, and scores are non-deterministic and unreproducible.
+2. **Massive duplication.** Each of the 5 agents restates its same-named skill (~1,600 near-copied lines, already drifting: 28 vs 69 headings in geo-technical). Scoring weights appear in 3+ places. `DEFAULT_HEADERS` lives in 3 scripts; block extraction is duplicated between `fetch_page.py` and `citability_scorer.py`; CRM tier logic between `crm_dashboard.py` and `webapp/app.py`.
+3. **Install-time mutation.** `install.sh:262-295` sed-patches shebangs and every markdown file after copying, so the shipped artifact differs from the tested one. `install-win.sh` skips the venv and the patching, so Windows runs a different, unpinned tool.
+4. **No versioning.** No VERSION, no manifest, no changelog; `geo-update` blindly `cp -r`s over the install.
+5. **Platform coupling.** PDF hard-requires macOS Chrome at a fixed path plus pandoc. Playwright is a required dependency that is only optionally installed.
+6. **State sprawl.** Three state locations; no schema for `prospects.json`; the skill writes `lead/qualified/proposal/won/lost` (`skills/geo-prospect/SKILL.md:126`) while both readers expect `lead/audit/proposal/active/churned/lost` (`crm_dashboard.py:274`, `webapp/app.py:88`) — the CLI and webapp cannot render prospects the skill creates. No concurrency guard on JSON read-modify-write.
+7. **Testing vacuum.** 275 lines of tests (one file, one heuristic) against ~6,800 lines of prompts and ~1,950 lines of Python. The only CI workflow updates a star-history chart.
+8. **Half-integrated features.** `white-label/` is imported by nothing. `hooks/` is referenced by install.sh, geo-update and docs but does not exist. `brand_scanner.py` is mostly stub instructions. Unused deps (Pillow, validators). Docs cite a ghost `generate_pdf_report.py`, state the skill count as 13/14/15, and contradict `citability_scorer.py:304`.
+9. **Marketing copy in executable prompts.** `geo/SKILL.md:46-59` and `brand_scanner.py` hardcode market statistics into prompts and output JSON, guaranteeing staleness.
+
+### 1.1 Why a rewrite and not incremental repair
+
+Three alternatives were weighed: (A) full rewrite, (B) three incremental PRs (wire scripts → dedupe → packaging), (C) fix four bugs (enum, ghost script, hooks path, embedded stats). **A was chosen** for one forcing reason: defect 3 means the tested artifact is not the shipped artifact, so *no partial fix can be verified* until packaging is replaced — and packaging, duplication and orchestration all touch the same files. B degenerates into A with worse sequencing; C leaves the architecture intact. A second reason arrived with the rename: a new repo under a new maintainer cannot ship as patches to someone else's tree.
+
+### 1.2 Relationship to upstream and positioning
+
+<!-- TODO(maintainer): 5–8 lines only you can write. See "Your turn" in the hand-off note.
+     The provisional text below keeps the PRD usable until then. -->
+
+*Provisional:* geo-audit-skill is an independent, MIT-licensed project built on geo-seo-claude's structure and prompts, **with the agreement of its author**, who continues to maintain upstream (last upstream commit 2026-09-18). It is not a GitHub fork and does not track upstream. It differs in one claim: **every number in a report is reproducible from recorded evidence.** Upstream optimizes for breadth of advice; this project optimizes for audits you can defend to a client. Upstream is credited in README and LICENSE. We do not install over, migrate in place, or uninstall upstream; the two coexist on one machine (§3.1).
+
+---
+
+## 2. Goals and non-goals
+
+**Goals**
+
+- **G1 — Scores are a pure function of recorded evidence.** `score(snapshot, data_version, scoring_version)` always returns the same bytes. The LLM narrates and prioritizes; it never produces a number that is summed into a score.
+- **G2 — One source of truth per concern.** No agent/skill twins, no duplicated weights, no duplicated helpers.
+- **G3 — The tested artifact is the shipped artifact.** Nothing is modified at install time.
+- **G4 — macOS, Linux, Windows parity**, or an explicit documented skip per feature.
+- **G5 — Audits are evidence-bound.** Every report states what it was computed from and whether that evidence is still current.
+- **G6 — A real test and CI story.**
+- **G7 — A credible open-source project:** license clarity, contributor path, security policy, fixtures we have the right to redistribute.
+
+**Non-goals**
+
+- Multi-host support (Codex, Cursor). Claude Code only.
+- Telemetry, consent flows, update checks, cross-machine sync.
+- A render farm. Playwright stays optional and local.
+- In-place upgrade from upstream. There is no install base in this repo to upgrade.
+- Live AI-citation measurement (ChatGPT/Perplexity answer share). Deferred, §8 — but see §6: it is the most likely post-1.0 direction.
+
+---
+
+## 3. Architecture
+
+```
+Claude Code ── plugin "geo" ── 9 skills (+2 agency, M4)
+     │  thin prompts · narrate sequentially · never fan out subagents
+     ▼  JSON envelope only (never raw page text)
+geo CLI  (PyPI: geo-audit-cli · import: geo_audit · console script: geo)
+  fetch · crawl · audit · score · scan · llmstxt · validate · compare · report · doctor · prune
+  [M4: crm · serve · import]
+     │
+     ├─ lib/    http, extract, robots, headers        (each helper exists once)
+     ├─ data/   crawler UA lists, thresholds, weights, tiers   (package data, carries data_version)
+     ├─ assets/ JSON-LD templates, report templates            (package data)
+     └─ state   → $GEO_HOME (default ~/.geo, 0700)
+                  projects/<slug>/audits.jsonl · projects/<slug>/reports/ · logs/last-run.log
+```
+
+### 3.0 Patterns adopted from gstack, and the failure each prevents here
+
+We copy four patterns and nothing else (§7). **Deterministic gates in code, prose only narrates** — prevents defect 1, where scores vary run to run because a prompt did the arithmetic. **Evidence binding** — prevents handing a client a report computed from a page that has since changed, with no way to tell. **Append-only JSONL history** — prevents defect 6's read-modify-write corruption for the file written most often. **Lint-enforced skill contracts** — prevents defect 2's drift, where two copies of one document silently diverged to 28 vs 69 headings. gstack's template *generator* is not adopted: its forcing function was multi-host output, which is a non-goal.
+
+### 3.1 Repo layout and distribution
+
+```
+.claude-plugin/plugin.json        name "geo", version == VERSION
+.claude-plugin/marketplace.json
+skills/<name>/SKILL.md            + skills/<name>/sections/*.md loaded on demand
+skills/_shared/response-contract.md
+src/geo_audit/                    the CLI (pyproject.toml, src layout)
+tests/  docs/  VERSION  CHANGELOG.md  LICENSE  README.md  CONTRIBUTING.md  SECURITY.md
+```
+
+- **Skills** install through the Claude Code plugin manager (D2). This deletes `install.sh`, `install-win.sh`, `uninstall.sh`, shebang patching, ownership manifests, retired-skill pruning and the Windows-installer parity problem in one move. It also deletes the router skill: `/geo:audit` *is* the routing.
+- **Coexistence.** Upstream installs un-namespaced skills into `~/.claude/skills/geo*`. Plugin skills are namespaced, so both can be installed at once. We never touch upstream's files.
+- **CLI** installs with `uv tool install geo-audit-cli` (or `pipx install geo-audit-cli`). Python ≥ 3.11. PyPI check on 2026-09-20: `geo-audit-cli` free, `geo-cli` free, `geo-audit` **taken**. Console script is `geo`; `geo doctor` warns if `geo` resolves to more than one binary on PATH.
+- **Playwright is an optional extra** (`geo-audit-cli[browser]`), used for JS-render diffing and PDF. Without it the affected signals are null (§3.4), never silently different.
+- Skills reference no file paths. Templates and schemas are package data reached through CLI commands — this is what makes G3 hold by construction.
+- **Updates:** `/plugin update` and `uv tool upgrade geo-audit-cli`. There is no `self-update` command and no `geo-update` skill.
+- **M0 spike (gate for D2):** publish a one-skill plugin that runs `geo --version`; confirm install from a GitHub marketplace, namespace, update behavior, and Windows. If the spike fails, fall back per D2.
+
+### 3.2 CLI contract
+
+**Commands** (one grammar: bare verbs). Core: `fetch`, `crawl`, `audit`, `score`, `scan`, `llmstxt`, `validate`, `compare`, `report`, `doctor`, `prune`. Agency (M4): `crm`, `serve`, `import`.
+
+**Global flags:** `--json`, `--out`, `--config`, `--no-input`, `--quiet` / `--verbose`, `--allow-private`, `--fail-on-partial`. `serve` adds `--port` (default 5050). `NO_COLOR` respected.
+
+**Output mode:** JSON when stdout is not a TTY or `--json` is passed; human rendering otherwise. Progress and logs go to **stderr only**, always.
+
+**Crawl defaults** — 50 pages, 30 s timeout, 1 req/s **global** (not per worker), 5 concurrent, robots respected — are part of the versioned contract and recorded in every audit record.
+
+**Envelope** (frozen at the M1 gate, before any porting):
+
+```json
+{
+  "schema_version": 1, "command": "audit", "ok": true,
+  "cli_version": "0.2.0", "scoring_version": "1.0", "data_version": "2026.09", "normalizer_version": 1,
+  "run_id": "01J8…", "observed_at": "2026-09-20T18:00:00Z",
+  "evidence": { "stamp": "PARTIAL", "pages_ok": 41,
+                "pages_failed": [ { "url": "…", "reason": "bot_blocked" } ] },
+  "completeness": { "computed": 31, "total": 36, "missing": ["render.js_diff"] },
+  "scores": { "composite": 62, "tier": "fair", "categories": { "citability": 58 } },
+  "signals":  [ { "id": "citability.self_containment", "class": "heuristic", "value": 17, "max": 25, "page": "…" } ],
+  "findings": [ { "id": "…", "severity": "critical", "effort": "low", "priority": 1,
+                  "pages": ["…"], "title": "…", "remediation": "…", "excerpt": "…(≤280 chars, delimiter-escaped)" } ],
+  "error": null
+}
+```
+
+On failure: `"ok": false, "scores": null`, and
+`"error": { "code": "GEO_E_TIMEOUT", "message": "<human sentence>", "hint": "<what to do>", "docs": "<url|null>", "log": "~/.geo/logs/last-run.log" }`.
+Every `GEO_E_*` code has a hint (contract-tested). `schema_version` is an **output field only**; there is no request flag. Policy: additive changes do not bump it; removals and renames bump it and are announced two releases ahead.
+
+**Exit codes** (the only table):
+
+| Code | Meaning |
+|---|---|
+| 0 | OK — *including PARTIAL audits* |
+| 1 | Internal error |
+| 2 | Usage error |
+| 3 | Network failure on the **start URL** |
+| 4 | State error (state newer than CLI, unreadable `GEO_HOME`) |
+| 5 | `--fail-on-partial` was passed and the audit is PARTIAL |
+
+Bot-blocked (403/challenge) and robots-disallowed pages are **findings** with `severity: critical`, not failures: exiting non-zero would abort exactly the sites that most need a report. PARTIAL is read from `evidence.stamp`, never inferred from the exit code.
+
+**Skill ↔ CLI:** each skill preflights `geo --version` against a required range and stops with the install command if missing or skewed. On `ok: false` the skill relays `error.message` + `error.hint` — never raw JSON, never an invented score.
+
+### 3.3 Fetch and crawl safety
+
+The core loop feeds up to 50 pages of untrusted web content toward an agent that has tool access. This is the project's top security concern.
+
+- **Output boundary (the main defense):** CLI output contains derived signals and length-capped, delimiter-escaped excerpts. It never contains full page text. Contract test on output size and shape per command.
+- **Skill boundary:** every skill states that excerpts are data, never instructions.
+- **Network guards:** redirect targets and crawl-discovered links to RFC 1918, loopback, link-local, `169.254.169.254` and non-http(s) schemes are always blocked. A private **start URL** is refused unless `--allow-private` is passed — auditing `localhost:3000` or a staging host is a legitimate use. The guard validates the *connected peer address*, not only the pre-resolved name (DNS rebinding). Redirect-chain cap, response-size cap (`GEO_E_TOO_LARGE`), decompression limit, content-type allowlist.
+- **Two robots jobs, kept separate:** (a) our own etiquette as the `geo-audit-cli` UA; (b) the *product feature* that evaluates AI-crawler UAs against the versioned list in `data/`. RFC 9309 edge cases are specified and fixture-tested: 5xx on robots.txt = disallow, redirects, conflicting groups, wildcards.
+
+### 3.4 Scoring
+
+- **Signal inventory** (M1 pre-work, one page, `docs/concepts/signals.md`): every signal is classified **deterministic** (parsed fact), **heuristic** (code with stated weights), **live** (third-party API, carries `observed_at`), or **advisory** (LLM judgment under a fixed rubric). The envelope and the operator report label each signal's class.
+- **The composite sums deterministic + heuristic + live signals only.** Advisory output is displayed in its own clearly-labeled section and never enters a number.
+- **Purity (G1):** the snapshot stored in `audits.jsonl` holds every scorer input, including live signals as observed. `geo audit --rescore <run_id>` recomputes from the snapshot with no network. *Reproducibility is claimed for rescoring a snapshot* — not for re-crawling a live site, which can legitimately differ.
+- **One pipeline, nullable signals.** A missing capability (no Playwright) nulls specific signals and lowers `completeness`; the report says "computed on 31 of 36 signals". There is no second scoring path.
+- **Upstream's scorer is a specification to correct, not to reproduce.** Upstream's six categories and weights (Citability 25 / Brand 20 / Content 20 / Technical 15 / Schema 10 / Platform 10) are the starting point. "Content" and "Platform" are largely LLM-judged upstream; the inventory decides which of their sub-signals are computable (byline, dates, outbound citations, `Person` schema → heuristic) and which become advisory. Every deliberate divergence is recorded in `docs/concepts/score-divergence.md`.
+- **Versions:** `scoring_version` (formula), `data_version` (thresholds, UA lists, tiers), `normalizer_version` (extraction). All three appear in every envelope, audit record and report footer. Weights, thresholds and tier boundaries live in `data/`, not in code and not in prose. **Data updates ship as a patch release on PyPI** — that channel is already versioned, checksummed and reversible. Pinning the data means pinning the package.
+- `geo compare` refuses to compare runs whose `scoring_version` major or `data_version` differ, or that lack a version. Scores are **not comparable with upstream geo-seo-claude scores**; README says so.
+
+### 3.5 Evidence model
+
+- **Hash = SHA-256 over the extracted content-block sequence** (the scorer's real inputs) **+ `normalizer_version`.** Golden test: the same fixture with a changed nonce, timestamp and ad slot still hashes identically.
+- **ETag / Last-Modified are *not* part of hash identity.** They change on every redeploy even when content is identical, which would flip reports to STALE for nothing — the exact noise block-hashing exists to avoid. They are stored as metadata and used only as a revalidation shortcut (`If-None-Match` → 304 ⇒ unchanged, skip the download).
+- **Stamps:** `CURRENT` · `PARTIAL` (failed or changed pages enumerated) · `STALE`.
+- **Retention:** derived signals and capped excerpts only. No raw HTML on disk.
+
+### 3.6 State
+
+- `$GEO_HOME` (default `~/.geo`, mode 0700). `projects/<slug>/audits.jsonl` is **history and evidence, not resume state**. A crashed crawl re-runs; it is bounded to minutes.
+- Core state is single-writer: one `write()` per JSONL record, atomic tmp-then-rename for everything else. The reader tolerates and discards a torn trailing line. Every record carries `run_id`. `geo prune` applies the size/age rule.
+- State carries a schema version. A CLI that finds **newer** state refuses to run (exit 4, state 8 in §3.9) and changes nothing.
+- Reports default to `projects/<slug>/reports/<YYYY-MM-DD>-<hash8>.html`; `--out` overrides; nothing is silently overwritten.
+- `geo doctor` warns when `GEO_HOME` sits on a sync drive (iCloud, Dropbox).
+- Cross-process locking is **not** needed until M4 introduces a multi-writer file (§3.11).
+
+### 3.7 Skills
+
+Nine core skills, thin prompts over the CLI. `agents/` is not carried over.
+
+| Skill | Calls | Absorbs from upstream |
+|---|---|---|
+| `geo:audit` | `geo audit` | geo (router), geo-audit, all 5 agents |
+| `geo:citability` | `geo score` | geo-citability |
+| `geo:technical` | `geo audit --only technical` | geo-technical, geo-crawlers |
+| `geo:content` | `geo audit --only content` + advisory rubric | geo-content, geo-platform-optimizer |
+| `geo:schema` | `geo validate` | geo-schema |
+| `geo:llmstxt` | `geo llmstxt` | geo-llmstxt |
+| `geo:brand` | `geo scan` | geo-brand-mentions |
+| `geo:compare` | `geo compare` | geo-compare |
+| `geo:report` | `geo report` | geo-report, geo-report-pdf |
+| *M4:* `geo:crm`, `geo:proposal` | `geo crm` | geo-prospect, geo-proposal |
+
+Not carried over: `geo-update` (the plugin manager updates), alias/forwarding skills (no install base to forward).
+
+- **Upstream's prompts are the starting material** (permitted by the D1 agreement), not something to write around. Each upstream skill and its twin agent are merged into one document; methodology checklists move to `sections/*.md` largely intact; what gets *removed* is scoring arithmetic (now in the CLI), market statistics, hardcoded `~/.claude/skills/geo/...` paths, and subagent fan-out instructions.
+- **The CLI owns all parallelism.** Skills narrate sequentially and never spawn subagents.
+- **Lint, not generation.** A CI lint validates frontmatter, asserts `version:` equals `VERSION`, asserts the skill directory set matches the table above, and asserts each skill's response-contract block is byte-identical to `skills/_shared/response-contract.md` (marker-delimited).
+- **Response contract** (every skill): headline result → key numbers → artifact path → one suggested next command.
+- **No scoring arithmetic in prose.** Enforced by a machine-readable key manifest: every status key or signal id a skill mentions must be one the CLI emits.
+- Long methodology moves to `sections/*.md`, loaded on demand.
+- **Sources, not personalities.** Auditor heuristics cite primary sources with URLs (Google Search Central, RFC 9309, schema.org, llmstxt.org). No instincts attributed to named individuals unless quoted with a link — fabricated attribution is a credibility risk an open-source audit tool cannot afford.
+- No market statistics in prompts or CLI output. Market context lives in docs with source and date.
+
+### 3.8 Reports
+
+One pipeline: Jinja (autoescape **on**, asserted with an XSS-string fixture) → HTML → optional PDF through Playwright print-to-PDF. Without Playwright: HTML plus the state-3 note.
+
+**Information architecture.** Reader order, not audit-decomposition order.
+
+1. **Page 1 — the answer.** Brand header · site · date · composite score as **number + tier label, always paired** (never color alone) · one sentence on what that tier means · three headline findings · **Top fixes**, ordered by `priority`: fix, expected impact, effort, pages affected.
+2. Category scores (six rows, number + label).
+3. Findings by category, each with page attribution and remediation copy.
+4. **Advisory analysis** — labeled as LLM judgment, visually distinct, excluded from scores.
+5. Appendix: methodology, signal classes, versions.
+6. *Operator mode only:* provenance — evidence hashes, per-signal class labels, failed-page list, brand-contrast warnings.
+
+Page 1 carries the arc *where do I stand → what is it costing → what do I do Monday*. STALE and PARTIAL are informational with an inline refresh command, never alarming.
+
+**Two render modes, isolated by construction.** Operator data is assembled in a **separate context object** that the client template never receives — not hidden by a conditional. Golden test: client-mode HTML contains zero operator-only fields and zero data from any other project (the regression class of upstream PR #71).
+
+**Brand tokens** (`brand.json`): default palette when absent; foreground derived from luminance and validated at 4.5:1, falling back to defaults **loudly** (stderr warning + operator-view annotation; yellow-brand test); logo max-height and aspect constraints. Attribution footer "Generated with geo-audit-skill" is on by default and removable in config.
+
+**Layout:** no card mosaic. Readable at 390 px with one intentional breakpoint. Print CSS: page size, margins, running header, page numbers, `break-inside: avoid` on findings. Body contrast ≥ 4.5:1.
+
+### 3.9 Interaction states — literal copy
+
+Eight states. (The review record lists nine; "resume prompt" died when R-E7 dropped crawl resume.)
+
+| # | State | Copy |
+|---|---|---|
+| 1 | **Loading** (stderr) | `[2/4] Crawling example.com — 12/50 pages, 2 failed` · In chat, once: "Running the audit. It crawls up to 50 pages at one request per second, so expect a few minutes." |
+| 2 | **Empty** | No audit: "No audits recorded for example.com yet. Run `geo audit https://example.com` to create the first one." · Zero pages: "The crawl found no scorable pages on example.com. The start URL returned 403. Nothing was scored." · Zero mentions: "No mentions of “Acme” found on Wikipedia, Wikidata, Reddit or YouTube (checked 2026-09-20). This is a result, not an error." · Zero blocks: "No citable content blocks found on this page. Score 0 — reason: no extractable blocks." |
+| 3 | **PDF unavailable** | "PDF skipped: the browser component is not installed. HTML report written to <path>. To enable PDF: `uv tool install 'geo-audit-cli[browser]' && playwright install chromium`" |
+| 4 | **Error** | "Couldn't reach example.com: connection timed out after 30 s (GEO_E_TIMEOUT). Check the URL, or try again. Details: ~/.geo/logs/last-run.log" — no score is shown. |
+| 5 | **Partial** | "PARTIAL audit: 41 of 50 pages scored. 9 could not be evaluated — 6 blocked by bot protection, 3 timed out (listed below). Scores reflect the 41 pages only." |
+| 6 | **Success** | "GEO score 62/100 (Fair) for example.com — 50 pages, evidence CURRENT. Report: <path>. Next: `/geo:report example.com`" |
+| 7 | **Stale** | "This report was computed from pages fetched on 2026-09-01. 4 of 50 pages have changed since. Refresh with `geo audit https://example.com`." |
+| 8 | **Refuse to run** | "~/.geo was written by geo-audit-cli 0.5 (state v3); this is 0.3 (state v2). Upgrade with `uv tool upgrade geo-audit-cli`. Nothing was changed." — never a stack trace. |
+
+*M4 adds:* lock contention — "Another geo process is updating the CRM. Waited 10 s. Try again in a moment; run `geo doctor` if this persists." — and empty CRM — "No prospects yet. Add one with `/geo:crm new <domain>`."
+
+Golden tests assert each string exists.
+
+### 3.10 Brand scan: real checks or nothing
+
+Wikipedia and Wikidata: real API checks. Reddit: public search JSON. YouTube: Data API when a key is configured, otherwise reported as *not checked*. LinkedIn: no API, so it appears in a separate **manual checks** section and is never emitted as a result. Per-platform failures (429, outage) are per-platform error entries, not a command failure. All are `live`-class signals with `observed_at`.
+
+### 3.11 Agency kit — M4, gated (D3)
+
+`geo crm` (rich dashboard in TTY mode, JSON otherwise), `geo serve` (Flask + HTMX, kept), `geo:proposal`, and:
+
+- **One status enum:** `lead / audit / proposal / active / churned / lost`.
+- **`geo import`** reads upstream's `~/.geo-prospects/prospects.json` **read-only** and writes `$GEO_HOME/crm/prospects.json` (0600). The source is never modified, so no backup, lock-during-migration or rollback machinery is needed. Mapping is a total function over both upstream dialects: `qualified → lead` (conservative — never advances a pipeline), `won → active`, the rest pass through; `legacy_status` is recorded. `--dry-run`. Fixtures: each dialect, a mixed file, corrupt JSON (refuses with a human message). Upstream's `audits/`, `proposals/`, `reports/` are left where they are.
+- **Locking arrives here**, because this is the first multi-writer file: `portalocker`, acquisition timeout, stale-lock recovery by pid + mtime, concurrent-write test on three OSes.
+- **`geo serve` hardening:** binds `127.0.0.1` only; per-session token on mutating routes; Host-header allowlist; port conflict suggests an alternate port; HTMX focus-preservation rules.
+- Italian strings become English. No i18n.
+
+**Go/no-go gate before M4:** build it if there is a concrete request for it (an issue from a non-maintainer, or your own agency use). Otherwise close M4 and ship 1.0 as an audit tool.
+
+### 3.12 Testing and CI
+
+pytest only. **Fixtures are synthetic pages authored for this repo** and served by a local test HTTP server — checking real third-party HTML into a public MIT repo redistributes other people's copyrighted content. Ten fixture sites cover: SSR, CSR shell, rich schema, no schema, broken schema, bot-block 403, robots edge cases, redirect chains, injection text, oversize response.
+
+Tests required: golden envelope per command (canonicalized: timestamps, `run_id`, ordering) · both TTY and JSON modes · exit code per class · every error code has a hint · SSRF matrix · robots matrix · output-shape cap · nonce-injection hash stability · rescore-twice byte identity · nullable signals + completeness · torn-line reader · prune · state-newer refusal · `GEO_HOME` override · deterministic report path · report section order · label+numeric pairing · XSS escape · **client-mode leak** · yellow-brand contrast warning · compare refusal · skill lint + key manifest · injection fixture (instruction-like page text alters neither state nor report structure). PDF smoke test is Playwright-gated with a loud skip summary.
+
+**CI: three workflows.** `ci.yml` — jobs: test matrix (ubuntu, macos, windows), skill lint, docs freshness, quickstart smoke (runs the literal README block against the fixture server and prints elapsed time; the functional pass is the gate, the time is a reported metric). `secret-scan.yml`. `release.yml` — tag → PyPI via trusted publishing.
+
+**Evals** (`tests/evals/`, recorded per minor release): on 5 real sites, the maintainer and one outside practitioner each answer two questions about the top-3 fixes — *are these the right three?* and *would you send this report unedited?*
+
+### 3.13 Docs and open-source hygiene
+
+- **Docs IA:** quickstart · commands (generated from code, CI-checked) · concepts (signals, evidence, score divergence) · troubleshooting (every exit code and `GEO_E_*` code mapped to a fix; `geo` PATH-collision note). Every command has one runnable example generated from golden fixtures. `docs/concepts/scoring-methodology.md` is hand-written rationale with a **marker region** for generated constants; the freshness check covers the marker region only.
+- **README quickstart** is a literal copy-paste block. Documented first success is `geo score <url>` — one page, no crawl, no Playwright, no Claude Code, under 30 seconds.
+- **M0 files:** `LICENSE` (per D4), `README.md` (with the optional upstream credit line and the "scores not comparable" note), `CONTRIBUTING.md`, `SECURITY.md` (the §3.3 threat model and a private reporting address), `CHANGELOG.md` (Keep a Changelog), `.gitattributes` for fixtures and generated regions, a fresh `CLAUDE.md`.
+- **Not carried over:** upstream's `examples/` (regenerate from the fixture site — upstream's samples have a client-data-leak history, PR #71), `pr-draft-*.md`, the star-history workflow, git history.
+
+### 3.14 Versioning and releases
+
+`VERSION` (semver) is the single source; `plugin.json`, skill frontmatter and `pyproject.toml` must match it (lint). Releases are tagged per milestone with a changelog entry: human summary first, itemized changes second. This project starts at **0.1.0**; it is not "v2" of anything. **1.0.0** freezes envelope `schema_version` under the §3.2 policy.
+
+---
+
+## 4. Milestones
+
+Each milestone ends in a tagged release. Lanes: after M1, M2's CLI work and M3's report work can overlap; skills follow the commands they call.
+
+| | Deliverable | Gate (all must hold) |
+|---|---|---|
+| **M0 — Bootstrap** *(no product code)* | New repo; the §3.13 M0 files; D2–D4 answered; written agreement re-read against D4 and kept on file (privately is fine); plugin spike (§3.1); §1.2 written. | Spike result recorded in this PRD. Repo public with `LICENSE` matching the agreement's text. |
+| **M1 — Walking skeleton → 0.1.0** | *Pre-work:* signal inventory; envelope + error contract frozen. *Then:* `fetch`, `score`, `doctor`; TTY/JSON modes; exit codes; fetch guards; `lib/` with each helper once; fixture server + 10 fixtures; **one skill end to end** (`geo:citability`) with preflight and response contract; README quickstart; PyPI publish; all three CI workflows. | Kill criterion (§6) evaluated. `geo score` quickstart passes in CI on 3 OSes. Divergence table exists. |
+| **M2 — Audit complete → 0.2.0** | `crawl`, `audit`, `scan`, `llmstxt`, `validate`, `prune`; `data/` files; state module; evidence stamps; robots matrix; `--rescore`; skills `audit`, `technical`, `schema`, `llmstxt`, `brand`. | Rescore-twice byte identity. PARTIAL labeled end to end. Injection fixture passes. |
+| **M3 — Report and polish → 0.3.0** | `report` (HTML + PDF, two modes, brand tokens, a11y, print), `compare`; skills `content`, `compare`, `report`; full docs IA with generated reference; first recorded eval. | Client-leak and XSS goldens pass. Every doc claim is CI-asserted. Eval recorded. |
+| **M4 — Agency kit → 0.4.0** *(go/no-go, §3.11)* | `crm`, `serve`, `import`, locking, serve hardening, `geo:crm`, `geo:proposal`. | Import fixture matrix; concurrent-write test on 3 OSes. |
+| **1.0.0** | Schema freeze. | Two consecutive evals where the outside practitioner would send ≥ 4 of 5 reports unedited. |
+
+---
+
+## 5. Risks
+
+| Risk | L | I | Mitigation |
+|---|---|---|---|
+| Untrusted page content steers the agent | M | H | §3.3: no page text in CLI output; capped, escaped excerpts; skill data-only rule; injection fixture |
+| Skill prose drifts back to LLM scoring | M | H | Key-manifest lint; composite excludes advisory class by construction |
+| Plugin mechanics differ from assumption (D2) | M | M | M0 spike before any skill work; documented fallback |
+| Scores read as authoritative when they are heuristics | M | H | Signal-class labels; divergence doc; "not comparable with upstream" note; practitioner eval gates 1.0 |
+| `LICENSE` claims more than the written agreement grants (notice waiver read as relicensing right) | L | H | D1 resolved with a written agreement covering code and prompts; the one M0 check is reading its text before choosing anything other than MIT (D4) |
+| Users expect parity with upstream's breadth | M | M | §1.2 positioning; README states what is deliberately absent |
+| `geo` binary name collides on PATH | L | M | `geo doctor` detects duplicates; troubleshooting entry |
+| Playwright download flakiness in CI | M | L | Optional extra; gated PDF smoke test; HTML is the guaranteed artifact |
+| Rebuilding gstack machinery we cut | M | M | §7 is binding; additions require a PRD amendment |
+| Scope outruns a solo maintainer | H | H | Walking skeleton first; M4 gated; every milestone is a usable release on its own |
+
+---
+
+## 6. Success metrics and kill criteria
+
+**Kill criterion (M1 gate).** The fetch/parse layer must match upstream `fetch_page.py` output on the fixtures (byte-fidelity after canonicalization), and the scorer must produce scores on all 10 fixtures that the maintainer can explain line by line from the signal inventory. If it cannot, stop and re-plan — the premise that GEO readiness is computable enough to be worth determinism is wrong.
+
+**Engineering.** Rescoring a snapshot twice is byte-identical. Nothing is modified at install time. Every doc claim about commands, skills and scoring constants is asserted in CI. 100 % of error codes carry a hint. `--help` is complete for every command.
+
+**Experience.** Quickstart passes from a cold container; elapsed time is reported (target < 5 min to first report, < 30 s to first `geo score`).
+
+**Value.** The practitioner eval of §3.12. Public adoption signals, since telemetry is cut: PyPI downloads, issues and PRs from non-maintainers, plugin installs if the marketplace exposes them.
+
+**Strategic hypothesis.** A clean, deterministic CLI is the distribution vector: the same core can later back a CI check, a GitHub Action, or live citation measurement (§8) without touching the skills. If by 1.0 nobody uses `geo` outside Claude Code, that hypothesis is weak and the CLI's public surface should shrink rather than grow.
+
+---
+
+## 7. Cut list (binding)
+
+Not built: multi-host generation · cross-machine sync · dual-voice external review pipelines · question-tuning hooks · telemetry, consent flows, update checks · LLM-judge paid eval tiers · event-sourced state with compaction · skill-start status machinery · **a custom self-update or data-update channel** (PyPI is the channel) · **shell installers and ownership manifests** (the plugin manager is the installer, per D2) · **SKILL.md template generator** (lint only) · **crawl resume** · **alias and forwarding skills** · **in-place migration of upstream state**.
+
+## 8. Deferred
+
+Live AI-citation measurement across engines (the strongest candidate for post-1.0; needs the CLI core first) · JS-rendered crawling at scale · longitudinal trend reports beyond `compare` · i18n · hosted version of `geo serve` · scorer plugin ecosystem · a `DESIGN.md` / design-consultation pass on the report.
+
+---
+
+## 9. Traceability — all 63 reviewed requirements
+
+**K** kept · **M** modified (reason given) · **C** cut (reason given) · **→M4** kept, moved behind the agency gate · **✓** satisfied by this document.
+
+| ID | | Where / why |
+|---|---|---|
+| R1 | ✓ | §1.1 |
+| R2 | K | §3.4 signal inventory; M1 pre-work |
+| R3 | C | Alias skills forward an install base; a new repo has none |
+| R4 | M | Becomes read-only `geo import` (§3.11). Source is never modified, so backup / migration-lock are unnecessary. Refuse-to-run survives for state-newer-than-CLI (§3.6) |
+| R5 | M | Volatile data in versioned `data/` files: kept. Custom update channel: cut — a PyPI patch release is already versioned, checksummed and reversible |
+| R6 | K | §3.3, §5 |
+| R7 | M | New repo: files are written fresh in M0; `LICENSE` per D4 (upstream notice waived by agreement, D1) |
+| R8 | M | No installer to prompt from; surfaced by `geo doctor`, the `GEO_E_*` hint, and state 3 |
+| R9 | ✓ | §3.0 |
+| R10 | M | Kill criterion, cadence, hypothesis kept (§6, §4). "Opt-in count" metric replaced with public signals — telemetry is cut |
+| R11 | K | §3.2 |
+| R12 | K | M1 gate |
+| R13 | — | Superseded by R-D3 |
+| R-D1 | ✓ | §3.8 outline |
+| R-D2 | M | No generator (R-E12), so the contract is a marker block linted for byte-equality |
+| R-D3 | M ✓ | §3.9. Eight states: "resume prompt" contradicted R-E7. Lock contention →M4 |
+| R-D4 | K | §3.8 |
+| R-D5 | K | §3.8 |
+| R-D6 | K | §3.8 |
+| R-D7 | K | §3.8; HTMX focus rules →M4 |
+| R-D8 | K | §3.2 |
+| R-D9 | K | §3.2; its exit table is superseded |
+| R-D10 | K | M1 pre-work; envelope fields in §3.2 |
+| R-D11 | →M4 | §3.11 |
+| R-D12 | K | §3.5 |
+| R-X1 | M | §3.2. `migrate`→`import` (M4); `self-update` and `--freeze-data` cut with the channel; `compare` and `prune` added (both were required elsewhere but missing from the list) |
+| R-X2 | M | Envelope, hints, log path, preflight kept. Exit 6/7 rejected per R-E3 |
+| R-X3 | M | Quickstart kept. Timing is a reported metric inside `ci.yml`, not its own workflow |
+| R-X4 | M | `doctor` kept; installer-ownership checks dropped with the installer; plugin↔CLI skew added |
+| R-X5 | M ✓ | Dist name `geo-audit-cli` (`geo-audit` is taken) |
+| R-X6 | M | `data_version` everywhere: kept. `--freeze-data`, channel checksums, offline/rollback: void — pin the package |
+| R-X7 | M | `scoring_version`, compare refusal kept. "v1 vs v2" becomes "not comparable with upstream". Only prospects are importable; other upstream artifacts stay put |
+| R-X8 | K | §3.6 |
+| R-X9 | K | §3.13 |
+| R-X10 | C | `uv tool install` and `/plugin install` are already non-interactive and native on Windows. Returns if D2 is rejected |
+| R-X11 | M | Schema policy kept (§3.2). Alias-removal schedule cut with the aliases |
+| R-X12 | ✓ | §1.1, §3.0, §3.8, §3.9 |
+| R-X13 | K | M1; §6 |
+| R-E1 | ✓ | This document |
+| R-E2 | K | §3.4, restated as snapshot purity — one testable claim instead of a claim plus an exclusion |
+| R-E3 | M | §3.2. Contiguous 0–5: "5 reserved, then 8" only avoided colliding with drafts that never shipped |
+| R-E4 | M ✓ | §3.7: 9 core + 2 agency. No router (namespacing routes), no aliases, no update skill |
+| R-E5 | K | §6 |
+| R-E6 | M | **ETag/Last-Modified removed from hash identity** — they change on redeploy with identical content and would cause false STALE. Kept as a revalidation shortcut (§3.5) |
+| R-E7 | K | §3.6 |
+| R-E8 | C | The plugin manager owns install, update, uninstall. Returns as written if D2 is rejected |
+| R-E9 | M | Kept, plus `--allow-private` for the start URL (localhost/staging audits are legitimate) and peer-address validation against DNS rebinding |
+| R-E10 | K | §3.4 |
+| R-E11 | K | §3.3 |
+| R-E12 | K | §3.7 |
+| R-E13 | K | §3.8 |
+| R-E14 | M →M4 | Core state is single-writer (atomic append / rename). Locking arrives with the first multi-writer file. Sync-drive warning stays in core `doctor` |
+| R-E15 | →M4 | §3.11 |
+| R-E16 | K / →M4 | Autoescape + XSS fixture in M3; serve token and Host allowlist in M4 |
+| R-E17 | K | §3.5, §3.4 |
+| R-E18 | K | §3.7 |
+| R-E19 | K | §3.8 |
+| R-E20 | ✓ | §3.1 |
+| R-E21 | C | Nothing to roll back to in a new repo; upstream stays independently installable |
+| R-E22 | K | §3.13 |
+| R-E23 | M | Three workflows with enumerated jobs. The data-channel amendment is void |
+| R-E24 | M | Per minor release, 5 sites, maintainer + one outside practitioner; merged with the design review's "send unedited" metric. Sized for a solo maintainer |
+| R-E25 | M | Kept: 0700, golden canonicalization, fixture-refresh doc, `.gitattributes`, key manifests, gated PDF skip, timing as metric, missing version refuses compare. Void: data-channel trust model. `prospects.json` 0600 →M4 |
+
+Totals (63): 32 kept or satisfied as written · 23 modified · 4 cut · 2 moved whole to M4 · 1 split between M3 and M4 (R-E16) · 1 superseded by a later requirement (R13).
+
+## 10. What changed from the reviewed draft, and why
+
+1. **New repo, new name, new owner** — so no install base. Removes alias skills, in-place migration, rollback tag, forwarding `geo-update`, the "v2" framing, and makes the upstream relationship a first-class item the draft never mentioned: reuse is by written agreement with upstream's author, covering code and prompts (D1).
+2. **Plugin distribution (D2)** — the draft deferred it "until distribution demand is real"; publishing a new open-source repo *is* that moment. Removes three installer scripts, R-E8, R-X10 and the router skill.
+3. **PyPI replaces the custom data channel** — the draft accepted the channel, then needed pinning, checksums, offline behavior, rollback, a trust-model doc and a cut-list amendment to make it safe. A patch release gives all of that for free.
+4. **Two logic fixes:** ETag out of hash identity (R-E6); "resume prompt" state removed (R-D3 vs R-E7).
+5. **Two safety fixes:** `--allow-private` + peer-address validation (R-E9); synthetic fixtures instead of captured third-party HTML (G7).
+6. **G1 restated as snapshot purity** — one claim that is actually testable.
+7. **Agency kit sequenced last behind a gate (D3)** — nothing is dropped; locking, serve hardening and CRM import move with it, which is where their only consumers live.
+8. **Sized for one maintainer:** 6 CI workflows → 3; per-release two-practitioner eval on 10 sites → per-minor on 5; named-expert "instincts" → cited primary sources.
+
+---
+
+## 11. Execution record
+
+Appended as milestones close. Each entry records the gate evidence, not the intent.
+
+### M0 — Bootstrap · closed 2026-09-20
+
+| Gate | Result |
+|---|---|
+| New repo, standalone, no upstream history | Done. `github.com/seo-skills/geo-audit-skill`. |
+| §3.13 M0 files | Done: `LICENSE`, `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CHANGELOG.md`, `.gitattributes`, `CLAUDE.md`, and this document as `PRD.md`. |
+| **D2** — distribution | **Plugin.** `.claude-plugin/plugin.json` (name `geo`) and `marketplace.json` written against the observed manifest format. Shell installers cut, per §7. |
+| **D3** — agency kit | **Deferred to M4 behind the go/no-go gate**, as drafted. No Flask, `rich` or `portalocker` dependency in 0.1.0. |
+| **D4** — license and copyright | **MIT, © 2026 seo-skills.** No upstream copyright line is carried, which the D1 agreement permits. *Open:* confirm the holder should be the GitHub org rather than a legal entity, and re-read the written agreement before choosing any licence other than MIT — a notice waiver and a relicensing grant are different rights. |
+| §1.2 positioning | **Still `TODO(maintainer)`.** The provisional text stands. The README ships a positioning section written around it that names no other project. |
+| Plugin spike | **Not yet run against a live marketplace.** The manifests are written and version-linted; installing them from a public GitHub marketplace requires the repo to be public, which is the next action. |
+
+### M1 — Walking skeleton → 0.1.0 · closed 2026-09-20
+
+| Gate | Result |
+|---|---|
+| Envelope and error contract frozen before porting | Done. Fixed key set, 17 `GEO_E_*` codes each with a hint, six exit codes. Golden-tested. |
+| Signal inventory | Done. `docs/concepts/signals.md`, generated from `data/weights.json`. |
+| `fetch`, `score`, `doctor`; TTY and JSON modes; exit codes; fetch guards | Done. |
+| `lib/` with each helper once | Done: `http`, `net`, `extract`, `robots`, `evidence`, `headers`, `ids`, `slug`, `browser`. |
+| Fixture server and fixtures | Done. Eight synthetic pages plus eleven routes covering bot-block, 5xx, 404, non-HTML, oversize declared and streamed, redirect chain, redirect loop, redirect-to-private, and robots edge cases. |
+| One skill end to end | Done. `geo:citability` with preflight, the shared response contract and two on-demand sections. |
+| README quickstart | Done, and executed by the test suite and by a CI job against a built wheel. |
+| Three CI workflows | Done: `ci.yml` (test matrix on 3 OSes × 2 Pythons, skill lint, docs freshness, quickstart from a wheel, package check), `secret-scan.yml`, `release.yml` (trusted publishing, tag/VERSION/CHANGELOG gate). |
+| **Kill criterion: fetch/parse parity with the reference implementation** | **Passed. 11 of 11 fixture routes agree on every comparable field** (status, redirect chain, title, full heading structure, canonical, description, JSON-LD types after `@graph` flattening, malformed-JSON-LD detection, external link set, internal link count, client-rendering verdict). Extracted text and word count are deliberately non-comparable; see divergence 5. The run found one real gap — an empty framework mount point with no noscript notice — which is now detected and tested. |
+| **Kill criterion: every score explainable line by line** | **Passed.** Each signal returns a `detail` payload of the counts behind its number; the fixtures rank ssr-rich 94 → schema-none 73 → weak-prose 13 → csr-shell 0, and each step is attributable to named signals. |
+| Divergence table exists | Done. Ten entries in `docs/concepts/score-divergence.md`, each with the reason. |
+| Quickstart passes in CI on 3 OSes | Workflow written; first run lands with the initial push. |
+| PyPI publish | **Not done.** `release.yml` publishes on a `v*` tag through trusted publishing. Requires the PyPI project and its trusted publisher to be configured once, by hand. |
+
+**Test suite at 0.1.0:** 263 passing, 2 skipped (both environment-gated).
+
+### Open before 0.2.0
+
+1. Make the repository public, then run the plugin spike for real (D2's gate).
+2. Configure the PyPI trusted publisher and tag `v0.1.0`.
+3. Write §1.2.
+4. Confirm the D4 copyright holder.

@@ -1,0 +1,53 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "geo-audit-cli"
+version = "0.1.0"
+description = "Deterministic GEO (Generative Engine Optimization) audit CLI. Every number is reproducible from recorded evidence."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+keywords = ["geo", "seo", "generative-engine-optimization", "ai-search", "audit", "llms-txt"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
+]
+dependencies = [
+  "requests>=2.32",
+  "beautifulsoup4>=4.12",
+]
+
+[project.optional-dependencies]
+browser = ["playwright>=1.44"]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+geo = "geo_audit.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/seo-skills/geo-audit-skill"
+Source = "https://github.com/seo-skills/geo-audit-skill"
+Issues = "https://github.com/seo-skills/geo-audit-skill/issues"
+Changelog = "https://github.com/seo-skills/geo-audit-skill/blob/main/CHANGELOG.md"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/geo_audit"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/geo_audit", "tests", "README.md", "LICENSE", "CHANGELOG.md", "VERSION"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+markers = [
+  "browser: requires the optional Playwright extra",
+]
