@@ -86,7 +86,9 @@ def evidence_block(result: crawl_lib.CrawlResult) -> dict:
         "content_hash": evidence_lib.site_digest(digests) if digests else None,
         "normalizer_version": evidence_lib.NORMALIZER_VERSION,
         "pages_ok": len(result.ok_pages),
-        "pages_failed": result.failures,
+        # Sorted: the order pages happened to fail is a property of the race,
+        # not of the site.
+        "pages_failed": sorted(result.failures, key=lambda entry: entry["url"]),
     }
 
 

@@ -11,7 +11,7 @@
   "ok": true,
   "prune": {
     "applied": false,
-    "bytes_reclaimed": 0,
+    "bytes_reclaimed": "<volatile>",
     "home": "<home>",
     "limits": {
       "keep_days": 365,
@@ -20,8 +20,8 @@
     },
     "projects": [
       {
-        "bytes_after": 25230,
-        "bytes_before": 25230,
+        "bytes_after": "<volatile>",
+        "bytes_before": "<volatile>",
         "damaged_lines_discarded": 0,
         "dropped_by": {},
         "oldest_kept": "<volatile>",

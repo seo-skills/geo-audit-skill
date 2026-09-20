@@ -42,6 +42,8 @@ the numbers are not on the same scale.
 | 21 | **A fact is scored once.** | Let related signals appear in several categories, as most scoring models do. | No signal id appears in two categories, and a test asserts it. Open Graph moved out of technical when platform arrived. | A fact that moves the composite twice makes the score impossible to explain and easy to game. |
 | 22 | **Two runs scored under different rules are not compared.** | Subtract the composites and report the delta. | `compare` refuses on a scoring-major or data-version change, with a hint saying what the number would have meant. | "Your score fell six points" when only our thresholds moved is a false statement to a paying client. |
 
+| 23 | **The crawl is level-synchronous, not completion-driven.** | Enqueue discovered links as each page returns, which is faster. | A whole level is awaited, its discoveries sorted, then the next level starts. | Enqueueing on completion makes `--max-pages` reach a different set of pages on a slower machine, which makes `compare` report changes that did not happen. A crawl is rate-limited rather than latency-limited, so the wait costs almost nothing. |
+
 ## Parity with the reference implementation
 
 The fetch and parse layer was compared field by field against the reference

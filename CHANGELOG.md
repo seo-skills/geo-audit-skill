@@ -29,6 +29,20 @@ something the build checks.
 - **Troubleshooting prose for every error code**, asserted rather than curated, and a
   quickstart that walks the whole workflow with a test that every command appears in it.
 
+### Fixed
+
+- **A capped crawl reached a different set of pages on a different machine.** Links
+  were enqueued the moment a page returned, so a fast branch went deeper before a slow
+  branch answered at all, and `--max-pages` then decided *which* pages by completion
+  order. `compare` would report pages as added and removed on a site where nothing had
+  changed. The crawl is now level-synchronous breadth-first: a whole level is awaited,
+  its discoveries are sorted, and only then does the next level start. A crawl is
+  rate-limited rather than latency-limited, so waiting out a level costs almost
+  nothing, and a test forces the race with staggered response delays rather than
+  hoping for it.
+- `evidence.pages_failed` is sorted. The order pages happened to fail is a property of
+  the race, not of the site.
+
 ### Changed
 
 - **The agency kit (M4) is closed at its gate and deferred, not deleted.** The gate

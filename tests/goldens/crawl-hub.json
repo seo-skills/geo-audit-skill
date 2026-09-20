@@ -205,7 +205,7 @@
     "seeded_from_sitemap": 2,
     "site": "127.0.0.1",
     "start_url": "http://fixture/hub.html",
-    "stopped_because": "max_pages"
+    "stopped_because": "exhausted"
   },
   "data_version": "2026.09",
   "error": null,
@@ -217,6 +217,11 @@
         "reason": "not_found",
         "status": 404,
         "url": "http://fixture/gone"
+      },
+      {
+        "reason": "not_html",
+        "status": null,
+        "url": "http://fixture/not-html"
       }
     ],
     "pages_ok": 7,

@@ -177,6 +177,82 @@ def test_max_pages_stops_the_crawl_and_says_so(site):
     assert result.stopped_because == "max_pages"
 
 
+def test_a_capped_crawl_reaches_the_same_pages_every_time(site):
+    """Found on CI: macOS and Windows crawled a different eight than Ubuntu.
+
+    Completions were processed in whichever order they finished, so discovery
+    order - and therefore which pages a cap reaches - depended on machine
+    speed. `compare` would then report pages as added and removed on a site
+    where nothing had changed.
+    """
+    visited = set()
+    for concurrency in (1, 2, 5, 5):
+        result = run_crawl(site, max_pages=8, concurrency=concurrency)
+        visited.add(tuple(sorted(page.url for page in result.pages)))
+    assert len(visited) == 1, f"a capped crawl reached {len(visited)} different page sets"
+
+
+def test_completion_order_does_not_decide_which_pages_a_cap_reaches(serve):
+    """The race, forced rather than hoped for.
+
+    Each first-level page links to one second-level page and answers at a
+    different speed, so the order they *finish* is the reverse of their URL
+    order. Without sorting completions, the fast page's link is discovered
+    first and a capped crawl reaches a different set.
+    """
+    from tests.fixture_server import Reply
+
+    def page(body: str, delay: float = 0.0) -> Reply:
+        return Reply(
+            body=f"<html><body><main><h1>t</h1><p>{'word ' * 40}</p>{body}</main></body></html>",
+            delay=delay,
+        )
+
+    routes = {
+        "/robots.txt": Reply(body="User-agent: *\nAllow: /\n", content_type="text/plain"),
+        "/hub.html": page(
+            '<a href="/a.html">a</a><a href="/b.html">b</a><a href="/c.html">c</a>'
+        ),
+        # Reverse-speed: `a` is slowest, `c` is fastest.
+        "/a.html": page('<a href="/a2.html">a2</a>', delay=0.30),
+        "/b.html": page('<a href="/b2.html">b2</a>', delay=0.15),
+        "/c.html": page('<a href="/c2.html">c2</a>', delay=0.0),
+        "/a2.html": page(""),
+        "/b2.html": page(""),
+        "/c2.html": page(""),
+    }
+    server = serve(routes)
+
+    reached = set()
+    for _ in range(3):
+        result = crawl(
+            f"{server.url}/hub.html",
+            CrawlOptions(allow_private=True, max_pages=5, requests_per_second=100,
+                         concurrency=3, use_sitemap=False),
+        )
+        reached.add(tuple(sorted(p.url.replace(server.url, "") for p in result.pages)))
+
+    assert len(reached) == 1, f"a capped crawl reached {len(reached)} different sets: {reached}"
+    pages = reached.pop()
+    assert "/a2.html" in pages, (
+        "the slowest branch was dropped, so completion order decided the frontier"
+    )
+
+
+def test_failures_are_reported_in_a_stable_order(site, geo_home):
+    """The order pages happened to fail is a property of the race, not the site."""
+    orders = set()
+    for concurrency in (1, 5, 5):
+        _, envelope = run_cli(
+            ["crawl", f"{site.url}/hub.html", "--allow-private", "--rate", "50",
+             "--max-pages", "20", "--concurrency", str(concurrency)]
+        )
+        failures = envelope["evidence"]["pages_failed"]
+        assert failures == sorted(failures, key=lambda entry: entry["url"])
+        orders.add(tuple(entry["url"] for entry in failures))
+    assert len(orders) == 1
+
+
 def test_an_exhausted_frontier_reports_exhausted(site):
     result = run_crawl(site, max_pages=50)
     assert result.stopped_because == "exhausted"

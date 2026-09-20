@@ -43,6 +43,11 @@
         "reason": "not_found",
         "status": 404,
         "url": "http://fixture/gone"
+      },
+      {
+        "reason": "not_html",
+        "status": null,
+        "url": "http://fixture/not-html"
       }
     ],
     "pages_ok": 7,
@@ -61,7 +66,7 @@
       "source": null,
       "warnings": []
     },
-    "bytes": 30123,
+    "bytes": 30135,
     "from_run": "<volatile>",
     "mode": "client",
     "observed_at": "<volatile>",

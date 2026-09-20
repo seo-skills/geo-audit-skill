@@ -20,7 +20,7 @@ from __future__ import annotations
 import threading
 import time
 from collections import deque
-from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from urllib.parse import urldefrag, urlsplit, urlunsplit
 
@@ -236,36 +236,42 @@ def crawl(
 
         start_host = host_of(start_url)
         seen: set[str] = {normalize_url(start_url)}
-        queue: deque[str] = deque([start_url])
+        # The start URL first, then whatever the sitemap advertises, sorted.
+        # Level one is therefore deterministic before a single page is fetched.
+        seeds: list[str] = []
 
         if options.use_sitemap and result.robots is not None and result.robots.sitemaps:
             for url in _sitemap_urls(result.robots, options, sessions.get(), pacer):
                 if not _acceptable(url, start_host, options, result, seen):
                     continue
                 seen.add(normalize_url(url))
-                queue.append(url)
+                seeds.append(url)
                 result.seeded_from_sitemap += 1
 
         def fetch_one(url: str) -> Page:
             pacer.wait()
             return load_page(url, options, session=sessions.get(), robots=result.robots)
 
+        # Level-synchronous breadth-first search. A whole level is dispatched,
+        # every page in it is awaited, and only then are the links it found
+        # sorted and promoted to the next level.
+        #
+        # The obvious alternative - enqueue links the moment a page returns -
+        # makes the crawl depend on which pages answered fastest. With a page
+        # cap that decides *which* pages get crawled, so the same site yields a
+        # different set on a slower machine and `compare` reports pages as
+        # added and removed when nothing changed. A crawl is rate-limited, not
+        # latency-limited, so waiting out a level costs almost nothing.
         with ThreadPoolExecutor(max_workers=max(1, options.concurrency)) as pool:
-            futures: dict = {}
-            while (queue or futures) and len(result.pages) < options.max_pages:
-                while (
-                    queue
-                    and len(futures) < options.concurrency
-                    and len(result.pages) + len(futures) < options.max_pages
-                ):
-                    url = queue.popleft()
-                    futures[pool.submit(fetch_one, url)] = url
+            frontier = [start_url] + sorted(seeds, key=normalize_url)
+            while frontier and len(result.pages) < options.max_pages:
+                budget = options.max_pages - len(result.pages)
+                level, frontier = frontier[:budget], frontier[budget:]
 
-                if not futures:
-                    break
-                done, _ = wait(set(futures), return_when=FIRST_COMPLETED)
-                for future in done:
-                    url = futures.pop(future)
+                futures = {pool.submit(fetch_one, url): url for url in level}
+                discovered: list[str] = []
+                for future in futures:
+                    url = futures[future]
                     try:
                         page = future.result()
                     except GeoError as error:
@@ -283,18 +289,18 @@ def crawl(
                     if page.doc is None:
                         continue
                     for link in page.doc.internal_links:
-                        if len(seen) >= options.max_pages * 20:
-                            break
                         if not _acceptable(link, start_host, options, result, seen):
                             continue
                         seen.add(normalize_url(link))
                         result.discovered += 1
-                        queue.append(link)
+                        discovered.append(link)
 
-            if queue and len(result.pages) >= options.max_pages:
+                # Sorted, so the next level does not depend on which page in
+                # this one happened to finish first.
+                frontier.extend(sorted(discovered, key=normalize_url))
+
+            if frontier and len(result.pages) >= options.max_pages:
                 result.stopped_because = "max_pages"
-            for future in futures:
-                future.cancel()
     finally:
         sessions.close()
 

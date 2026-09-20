@@ -237,7 +237,7 @@
     "seeded_from_sitemap": 2,
     "site": "127.0.0.1",
     "start_url": "http://fixture/hub.html",
-    "stopped_because": "max_pages"
+    "stopped_because": "exhausted"
   },
   "data_version": "2026.09",
   "error": null,
@@ -249,6 +249,11 @@
         "reason": "not_found",
         "status": 404,
         "url": "http://fixture/gone"
+      },
+      {
+        "reason": "not_html",
+        "status": null,
+        "url": "http://fixture/not-html"
       }
     ],
     "pages_ok": 7,
@@ -638,8 +643,7 @@
         "min": 0.0,
         "pages_measured": 7,
         "pages_total": 7,
-        "worst_example": "This is something that comes up a lot. It tends to be the kind of thing that people ask about when they are getting started, and it is also the kind of thing that is easy to get wrong if you are not careful about it from the beginning.",
-        "worst_page": "http://fixture/weak-prose.html"
+        "worst_page": "http://fixture/csr-shell.html"
       },
       "id": "citability.self_containment",
       "max": 25,
@@ -654,7 +658,7 @@
         "min": 0.0,
         "pages_measured": 7,
         "pages_total": 7,
-        "worst_page": "http://fixture/weak-prose.html"
+        "worst_page": "http://fixture/csr-shell.html"
       },
       "id": "citability.answer_first",
       "max": 20,
@@ -686,8 +690,7 @@
         "min": 0.0,
         "pages_measured": 7,
         "pages_total": 7,
-        "worst_example": "In this article we are going to look at a few of the things that we have been thinking about lately, and why they matter to us as a team and to the people we work with every day.",
-        "worst_page": "http://fixture/weak-prose.html"
+        "worst_page": "http://fixture/csr-shell.html"
       },
       "id": "citability.evidence_density",
       "max": 15,
@@ -776,7 +779,7 @@
         "noindex": false,
         "pages_measured": 7,
         "pages_total": 8,
-        "worst_page": "http://fixture/schema-broken.html",
+        "worst_page": "http://fixture/injection.html",
         "x_robots_tag": null
       },
       "id": "technical.indexability",

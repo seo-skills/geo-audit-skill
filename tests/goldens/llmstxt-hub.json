@@ -37,7 +37,7 @@
     "crawl": {
       "pages_crawled": 8,
       "pages_ok": 7,
-      "stopped_because": "max_pages"
+      "stopped_because": "exhausted"
     },
     "generated": {
       "bytes": 1159,

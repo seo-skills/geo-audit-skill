@@ -38,6 +38,10 @@ VOLATILE_FIELDS = (
     "from_run",
     "path",
     "pdf_path",
+    # Sizes of files whose content carries a host and port.
+    "bytes_before",
+    "bytes_after",
+    "bytes_reclaimed",
 )
 
 
