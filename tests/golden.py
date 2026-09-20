@@ -21,9 +21,14 @@ GOLDEN_DIR = Path(__file__).parent / "goldens"
 FIXTURE_ORIGIN = "http://fixture"
 
 # Temp directories, and anything under them, differ per run and per platform.
+# Temp directories differ per run, per platform and per user. On Windows they
+# also sit *under* the user's home, so a displayed path comes back tilde-
+# prefixed and matches no drive-letter pattern - which is why `pytest-of-` is
+# matched on its own.
 TEMP_PATH = re.compile(
     r"(?:/private)?(?:/var/folders/[^\"\s]*|/tmp/[^\"\s]*)"
-    r"|[A-Za-z]:\\\\[^\"\s]*?Temp\\\\[^\"\s]*"
+    r"|[A-Za-z]:(?:\\\\|/)[^\"\s]*?[Tt]emp(?:\\\\|/)[^\"\s]*"
+    r"|[^\"\s]*pytest-of-[^\"\s]*"
 )
 
 

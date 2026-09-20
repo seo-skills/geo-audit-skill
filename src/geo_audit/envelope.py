@@ -42,6 +42,8 @@ VOLATILE_FIELDS = (
     "bytes_before",
     "bytes_after",
     "bytes_reclaimed",
+    # $GEO_HOME as displayed: a machine path by definition.
+    "home",
 )
 
 

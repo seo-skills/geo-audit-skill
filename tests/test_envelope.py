@@ -201,3 +201,37 @@ def test_two_runs_of_the_same_page_differ_only_in_volatile_fields(site, geo_home
     _, second = run(["score", f"{site.url}/ssr-rich.html", "--allow-private", "--no-render"])
     assert normalize(first, site.url) == normalize(second, site.url)
     assert first["run_id"] != second["run_id"]
+
+
+# --- the goldens have to be machine-independent ---------------------------
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "/tmp/pytest-of-runner/pytest-0/geo-home",
+        "/private/var/folders/v2/abc/T/pytest-of-x/pytest-1/geo-home",
+        "/var/folders/v2/abc/T/pytest-of-x/pytest-1/geo-home",
+        r"C:\Users\runneradmin\AppData\Local\Temp\pytest-of-runner\pytest-0\geo-home",
+        # Windows temp sits under the user's home, so a displayed path comes
+        # back tilde-prefixed and matches no drive-letter pattern. That is what
+        # made the prune golden fail on Windows and nowhere else.
+        r"~/AppData\Local\Temp\pytest-of-runner\pytest-0\geo-home",
+    ],
+)
+def test_machine_paths_are_scrubbed_from_goldens(value):
+    from tests.golden import _scrub_paths
+
+    payload = json.dumps({"home": value})
+    assert value not in _scrub_paths(payload), f"{value} would leak into a golden"
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["https://example.com/temperature", "/docs/templates", "https://x.test/tmp-guide"],
+)
+def test_the_scrub_leaves_real_values_alone(value):
+    from tests.golden import _scrub_paths
+
+    payload = json.dumps({"url": value})
+    assert _scrub_paths(payload) == payload

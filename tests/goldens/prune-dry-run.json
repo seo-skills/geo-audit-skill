@@ -12,7 +12,7 @@
   "prune": {
     "applied": false,
     "bytes_reclaimed": "<volatile>",
-    "home": "<home>",
+    "home": "<volatile>",
     "limits": {
       "keep_days": 365,
       "keep_runs": 1,
