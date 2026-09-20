@@ -124,7 +124,7 @@ options:
 | `GEO_E_BAD_CONTENT_TYPE` | 3 | Only HTML and XHTML are scored. Point the command at a page rather than at a PDF, image or feed. |
 | `GEO_E_BAD_URL` | 2 | Pass an absolute http:// or https:// URL, for example `geo score https://example.com/pricing`. |
 | `GEO_E_BLOCKED_SCHEME` | 2 | Only http:// and https:// are fetched. file://, data://, ftp:// and the rest are refused by design. |
-| `GEO_E_CONNECT` | 3 | The connection was refused or reset. Check the URL, the port, and any proxy or VPN on this machine. |
+| `GEO_E_CONNECT` | 3 | The message names which connection failure it was. Check the URL, the port, and any proxy or VPN on this machine. |
 | `GEO_E_DNS` | 3 | The hostname did not resolve. Check for a typo, or whether the domain is reachable from this machine. |
 | `GEO_E_INTERNAL` | 1 | This is a bug in geo-audit-cli. The log names the failing step; please open an issue with it. |
 | `GEO_E_PARTIAL` | 5 | Some pages could not be evaluated. Drop --fail-on-partial to accept a partial result, or fix the blocked pages listed in the findings. |

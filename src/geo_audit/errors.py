@@ -94,8 +94,8 @@ ERRORS: dict[str, ErrorSpec] = {
         _spec(
             "GEO_E_CONNECT",
             EXIT_NETWORK,
-            "The connection was refused or reset. Check the URL, the port, and "
-            "any proxy or VPN on this machine.",
+            "The message names which connection failure it was. Check the URL, "
+            "the port, and any proxy or VPN on this machine.",
         ),
         _spec(
             "GEO_E_TLS",

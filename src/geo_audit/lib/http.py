@@ -119,6 +119,49 @@ def _peer_address(response: requests.Response) -> str | None:
     return None
 
 
+def _connection_reason(exc: Exception) -> str:
+    """Classify a ConnectionError into something a reader can act on.
+
+    A refused connection, a reset, and a server that hung up before
+    responding have three different causes and three different fixes.
+    """
+    cause = exc.__cause__ or exc.__context__
+    text = f"{type(cause).__name__} {cause}" if cause else str(exc)
+    lowered = text.lower()
+    if "refused" in lowered:
+        return "the connection was refused"
+    if "reset by peer" in lowered or "connectionreset" in lowered:
+        return "the server reset the connection"
+    if "remotedisconnected" in lowered or "without a response" in lowered:
+        return "the server closed the connection before sending a response"
+    if "connection aborted" in lowered:
+        return "the connection was aborted mid-request"
+    if "broken pipe" in lowered:
+        return "the connection broke while the request was being sent"
+    if "timed out" in lowered:
+        return "the connection timed out"
+    if "too many open" in lowered or "cannot assign" in lowered:
+        return "this machine ran out of sockets"
+    return "the connection failed"
+
+
+def _hard_close(response: requests.Response) -> None:
+    """Close the socket so a half-read response cannot be pooled.
+
+    `Response.close()` *releases* a streaming connection back to the pool. If
+    the body was not fully read, the next request on that pool picks up the
+    previous response's leftover bytes. Aborting a download is exactly when
+    that happens, so those connections are closed rather than released.
+    """
+    raw = getattr(response, "raw", None)
+    for target in (getattr(raw, "_connection", None), raw):
+        try:
+            if target is not None:
+                target.close()
+        except Exception:  # noqa: BLE001 - teardown must not mask the real error
+            pass
+
+
 def _drain(response: requests.Response, limit: int) -> None:
     """Read and discard a body so the connection closes with FIN, not RST.
 
@@ -245,17 +288,19 @@ def fetch(
                     ) from exc
                 raise GeoError(
                     "GEO_E_CONNECT",
-                    f"Couldn't connect to {urlsplit(current).hostname}: the connection "
-                    f"was refused or reset.",
+                    f"Couldn't connect to {urlsplit(current).hostname}: "
+                    f"{_connection_reason(exc)}.",
                 ) from exc
 
-            with response:
+            drained = False
+            try:
                 peer, verified = _verify_peer(response, current, allow_private)
                 status = response.status_code
                 location = response.headers.get("location")
 
                 if status in _REDIRECT_STATUSES and location:
                     _drain(response, max_bytes)
+                    drained = True
                     chain.append(Hop(url=current, status=status, location=location))
                     current = urljoin(current, location)
                     continue
@@ -293,6 +338,7 @@ def fetch(
                             f"downloading.",
                         )
 
+                drained = True
                 body, encoding = _decode(bytes(buffer), kept.get("content-type"))
                 return FetchResult(
                     requested_url=url,
@@ -307,6 +353,10 @@ def fetch(
                     peer_verified=verified,
                     chain=chain,
                 )
+            finally:
+                if not drained:
+                    _hard_close(response)
+                response.close()
 
         raise GeoError(
             "GEO_E_TOO_MANY_REDIRECTS",
