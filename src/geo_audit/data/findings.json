@@ -108,6 +108,30 @@
       "effort": "medium",
       "title": "No structured data that answers a question directly",
       "remediation": "Where the content fits, add FAQPage, HowTo, Product, Event or BreadcrumbList. These types map onto the shape of an answer, so an engine can lift them with no interpretation at all."
+    },
+    "brand.encyclopedic": {
+      "severity": "high",
+      "effort": "high",
+      "title": "The brand has no encyclopedic entity to resolve to",
+      "remediation": "A Wikipedia article and a Wikidata item are how an engine turns a name into an entity it can reason about. Neither can be created to order, and writing your own is against Wikipedia's conflict-of-interest guidance. What you can do is earn the independent coverage those pages require, and make sure the facts an editor would need are easy to find on your own site."
+    },
+    "brand.community": {
+      "severity": "medium",
+      "effort": "high",
+      "title": "The brand is barely discussed anywhere public",
+      "remediation": "AI answers lean on places where people discuss things in their own words. This is not a content task: it is whether anyone outside the company has reason to mention you. Treat a low number as a signal about the product's reach rather than something to fix with posts."
+    },
+    "brand.video": {
+      "severity": "low",
+      "effort": "high",
+      "title": "No video results for the brand",
+      "remediation": "Video is one of the surfaces engines pull into answers for how-to and comparison questions. Worth considering only if your audience searches that way; it is the most expensive item on this list."
+    },
+    "brand.consistency": {
+      "severity": "medium",
+      "effort": "low",
+      "title": "The site does not link itself to the profiles that identify it",
+      "remediation": "Add the profiles found here to the `sameAs` array of your Organization JSON-LD. It is the one step in this category that is entirely within your control, and it is what tells an engine that this site and that entity are the same thing."
     }
   },
   "checks": {

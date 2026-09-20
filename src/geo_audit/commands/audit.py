@@ -31,12 +31,23 @@ from geo_audit.scoring.model import (
     weighted_composite,
 )
 
-CATEGORIES = ("citability", "technical", "schema")
+# What an audit can compute from a URL alone. `brand` needs a name, so it
+# joins the run only when --brand is given: a category the inputs cannot
+# reach is not "missing", it is out of scope for that run.
+SITE_CATEGORIES = ("citability", "technical", "schema")
+CATEGORIES = SITE_CATEGORIES + ("brand",)
 
 
-def parse_only(value: str | None) -> tuple[str, ...]:
+def candidates(args) -> tuple[str, ...]:
+    """The categories this run's inputs can reach."""
+    if getattr(args, "brand", None):
+        return SITE_CATEGORIES + ("brand",)
+    return SITE_CATEGORIES
+
+
+def parse_only(value: str | None, available: tuple[str, ...] = CATEGORIES) -> tuple[str, ...]:
     if not value:
-        return CATEGORIES
+        return available
     chosen = tuple(part.strip().lower() for part in value.split(",") if part.strip())
     unknown = [name for name in chosen if name not in CATEGORIES]
     if unknown:
@@ -44,6 +55,13 @@ def parse_only(value: str | None) -> tuple[str, ...]:
             "GEO_E_BAD_ARGS",
             f"--only does not know {', '.join(unknown)}. "
             f"Available: {', '.join(CATEGORIES)}.",
+        )
+    out_of_scope = [name for name in chosen if name not in available]
+    if out_of_scope:
+        raise GeoError(
+            "GEO_E_BAD_ARGS",
+            f"--only {', '.join(out_of_scope)} needs an input this run does not "
+            f"have. `brand` needs --brand <name>.",
         )
     return chosen
 
@@ -66,7 +84,8 @@ def run(args, run_id: str) -> dict:
         return rescore(args, run_id)
 
     state.init()
-    categories = parse_only(args.only)
+    available = candidates(args)
+    categories = parse_only(args.only, available)
     options = crawl_cmd.options_from(args)
 
     def progress(done: int, total: int, failed: int) -> None:
@@ -93,6 +112,31 @@ def run(args, run_id: str) -> dict:
             findings.extend(findings_for(signals, page.result.final_url if page.result else page.url))
         findings.extend(page.findings)
 
+    extra = None
+    if "brand" in categories:
+        from geo_audit.commands import scan as scan_cmd
+
+        platforms = {
+            name: scan_cmd.check(name, args.brand, spec, allow_private=args.allow_private)
+            for name, spec in data.load("brand_platforms")["platforms"].items()
+        }
+        same_as = scan_cmd._same_as_for(args.url, args.allow_private, args.timeout)
+        brand_signals = scan_cmd.build_signals(platforms, same_as)
+        per_category["brand"] = [brand_signals]
+        findings.extend(findings_for(brand_signals, args.brand))
+        extra = {
+            "scan": {
+                "brand": args.brand,
+                "site": args.url,
+                "platforms": list(platforms.values()),
+                "platforms_checked": sum(1 for entry in platforms.values() if entry["checked"]),
+                "platforms_total": len(platforms),
+                "total_results": sum(entry.get("results", 0) for entry in platforms.values() if entry["checked"]),
+                "manual_checks": data.load("brand_platforms")["manual"],
+                "same_as": same_as,
+            }
+        }
+
     return _assemble(
         run_id=run_id,
         start_url=args.url,
@@ -102,6 +146,8 @@ def run(args, run_id: str) -> dict:
         crawl_block=crawl_cmd.crawl_block(result, options),
         evidence=crawl_cmd.evidence_block(result),
         record=True,
+        available=available,
+        extra=extra,
     )
 
 
@@ -115,9 +161,11 @@ def _assemble(
     crawl_block: dict,
     evidence: dict,
     record: bool,
+    available: tuple[str, ...] | None = None,
     extra: dict | None = None,
 ) -> dict:
     weights = data.weights()
+    available = available or categories
     category_scores: dict[str, int] = {}
     category_completeness: dict[str, dict] = {}
     all_signals: list[Signal] = []
@@ -132,8 +180,10 @@ def _assemble(
         category_completeness[name] = completeness
         all_signals.extend(rolled)
 
+    # Only the categories this run could reach: a category the inputs cannot
+    # feed is out of scope, not missing.
     total, coverage = weighted_composite(
-        {name: weights[name]["weight"] for name in weights}, category_scores
+        {name: weights[name]["weight"] for name in available}, category_scores
     )
     tier = data.tier_for(total)
 
@@ -250,6 +300,7 @@ def rescore(args, run_id: str) -> dict:
         crawl_block=record.get("crawl", {}),
         evidence=record.get("evidence") or {},
         record=False,
+        available=categories,
         extra={"rescore": rescore_block},
     )
 

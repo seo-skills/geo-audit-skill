@@ -1,0 +1,46 @@
+{
+  "comment": "Where the brand scan looks. Each entry names the public endpoint, what a result means, and whether a credential is needed. Platforms with no usable API are listed under `manual` and are never emitted as a result, because a check nobody performed is not a finding.",
+  "platforms": {
+    "wikipedia": {
+      "label": "Wikipedia",
+      "url": "https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch={query}&srlimit=5&format=json",
+      "docs": "https://www.mediawiki.org/wiki/API:Search",
+      "needs_key": null
+    },
+    "wikidata": {
+      "label": "Wikidata",
+      "url": "https://www.wikidata.org/w/api.php?action=wbsearchentities&search={query}&language=en&limit=5&format=json",
+      "docs": "https://www.wikidata.org/w/api.php?action=help&modules=wbsearchentities",
+      "needs_key": null
+    },
+    "reddit": {
+      "label": "Reddit",
+      "url": "https://www.reddit.com/search.json?q={query}&limit=25&sort=relevance",
+      "docs": "https://www.reddit.com/dev/api/",
+      "needs_key": null
+    },
+    "youtube": {
+      "label": "YouTube",
+      "url": "https://www.googleapis.com/youtube/v3/search?q={query}&part=snippet&type=video&maxResults=25&key={key}",
+      "docs": "https://developers.google.com/youtube/v3/docs/search/list",
+      "needs_key": "GEO_YOUTUBE_API_KEY"
+    }
+  },
+  "manual": [
+    {
+      "label": "LinkedIn",
+      "why": "no public search API; scraping it breaks their terms",
+      "how": "Search LinkedIn for the brand and note whether a company page exists and is complete."
+    },
+    {
+      "label": "X",
+      "why": "search requires a paid API tier",
+      "how": "Search for the brand name and note whether people outside the company discuss it."
+    },
+    {
+      "label": "G2 and Capterra",
+      "why": "no free API",
+      "how": "Check whether a profile exists and how many reviews it carries; these pages are frequently cited in comparison answers."
+    }
+  ]
+}

@@ -15,6 +15,7 @@ positional arguments:
     score     score the citability of one page
     validate  check the structured data on one page
     llmstxt   check for an llms.txt, or build one from the site
+    scan      check whether a brand exists as a lookupable entity
     prune     apply the retention rules to recorded history
     doctor    check this installation and its environment
 
@@ -104,7 +105,7 @@ usage: geo audit [-h] [--json] [--out PATH] [--config PATH] [--no-input]
                  [--quiet] [--verbose] [--allow-private] [--fail-on-partial]
                  [--timeout SECONDS] [--max-bytes BYTES] [--no-robots]
                  [--max-pages N] [--rate PER_SECOND] [--concurrency N]
-                 [--no-sitemap] [--only CATEGORY[,CATEGORY]]
+                 [--no-sitemap] [--only CATEGORY[,CATEGORY]] [--brand NAME]
                  [--rescore RUN_ID]
                  url
 
@@ -137,7 +138,9 @@ options:
                         advertises
   --only CATEGORY[,CATEGORY]
                         score only these categories (citability, technical,
-                        schema)
+                        schema, brand)
+  --brand NAME          also score brand presence for this name, folding it
+                        into the composite
   --rescore RUN_ID      recompute from a recorded audit instead of crawling;
                         no network is used
 ```
@@ -248,6 +251,38 @@ options:
   --no-sitemap       do not seed the frontier from the sitemaps robots.txt
                      advertises
   --generate         crawl the site and propose an llms.txt
+```
+
+## `geo scan`
+
+Query Wikipedia, Wikidata, Reddit and YouTube for a brand name through their documented public APIs. Platforms with no usable API are listed as manual checks and never reported as results.
+
+```
+usage: geo scan [-h] [--json] [--out PATH] [--config PATH] [--no-input]
+                [--quiet] [--verbose] [--allow-private] [--fail-on-partial]
+                [--site URL] [--timeout SECONDS]
+                brand
+
+Query Wikipedia, Wikidata, Reddit and YouTube for a brand name through their
+documented public APIs. Platforms with no usable API are listed as manual
+checks and never reported as results.
+
+positional arguments:
+  brand              the brand name to look for
+
+options:
+  -h, --help         show this help message and exit
+  --json             force JSON output
+  --out PATH         also write the JSON envelope here
+  --config PATH      JSON file of default flag values
+  --no-input         never prompt (reserved: this release never prompts)
+  --quiet            suppress progress on stderr
+  --verbose          more progress on stderr
+  --allow-private    permit a private, loopback or link-local start URL
+  --fail-on-partial  exit 5 when the result is PARTIAL
+  --site URL         also read this site's Organization sameAs links and
+                     compare them
+  --timeout SECONDS
 ```
 
 ## `geo prune`

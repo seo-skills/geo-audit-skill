@@ -57,6 +57,8 @@ def render(envelope: dict, out: TextIO | None = None) -> None:
         _render_llmstxt(envelope, out, style)
     elif command == "prune":
         _render_prune(envelope, out, style)
+    elif command == "scan":
+        _render_scan(envelope, out, style)
     elif command == "doctor":
         _render_doctor(envelope, out, style)
     else:  # pragma: no cover - every command registers a renderer
@@ -481,6 +483,73 @@ def _render_llmstxt(envelope: dict, out: TextIO, style: Style) -> None:
         else "geo llmstxt <url> --generate"
     )
     print(copytext.NEXT_COMMAND.format(command=command), file=out)
+
+
+def _render_scan(envelope: dict, out: TextIO, style: Style) -> None:
+    block = envelope.get("scan") or {}
+    scores = envelope.get("scores") or {}
+    platforms = block.get("platforms") or []
+    checked = [entry for entry in platforms if entry["checked"]]
+
+    if checked and block.get("total_results", 0) == 0:
+        names = ", ".join(entry["label"] for entry in checked)
+        date = (checked[0].get("observed_at") or "")[:10]
+        print(
+            style.bold(
+                copytext.NO_MENTIONS.format(brand=block.get("brand"), platforms=names, date=date)
+            ),
+            file=out,
+        )
+    else:
+        print(
+            style.bold(
+                f"Brand presence {scores.get('composite')}/100 "
+                f"({scores.get('tier', '').capitalize()}) for "
+                f"\u201c{block.get('brand')}\u201d - {block.get('total_results', 0)} results "
+                f"across {block.get('platforms_checked')} of "
+                f"{block.get('platforms_total')} platforms."
+            ),
+            file=out,
+        )
+
+    print(file=out)
+    print(style.bold("Platforms"), file=out)
+    width = max((len(entry["label"]) for entry in platforms), default=0)
+    for entry in platforms:
+        if entry["checked"]:
+            detail = f"{entry.get('results', 0)} result(s)"
+            example = (entry.get("examples") or [None])[0]
+            if example:
+                detail += f"  e.g. {example}"
+            print(f"  [ok  ] {entry['label']:<{width}}  {detail}", file=out)
+        else:
+            print(f"  [skip] {entry['label']:<{width}}  {entry.get('reason', 'not checked')}", file=out)
+
+    manual = block.get("manual_checks") or []
+    if manual:
+        print(file=out)
+        print(style.bold("Manual checks - not results, and not scored"), file=out)
+        for entry in manual:
+            print(f"  {entry['label']}: {entry['how']}", file=out)
+            print(style.dim(f"     ({entry['why']})"), file=out)
+
+    _render_findings(envelope, out, style)
+    print(file=out)
+    completeness = envelope.get("completeness") or {}
+    if completeness.get("missing"):
+        print(
+            style.dim(
+                f"Computed on {completeness['computed']} of {completeness['total']} "
+                f"signals. Not measured: {', '.join(completeness['missing'])}."
+            ),
+            file=out,
+        )
+    print(
+        copytext.NEXT_COMMAND.format(
+            command=f"geo scan \"{block.get('brand')}\" --site https://example.com"
+        ),
+        file=out,
+    )
 
 
 def _render_prune(envelope: dict, out: TextIO, style: Style) -> None:

@@ -28,6 +28,7 @@ from geo_audit.commands import crawl as crawl_cmd
 from geo_audit.commands import doctor as doctor_cmd
 from geo_audit.commands import llmstxt as llmstxt_cmd
 from geo_audit.commands import prune as prune_cmd
+from geo_audit.commands import scan as scan_cmd
 from geo_audit.commands import validate as validate_cmd
 from geo_audit.commands import fetch as fetch_cmd
 from geo_audit.commands import score as score_cmd
@@ -45,6 +46,7 @@ COMMANDS = {
     "score": score_cmd.run,
     "validate": validate_cmd.run,
     "llmstxt": llmstxt_cmd.run,
+    "scan": scan_cmd.run,
     "prune": prune_cmd.run,
     "doctor": doctor_cmd.run,
 }
@@ -196,6 +198,11 @@ def build_parser() -> argparse.ArgumentParser:
         help=f"score only these categories ({', '.join(audit_cmd.CATEGORIES)})",
     )
     audit.add_argument(
+        "--brand",
+        metavar="NAME",
+        help="also score brand presence for this name, folding it into the composite",
+    )
+    audit.add_argument(
         "--rescore",
         metavar="RUN_ID",
         help="recompute from a recorded audit instead of crawling; no network is used",
@@ -244,6 +251,22 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="crawl the site and propose an llms.txt",
     )
+
+    scan = subparsers.add_parser(
+        "scan",
+        parents=[parent],
+        help="check whether a brand exists as a lookupable entity",
+        description="Query Wikipedia, Wikidata, Reddit and YouTube for a brand "
+        "name through their documented public APIs. Platforms with no usable API "
+        "are listed as manual checks and never reported as results.",
+    )
+    scan.add_argument("brand", help="the brand name to look for")
+    scan.add_argument(
+        "--site",
+        metavar="URL",
+        help="also read this site's Organization sameAs links and compare them",
+    )
+    scan.add_argument("--timeout", type=float, default=http.DEFAULT_TIMEOUT, metavar="SECONDS")
 
     prune = subparsers.add_parser(
         "prune",

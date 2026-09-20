@@ -9,7 +9,7 @@ import pytest
 
 from geo_audit import data
 from geo_audit.cli import main
-from geo_audit.commands.audit import CATEGORIES, parse_only
+from geo_audit.commands.audit import CATEGORIES, SITE_CATEGORIES, parse_only
 from geo_audit.errors import GeoError
 from geo_audit.scoring.model import weighted_composite
 from tests.golden import normalize
@@ -35,17 +35,20 @@ class FakeTTY(io.StringIO):
 # --- the composite ---------------------------------------------------------
 
 
-def test_an_audit_scores_every_declared_category(site, geo_home):
+def test_an_audit_scores_every_category_its_inputs_can_reach(site, geo_home):
+    """`brand` needs a name, so a URL-only audit does not claim to have missed it."""
     code, envelope = audit(site)
     assert code == 0
-    assert set(envelope["scores"]["categories"]) == set(CATEGORIES)
+    assert set(envelope["scores"]["categories"]) == set(SITE_CATEGORIES)
+    assert "brand" not in envelope["completeness"]["categories"]["missing"]
+    assert "brand" not in envelope["completeness"]["categories"]["declared"]
     assert 0 <= envelope["scores"]["composite"] <= 100
     assert envelope["scores"]["tier"] in {t["label"] for t in data.tiers()}
 
 
 def test_the_composite_is_the_weighted_mean_of_the_categories(site, geo_home):
     _, envelope = audit(site)
-    weights = {name: data.weights()[name]["weight"] for name in CATEGORIES}
+    weights = {name: data.weights()[name]["weight"] for name in SITE_CATEGORIES}
     expected, _ = weighted_composite(weights, envelope["scores"]["categories"])
     assert envelope["scores"]["composite"] == expected
 
@@ -73,11 +76,18 @@ def test_an_unknown_category_is_a_usage_error(site, geo_home):
     assert "citability" in envelope["error"]["message"]
 
 
-def test_parse_only_defaults_to_everything():
+def test_parse_only_defaults_to_what_is_available():
     assert parse_only(None) == CATEGORIES
+    assert parse_only(None, SITE_CATEGORIES) == SITE_CATEGORIES
     assert parse_only("  schema , technical ") == ("schema", "technical")
     with pytest.raises(GeoError):
         parse_only("nope")
+
+
+def test_only_brand_without_a_brand_name_says_what_is_missing():
+    with pytest.raises(GeoError) as raised:
+        parse_only("brand", SITE_CATEGORIES)
+    assert "--brand" in raised.value.message
 
 
 # --- PARTIAL, end to end ---------------------------------------------------

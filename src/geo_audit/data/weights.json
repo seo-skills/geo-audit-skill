@@ -87,14 +87,33 @@
           "class": "heuristic"
         }
       }
+    },
+    "brand": {
+      "weight": 20,
+      "signals": {
+        "brand.encyclopedic": {
+          "max": 35,
+          "class": "live"
+        },
+        "brand.community": {
+          "max": 25,
+          "class": "live"
+        },
+        "brand.video": {
+          "max": 20,
+          "class": "live",
+          "requires": "youtube_api_key"
+        },
+        "brand.consistency": {
+          "max": 20,
+          "class": "heuristic",
+          "requires": "site"
+        }
+      }
     }
   },
   "planned_categories": {
     "comment": "Declared so the divergence table can reference them before they ship. Absent from every computation until their milestone lands.",
-    "brand": {
-      "weight": 20,
-      "milestone": "M2"
-    },
     "content": {
       "weight": 20,
       "milestone": "M3"
