@@ -46,6 +46,9 @@ EXPECTED_SKILLS = {
     "schema": "M2",
     "llmstxt": "M2",
     "brand": "M2",
+    "content": "M3",
+    "compare": "M3",
+    "report": "M3",
 }
 
 CONTRACT_BEGIN = "<!-- geo:response-contract:begin -->"
@@ -94,7 +97,10 @@ def parse_frontmatter(text: str) -> dict[str, str]:
 def known_keys() -> set[str]:
     """Every identifier the CLI is allowed to teach a skill."""
     keys: set[str] = set(ERRORS)
-    keys |= set(data.weights()["citability"]["signals"])
+    for category in data.weights().values():
+        keys |= set(category["signals"])
+        # Advisory questions are emitted as signals too, with a rubric and no value.
+        keys |= set(category.get("advisory") or {})
     findings = data.load("findings")
     keys |= set(findings["signals"]) | set(findings["checks"])
 

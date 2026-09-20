@@ -21,7 +21,10 @@
     "./skills/audit",
     "./skills/brand",
     "./skills/citability",
+    "./skills/compare",
+    "./skills/content",
     "./skills/llmstxt",
+    "./skills/report",
     "./skills/schema",
     "./skills/technical"
   ]

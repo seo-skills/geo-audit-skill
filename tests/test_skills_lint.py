@@ -209,13 +209,21 @@ def test_every_identifier_a_skill_mentions_appears_in_a_real_envelope(site, geo_
     assert main(["score", "not-a-url"] + out, out=buffer) == 2
     emitted |= emitted_key_paths(json.loads(buffer.getvalue()))
 
-    # Run one rescore so the rescore block is covered too.
+    # A second audit, so compare and report have two records to work from, and
+    # a rescore so that block is covered too.
     buffer = io.StringIO()
     main(["audit", f"{site.url}/hub.html", *crawl] + out, out=buffer)
     run_id = json.loads(buffer.getvalue())["run_id"]
-    buffer = io.StringIO()
-    main(["audit", f"{site.url}/hub.html", "--rescore", run_id] + out, out=buffer)
-    emitted |= emitted_key_paths(json.loads(buffer.getvalue()))
+    for follow_up in (
+        ["audit", f"{site.url}/hub.html", "--rescore", run_id],
+        ["compare", f"{site.url}/hub.html"],
+        ["report", f"{site.url}/hub.html"],
+        ["report", f"{site.url}/hub.html", "--mode", "operator"],
+    ):
+        buffer = io.StringIO()
+        code = main(follow_up + out, out=buffer)
+        assert code == 0, f"{follow_up[0]} exited {code}: {buffer.getvalue()[:300]}"
+        emitted |= emitted_key_paths(json.loads(buffer.getvalue()))
 
     missing: dict[str, set[str]] = {}
     for skill, identifiers in skill_identifiers().items():

@@ -240,7 +240,22 @@ def schema_types_region() -> str:
     return "\n".join(lines)
 
 
+def rubrics_region() -> str:
+    lines = []
+    for name, category in data.weights().items():
+        for signal_id, spec in (category.get("advisory") or {}).items():
+            lines += [f"## `{signal_id}`", "", f"**{spec['question']}**", ""]
+            lines += [f"{index}. {test}" for index, test in enumerate(spec["rubric"], start=1)]
+            lines.append("")
+    lines.append(
+        f"*Generated from `data/weights.json` at data_version {data.data_version()}. "
+        f"These are the questions the CLI emits; answering a different one is refused.*"
+    )
+    return "\n".join(lines)
+
+
 REGIONS = {
+    ROOT / "skills/content/sections/rubrics.md": {"rubrics": rubrics_region},
     ROOT / "skills/technical/sections/crawlers.md": {"crawlers": crawlers_region},
     ROOT / "skills/schema/sections/types.md": {"schema-types": schema_types_region},
     ROOT / "docs/concepts/signals.md": {"signals": signals_region},
