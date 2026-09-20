@@ -141,3 +141,53 @@ def test_excerpt_is_capped_and_escapes_prompt_delimiters():
 
 def test_excerpt_leaves_short_text_alone():
     assert excerpt("  Two   spaces  ") == "Two spaces"
+
+
+# --- choosing the content root ---------------------------------------------
+
+
+def test_a_single_article_is_the_content_root():
+    d = doc(
+        "<html><body><div><article><h1>Post</h1><p>The body of one post.</p></article>"
+        "</div></body></html>"
+    )
+    assert d.content_root == "article"
+    assert "The body of one post." in " ".join(b.text for b in d.blocks)
+
+
+def test_many_articles_means_a_listing_and_the_body_is_the_root():
+    """Found by auditing eff.org.
+
+    Its homepage has no `<main>` and thirteen `<article>` teasers. Taking the
+    first one reduced the page to fifty characters of a single card, and the
+    site was then scored as though that were all it had: 32/100, on 100
+    characters, with one link discovered instead of eighty-eight.
+    """
+    teasers = "".join(
+        f"<article><h2>Story {i}</h2><p>A summary of story {i} that runs to a "
+        f"reasonable length so it is not discarded as noise.</p></article>"
+        for i in range(6)
+    )
+    d = doc(f"<html><body><div class='page'><h1>Latest</h1>{teasers}</div></body></html>")
+    assert d.content_root == "body"
+    text = " ".join(b.text for b in d.blocks)
+    for i in range(6):
+        assert f"A summary of story {i}" in text, "a listing must keep every teaser"
+
+
+def test_main_still_wins_over_articles_inside_it():
+    teasers = "".join(f"<article><p>Teaser {i} with enough words to survive.</p></article>" for i in range(4))
+    d = doc(f"<html><body><main><h1>T</h1>{teasers}</main></body></html>")
+    assert d.content_root == "main"
+    assert len([b for b in d.blocks if b.text.startswith("Teaser")]) == 4
+
+
+def test_a_listing_page_yields_its_links():
+    """The knock-on effect: content the root discarded took its links with it."""
+    teasers = "".join(
+        f'<article><h2>S{i}</h2><p>Summary {i} of reasonable length.</p>'
+        f'<a href="/story-{i}">read</a></article>'
+        for i in range(5)
+    )
+    d = doc(f"<html><body><div>{teasers}</div></body></html>")
+    assert len(d.internal_links) == 5

@@ -281,6 +281,19 @@ def test_severity_still_leads_within_the_non_blocking_tier():
     assert [f.id for f in prioritize([cheap_medium, dear_high])] == ["a.dear", "z.cheap"]
 
 
+def test_a_blocker_on_one_page_does_not_lead_the_report():
+    """MDN, round two: one page of eight carried a noindex, worth 0.38
+    composite points, and headed the whole audit because indexability is a
+    blocker and blockers skipped the cap."""
+    from geo_audit import data
+
+    blocking_id = data.load("findings")["blocking"]["ids"][0]
+    outlier = Finding(blocking_id, "critical", "low", "t", "r", impact=0.4).mark_page_level()
+    assert outlier.severity == "medium", "marking it page-level is what caps it"
+    site_wide = Finding("z.site", "high", "medium", "t", "r", impact=5.0)
+    assert [f.id for f in prioritize([outlier, site_wide])] == ["z.site", blocking_id]
+
+
 def test_a_blocker_comes_first_however_the_arithmetic_falls():
     """Prose on a page no crawler can fetch recovers nothing."""
     from geo_audit import data

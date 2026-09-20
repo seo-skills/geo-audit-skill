@@ -20,6 +20,17 @@ def test_the_protocol_states_the_1_0_gate():
     assert "does not work on this tool" in readme
 
 
+def test_the_protocol_says_a_round_that_changes_the_tool_does_not_count():
+    """Round two moved two scores by 24 and 10 points after a fix.
+
+    Counting it would have claimed a result for a version that no longer
+    exists.
+    """
+    readme = (ROOT / "tests" / "evals" / "README.md").read_text(encoding="utf-8")
+    assert "does not count" in readme
+    assert "counter starts again" in readme
+
+
 def test_the_site_list_is_five_sites_of_stated_shapes():
     """Shapes are stated because the point is variety, not a score.
 

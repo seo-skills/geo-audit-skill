@@ -122,10 +122,25 @@ def _is_chrome(tag: Tag) -> bool:
 
 
 def _pick_root(soup: BeautifulSoup) -> tuple[Tag, str]:
-    for selector, name in (("main", "main"), ("article", "article")):
-        node = soup.find(selector)
-        if isinstance(node, Tag):
-            return node, name
+    """Choose the element that holds the page's own content.
+
+    `<main>` first, then a *single* `<article>`, then `role="main"`, then the
+    body.
+
+    The single-article rule is the important one. On an article page there is
+    one `<article>` and it is exactly the content. On a homepage or a listing
+    there are a dozen, each a teaser, and taking the first one throws the page
+    away: eff.org's homepage reduced to fifty characters of one card, and was
+    then scored as though that were the whole site.
+    """
+    node = soup.find("main")
+    if isinstance(node, Tag):
+        return node, "main"
+
+    articles = [n for n in soup.find_all("article") if isinstance(n, Tag)]
+    if len(articles) == 1:
+        return articles[0], "article"
+
     node = soup.find(attrs={"role": "main"})
     if isinstance(node, Tag):
         return node, "role=main"

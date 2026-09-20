@@ -75,7 +75,24 @@ class Finding:
     # citability (weight 25) are not the same size of win - and ranking by the
     # raw number puts them in the wrong order.
     impact: float | None = None
+    # True when the finding describes a minority of pages rather than the site.
+    # Those never lead the report, however severe they are on the page itself.
+    page_level: bool = False
     priority: int = 0
+
+    def mark_page_level(self) -> "Finding":
+        """Say this describes a minority of pages, and cap it accordingly.
+
+        Severity and ordering follow from the same fact, so they are set in
+        the same place. A page-level finding never leads the report and never
+        reads as critical: MDN had one page of eight with a noindex, worth
+        0.38 composite points, heading a whole site audit.
+        """
+        self.page_level = True
+        self.severity = demote(self.severity)
+        if _SEVERITY_ORDER.index(self.severity) < _SEVERITY_ORDER.index(PAGE_LEVEL_CEILING):
+            self.severity = PAGE_LEVEL_CEILING
+        return self
 
     def to_dict(self) -> dict:
         return {
@@ -85,11 +102,15 @@ class Finding:
             "priority": self.priority,
             "points_lost": round(self.points_lost, 2),
             "impact": None if self.impact is None else round(self.impact, 2),
+            "page_level": self.page_level,
             "pages": self.pages,
             "title": self.title,
             "remediation": self.remediation,
             "excerpt": self.excerpt,
         }
+
+
+PAGE_LEVEL_CEILING = "medium"
 
 
 def demote(severity: str) -> str:
@@ -305,6 +326,7 @@ def merge(findings: list[Finding]) -> list[Finding]:
                 pages=list(finding.pages),
                 excerpt=finding.excerpt,
                 points_lost=finding.points_lost,
+                page_level=finding.page_level,
             )
             continue
         for page in finding.pages:
@@ -379,7 +401,7 @@ def prioritize(findings: list[Finding]) -> list[Finding]:
     ordered = sorted(
         findings,
         key=lambda f: (
-            0 if f.id in blocking else 1,
+            0 if (f.id in blocking and not f.page_level) else 1,
             _SEVERITY_ORDER.index(f.severity),
             -value(f),
             f.id,

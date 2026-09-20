@@ -11,6 +11,7 @@
       "excerpt": "output_demand, override, role_assertion, role_marker",
       "id": "content.instruction_like",
       "impact": null,
+      "page_level": false,
       "pages": [
         "http://fixture/injection.html"
       ],
@@ -25,6 +26,7 @@
       "excerpt": null,
       "id": "llmstxt.missing",
       "impact": null,
+      "page_level": false,
       "pages": [
         "http://fixture/llms.txt"
       ],
@@ -39,10 +41,10 @@
     "crawl": {
       "pages_crawled": 8,
       "pages_ok": 7,
-      "stopped_because": "exhausted"
+      "stopped_because": "max_pages"
     },
     "generated": {
-      "bytes": 1159,
+      "bytes": 1091,
       "excluded": [
         {
           "patterns": [
@@ -58,7 +60,7 @@
       "pages_listed": 6,
       "pages_optional": 1,
       "parsed": {
-        "bytes": 1159,
+        "bytes": 1091,
         "has_optional_section": true,
         "link_count": 6,
         "links": [
@@ -66,6 +68,11 @@
             "description": "Index of the fixture site.",
             "title": "Fixture Press: everything we have published",
             "url": "http://fixture/hub.html"
+          },
+          {
+            "description": "A listing page built the way most news homepages are: many article teasers and no main element.",
+            "title": "Fixture Press: latest reporting",
+            "url": "http://fixture/listing.html"
           },
           {
             "description": "The Fixture Plan costs 49 dollars per month and includes 10 seats, 100 GB of storage and unlimited projects. Annual billing removes two months from the total.",
@@ -83,11 +90,6 @@
             "url": "http://fixture/ssr-rich.html"
           },
           {
-            "description": "In this article we are going to look at a few of the things that we have been thinking about lately, and why they matter to us as a team and to the people we w…",
-            "title": "Some thoughts on our approach",
-            "url": "http://fixture/weak-prose.html"
-          },
-          {
             "description": null,
             "title": "Fixture App",
             "url": "http://fixture/csr-shell.html"
@@ -102,7 +104,7 @@
         "title": "Fixture Press: everything we have published",
         "valid": true
       },
-      "text": "# Fixture Press: everything we have published\n\n> Index of the fixture site.\n\n## Pages\n\n- [Fixture Press: everything we have published](http://fixture/hub.html): Index of the fixture site.\n- [Pricing that does not add up](http://fixture/schema-broken.html): The Fixture Plan costs 49 dollars per month and includes 10 seats, 100 GB of storage and unlimited projects. Annual billing removes two months from the total.\n- [Deployment checklist](http://fixture/schema-none.html): A deployment checklist reduces incident rate by forcing the same verification steps on every release. This checklist covers the four steps that catch most regr…\n- [How server-side rendering affects AI crawlers](http://fixture/ssr-rich.html): Most AI crawlers do not execute JavaScript. This page explains what that means for content delivery.\n- [Some thoughts on our approach](http://fixture/weak-prose.html): In this article we are going to look at a few of the things that we have been thinking about lately, and why they matter to us as a team and to the people we w…\n\n## Optional\n\n- [Fixture App](http://fixture/csr-shell.html)\n"
+      "text": "# Fixture Press: everything we have published\n\n> Index of the fixture site.\n\n## Pages\n\n- [Fixture Press: everything we have published](http://fixture/hub.html): Index of the fixture site.\n- [Fixture Press: latest reporting](http://fixture/listing.html): A listing page built the way most news homepages are: many article teasers and no main element.\n- [Pricing that does not add up](http://fixture/schema-broken.html): The Fixture Plan costs 49 dollars per month and includes 10 seats, 100 GB of storage and unlimited projects. Annual billing removes two months from the total.\n- [Deployment checklist](http://fixture/schema-none.html): A deployment checklist reduces incident rate by forcing the same verification steps on every release. This checklist covers the four steps that catch most regr…\n- [How server-side rendering affects AI crawlers](http://fixture/ssr-rich.html): Most AI crawlers do not execute JavaScript. This page explains what that means for content delivery.\n\n## Optional\n\n- [Fixture App](http://fixture/csr-shell.html)\n"
     },
     "llms_full_txt": {
       "present": false,
@@ -117,7 +119,7 @@
     },
     "site": "127.0.0.1"
   },
-  "normalizer_version": 1,
+  "normalizer_version": 2,
   "observed_at": "<volatile>",
   "ok": true,
   "run_id": "<volatile>",

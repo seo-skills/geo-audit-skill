@@ -6,7 +6,7 @@
     "disallowed_by_robots": [
       "http://fixture/private/secret.html"
     ],
-    "discovered": 6,
+    "discovered": 7,
     "elapsed_ms": "<volatile>",
     "limits": {
       "concurrency": 5,
@@ -20,7 +20,7 @@
       {
         "blocks": 1,
         "content_chars": 11,
-        "content_hash": "21500a700a0d22ae086663584ec8d05da742ecb4ccb1b4097a752a939c0ec423",
+        "content_hash": "066d38416479eacb27338cb7cd77095bfc9e7152fbc75eabf14cf3d8c56f209b",
         "content_root": "body",
         "headings": 0,
         "jsonld_types": [],
@@ -40,9 +40,9 @@
         "url": "http://fixture/gone"
       },
       {
-        "blocks": 20,
-        "content_chars": 663,
-        "content_hash": "27e1bd00fa757d5446f563e261ee01dcb3c6467dd1f7787c55d434f70d9844fa",
+        "blocks": 21,
+        "content_chars": 679,
+        "content_hash": "ba87ca335cadb37484684ad362a8da9da6c6c7f2413779abc6fd41cd7fa58b57",
         "content_root": "main",
         "headings": 4,
         "jsonld_types": [],
@@ -53,7 +53,7 @@
       {
         "blocks": 8,
         "content_chars": 824,
-        "content_hash": "dbc512c698c2c0864ce89f224bfef27c8cdc0d5759ad88c3384293fdd27aef1a",
+        "content_hash": "98f215eb68ffa4eb7f18dfbed028a39bba1770b10d22e0ead53e4d8c046b86f2",
         "content_root": "main",
         "headings": 3,
         "jsonld_types": [],
@@ -62,9 +62,20 @@
         "url": "http://fixture/injection.html"
       },
       {
+        "blocks": 11,
+        "content_chars": 944,
+        "content_hash": "d4ffce85cbfee45fb405add635f94e1acc643b4277e932cb9056466db245c6ef",
+        "content_root": "body",
+        "headings": 5,
+        "jsonld_types": [],
+        "scorable": true,
+        "status": 200,
+        "url": "http://fixture/listing.html"
+      },
+      {
         "blocks": 9,
         "content_chars": 703,
-        "content_hash": "59f3790111a86c0d28f56915f2bd9a6901730eb4b6ed4467974427db34bee393",
+        "content_hash": "4c5e4940010568d61b60d5cc66bce85557cb51fbe327f99cc61fa1d979b359cf",
         "content_root": "main",
         "headings": 4,
         "jsonld_types": [],
@@ -75,7 +86,7 @@
       {
         "blocks": 9,
         "content_chars": 705,
-        "content_hash": "5c3d36e477baf409262a07cb992ab55ece183c0e1567eece3a83b0439be27548",
+        "content_hash": "9298f037c5539f2ebaa55cc77a221ea7c9eb4bac800d2184656cb730918d97c0",
         "content_root": "main",
         "headings": 4,
         "jsonld_types": [],
@@ -86,7 +97,7 @@
       {
         "blocks": 28,
         "content_chars": 2052,
-        "content_hash": "c9717fc0e3c2fc302dc88443899cf0ac44a8ceae639853a27c01cf7816bed977",
+        "content_hash": "fb0f593c34f60115898506becee6b95d8276cc25f7400c9541981eab28cf8426",
         "content_root": "main",
         "headings": 5,
         "jsonld_types": [
@@ -95,17 +106,6 @@
         "scorable": true,
         "status": 200,
         "url": "http://fixture/ssr-rich.html"
-      },
-      {
-        "blocks": 8,
-        "content_chars": 1187,
-        "content_hash": "2858bc950bf075d22ee993243db8ed80c938ed3f25d4a9f23dcee931efc3e0d8",
-        "content_root": "body",
-        "headings": 2,
-        "jsonld_types": [],
-        "scorable": true,
-        "status": 200,
-        "url": "http://fixture/weak-prose.html"
       }
     ],
     "pages_crawled": 8,
@@ -205,13 +205,13 @@
     "seeded_from_sitemap": 2,
     "site": "127.0.0.1",
     "start_url": "http://fixture/hub.html",
-    "stopped_because": "exhausted"
+    "stopped_because": "max_pages"
   },
   "data_version": "2026.09",
   "error": null,
   "evidence": {
-    "content_hash": "7dbcfb495b0a226e12fa4afe86ea427fb1458fbf12d96627619cfc034b4fcd88",
-    "normalizer_version": 1,
+    "content_hash": "45191b9ec6312f355ad06aed39d9492c26d21eaded15cd8514bb082c973263fe",
+    "normalizer_version": 2,
     "pages_failed": [
       {
         "reason": "not_found",
@@ -233,6 +233,7 @@
       "excerpt": "HTTP 404",
       "id": "fetch.not_found",
       "impact": null,
+      "page_level": false,
       "pages": [
         "http://fixture/gone"
       ],
@@ -243,7 +244,7 @@
       "title": "A link points at a page that does not exist"
     }
   ],
-  "normalizer_version": 1,
+  "normalizer_version": 2,
   "observed_at": "<volatile>",
   "ok": true,
   "run_id": "<volatile>",

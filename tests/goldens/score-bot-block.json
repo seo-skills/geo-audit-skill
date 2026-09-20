@@ -10,7 +10,7 @@
   "error": null,
   "evidence": {
     "content_hash": null,
-    "normalizer_version": 1,
+    "normalizer_version": 2,
     "pages_failed": [
       {
         "reason": "bot_blocked",
@@ -27,6 +27,7 @@
       "excerpt": "HTTP 403",
       "id": "fetch.blocked",
       "impact": null,
+      "page_level": false,
       "pages": [
         "http://fixture/bot-block"
       ],
@@ -37,7 +38,7 @@
       "title": "The page refused an ordinary crawler request"
     }
   ],
-  "normalizer_version": 1,
+  "normalizer_version": 2,
   "note": "The crawl found no scorable pages on 127.0.0.1. The start URL returned 403. Nothing was scored.",
   "observed_at": "<volatile>",
   "ok": true,

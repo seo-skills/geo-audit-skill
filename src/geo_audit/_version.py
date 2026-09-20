@@ -27,5 +27,7 @@ REPO_URL = "https://github.com/seo-skills/geo-audit-skill"
 
 SCHEMA_VERSION = 1
 SCORING_VERSION = "1.0"
-NORMALIZER_VERSION = 1
+# 2: `<article>` is only the content root when the page has exactly one. Taking
+#    the first of many reduced every listing page to a single teaser card.
+NORMALIZER_VERSION = 2
 STATE_VERSION = 1

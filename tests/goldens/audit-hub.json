@@ -37,7 +37,7 @@
     "disallowed_by_robots": [
       "http://fixture/private/secret.html"
     ],
-    "discovered": 6,
+    "discovered": 7,
     "elapsed_ms": "<volatile>",
     "limits": {
       "concurrency": 5,
@@ -51,7 +51,7 @@
       {
         "blocks": 1,
         "content_chars": 11,
-        "content_hash": "21500a700a0d22ae086663584ec8d05da742ecb4ccb1b4097a752a939c0ec423",
+        "content_hash": "066d38416479eacb27338cb7cd77095bfc9e7152fbc75eabf14cf3d8c56f209b",
         "content_root": "body",
         "headings": 0,
         "jsonld_types": [],
@@ -71,9 +71,9 @@
         "url": "http://fixture/gone"
       },
       {
-        "blocks": 20,
-        "content_chars": 663,
-        "content_hash": "27e1bd00fa757d5446f563e261ee01dcb3c6467dd1f7787c55d434f70d9844fa",
+        "blocks": 21,
+        "content_chars": 679,
+        "content_hash": "ba87ca335cadb37484684ad362a8da9da6c6c7f2413779abc6fd41cd7fa58b57",
         "content_root": "main",
         "headings": 4,
         "jsonld_types": [],
@@ -84,7 +84,7 @@
       {
         "blocks": 8,
         "content_chars": 824,
-        "content_hash": "dbc512c698c2c0864ce89f224bfef27c8cdc0d5759ad88c3384293fdd27aef1a",
+        "content_hash": "98f215eb68ffa4eb7f18dfbed028a39bba1770b10d22e0ead53e4d8c046b86f2",
         "content_root": "main",
         "headings": 3,
         "jsonld_types": [],
@@ -93,9 +93,20 @@
         "url": "http://fixture/injection.html"
       },
       {
+        "blocks": 11,
+        "content_chars": 944,
+        "content_hash": "d4ffce85cbfee45fb405add635f94e1acc643b4277e932cb9056466db245c6ef",
+        "content_root": "body",
+        "headings": 5,
+        "jsonld_types": [],
+        "scorable": true,
+        "status": 200,
+        "url": "http://fixture/listing.html"
+      },
+      {
         "blocks": 9,
         "content_chars": 703,
-        "content_hash": "59f3790111a86c0d28f56915f2bd9a6901730eb4b6ed4467974427db34bee393",
+        "content_hash": "4c5e4940010568d61b60d5cc66bce85557cb51fbe327f99cc61fa1d979b359cf",
         "content_root": "main",
         "headings": 4,
         "jsonld_types": [],
@@ -106,7 +117,7 @@
       {
         "blocks": 9,
         "content_chars": 705,
-        "content_hash": "5c3d36e477baf409262a07cb992ab55ece183c0e1567eece3a83b0439be27548",
+        "content_hash": "9298f037c5539f2ebaa55cc77a221ea7c9eb4bac800d2184656cb730918d97c0",
         "content_root": "main",
         "headings": 4,
         "jsonld_types": [],
@@ -117,7 +128,7 @@
       {
         "blocks": 28,
         "content_chars": 2052,
-        "content_hash": "c9717fc0e3c2fc302dc88443899cf0ac44a8ceae639853a27c01cf7816bed977",
+        "content_hash": "fb0f593c34f60115898506becee6b95d8276cc25f7400c9541981eab28cf8426",
         "content_root": "main",
         "headings": 5,
         "jsonld_types": [
@@ -126,17 +137,6 @@
         "scorable": true,
         "status": 200,
         "url": "http://fixture/ssr-rich.html"
-      },
-      {
-        "blocks": 8,
-        "content_chars": 1187,
-        "content_hash": "2858bc950bf075d22ee993243db8ed80c938ed3f25d4a9f23dcee931efc3e0d8",
-        "content_root": "body",
-        "headings": 2,
-        "jsonld_types": [],
-        "scorable": true,
-        "status": 200,
-        "url": "http://fixture/weak-prose.html"
       }
     ],
     "pages_crawled": 8,
@@ -237,13 +237,13 @@
     "seeded_from_sitemap": 2,
     "site": "127.0.0.1",
     "start_url": "http://fixture/hub.html",
-    "stopped_because": "exhausted"
+    "stopped_because": "max_pages"
   },
   "data_version": "2026.09",
   "error": null,
   "evidence": {
-    "content_hash": "7dbcfb495b0a226e12fa4afe86ea427fb1458fbf12d96627619cfc034b4fcd88",
-    "normalizer_version": 1,
+    "content_hash": "45191b9ec6312f355ad06aed39d9492c26d21eaded15cd8514bb082c973263fe",
+    "normalizer_version": 2,
     "pages_failed": [
       {
         "reason": "not_found",
@@ -265,13 +265,14 @@
       "excerpt": null,
       "id": "citability.extractability",
       "impact": 2.77,
+      "page_level": false,
       "pages": [
         "http://fixture/csr-shell.html",
         "http://fixture/hub.html",
         "http://fixture/injection.html",
+        "http://fixture/listing.html",
         "http://fixture/schema-broken.html",
-        "http://fixture/schema-none.html",
-        "http://fixture/weak-prose.html"
+        "http://fixture/schema-none.html"
       ],
       "points_lost": 11.07,
       "priority": 1,
@@ -284,14 +285,15 @@
       "excerpt": null,
       "id": "content.expertise",
       "impact": 4.34,
+      "page_level": false,
       "pages": [
         "http://fixture/csr-shell.html",
         "http://fixture/hub.html",
         "http://fixture/injection.html",
+        "http://fixture/listing.html",
         "http://fixture/schema-broken.html",
         "http://fixture/schema-none.html",
-        "http://fixture/ssr-rich.html",
-        "http://fixture/weak-prose.html"
+        "http://fixture/ssr-rich.html"
       ],
       "points_lost": 21.71,
       "priority": 2,
@@ -303,16 +305,17 @@
       "effort": "high",
       "excerpt": null,
       "id": "content.depth",
-      "impact": 3.52,
+      "impact": 3.43,
+      "page_level": false,
       "pages": [
         "http://fixture/csr-shell.html",
         "http://fixture/hub.html",
         "http://fixture/injection.html",
+        "http://fixture/listing.html",
         "http://fixture/schema-broken.html",
-        "http://fixture/schema-none.html",
-        "http://fixture/weak-prose.html"
+        "http://fixture/schema-none.html"
       ],
-      "points_lost": 17.61,
+      "points_lost": 17.14,
       "priority": 3,
       "remediation": "An engine quoting a page has to find the whole answer on it. Cover the question, the constraints and at least one worked case, and use lists or a table where the content is genuinely tabular. Length is not the goal; completeness is, and length is what it costs.",
       "severity": "high",
@@ -321,33 +324,18 @@
     {
       "effort": "medium",
       "excerpt": null,
-      "id": "citability.self_containment",
-      "impact": 2.25,
-      "pages": [
-        "http://fixture/csr-shell.html",
-        "http://fixture/hub.html",
-        "http://fixture/weak-prose.html"
-      ],
-      "points_lost": 8.98,
-      "priority": 4,
-      "remediation": "Rewrite the opening sentence of each passage so it names its own subject. An engine lifts one paragraph, not the page: a paragraph that starts with \"This also means...\" arrives at the reader with nothing to point at.",
-      "severity": "high",
-      "title": "Passages depend on the paragraph above them"
-    },
-    {
-      "effort": "medium",
-      "excerpt": null,
       "id": "schema.presence",
       "impact": 2.14,
+      "page_level": false,
       "pages": [
         "http://fixture/csr-shell.html",
         "http://fixture/hub.html",
         "http://fixture/injection.html",
-        "http://fixture/schema-none.html",
-        "http://fixture/weak-prose.html"
+        "http://fixture/listing.html",
+        "http://fixture/schema-none.html"
       ],
       "points_lost": 21.43,
-      "priority": 5,
+      "priority": 4,
       "remediation": "Add JSON-LD describing what the page is. Structured data is the only part of a page an engine does not have to interpret, which makes it the cheapest way to be understood correctly.",
       "severity": "high",
       "title": "The page carries no structured data"
@@ -357,17 +345,18 @@
       "excerpt": null,
       "id": "schema.organization",
       "impact": 1.93,
+      "page_level": false,
       "pages": [
         "http://fixture/csr-shell.html",
         "http://fixture/hub.html",
         "http://fixture/injection.html",
+        "http://fixture/listing.html",
         "http://fixture/schema-broken.html",
         "http://fixture/schema-none.html",
-        "http://fixture/ssr-rich.html",
-        "http://fixture/weak-prose.html"
+        "http://fixture/ssr-rich.html"
       ],
       "points_lost": 19.29,
-      "priority": 6,
+      "priority": 5,
       "remediation": "Add an Organization or Person node with name, url, logo, description and sameAs links to the profiles that identify you. sameAs is what lets an engine connect this site to the entity it already knows about.",
       "severity": "high",
       "title": "No machine-readable publisher identity"
@@ -377,18 +366,19 @@
       "excerpt": null,
       "id": "technical.transport_security",
       "impact": 1.5,
+      "page_level": false,
       "pages": [
         "http://fixture/csr-shell.html",
         "http://fixture/gone",
         "http://fixture/hub.html",
         "http://fixture/injection.html",
+        "http://fixture/listing.html",
         "http://fixture/schema-broken.html",
         "http://fixture/schema-none.html",
-        "http://fixture/ssr-rich.html",
-        "http://fixture/weak-prose.html"
+        "http://fixture/ssr-rich.html"
       ],
       "points_lost": 10.0,
-      "priority": 7,
+      "priority": 6,
       "remediation": "Serve everything over HTTPS and send a Strict-Transport-Security header. Engines discount, and some browsers block, content served over plain HTTP.",
       "severity": "high",
       "title": "The site is not served securely"
@@ -398,11 +388,12 @@
       "excerpt": "HTTP 404",
       "id": "fetch.not_found",
       "impact": null,
+      "page_level": false,
       "pages": [
         "http://fixture/gone"
       ],
       "points_lost": 0.0,
-      "priority": 8,
+      "priority": 7,
       "remediation": "Fix the link or remove it. A crawler that follows it spends part of its budget on a 404, and an engine that followed it from a citation sends the reader nowhere.",
       "severity": "high",
       "title": "A link points at a page that does not exist"
@@ -412,16 +403,17 @@
       "excerpt": null,
       "id": "content.freshness",
       "impact": 4.29,
+      "page_level": false,
       "pages": [
         "http://fixture/csr-shell.html",
         "http://fixture/hub.html",
         "http://fixture/injection.html",
+        "http://fixture/listing.html",
         "http://fixture/schema-broken.html",
-        "http://fixture/schema-none.html",
-        "http://fixture/weak-prose.html"
+        "http://fixture/schema-none.html"
       ],
       "points_lost": 21.43,
-      "priority": 9,
+      "priority": 8,
       "remediation": "Publish a dateModified and update it when the content actually changes, not on every deploy. A page with no date is undatable, and an engine asked for current information cannot choose it over one that is.",
       "severity": "medium",
       "title": "Pages do not say when they were last checked"
@@ -431,18 +423,19 @@
       "excerpt": null,
       "id": "platform.llms_txt",
       "impact": 4.12,
+      "page_level": false,
       "pages": [
         "http://fixture/csr-shell.html",
         "http://fixture/gone",
         "http://fixture/hub.html",
         "http://fixture/injection.html",
+        "http://fixture/listing.html",
         "http://fixture/schema-broken.html",
         "http://fixture/schema-none.html",
-        "http://fixture/ssr-rich.html",
-        "http://fixture/weak-prose.html"
+        "http://fixture/ssr-rich.html"
       ],
       "points_lost": 35.0,
-      "priority": 10,
+      "priority": 9,
       "remediation": "Add /llms.txt: one H1, a blockquote summary, then sections of markdown links to the pages worth reading. It is a convention rather than a standard, which is why this is medium - but it is the only place you get to state your own priorities in your own words, and `geo llmstxt --generate` writes a first draft from your own pages.",
       "severity": "medium",
       "title": "The site publishes no llms.txt"
@@ -452,17 +445,18 @@
       "excerpt": null,
       "id": "platform.social_cards",
       "impact": 3.53,
+      "page_level": false,
       "pages": [
         "http://fixture/csr-shell.html",
         "http://fixture/hub.html",
         "http://fixture/injection.html",
+        "http://fixture/listing.html",
         "http://fixture/schema-broken.html",
         "http://fixture/schema-none.html",
-        "http://fixture/ssr-rich.html",
-        "http://fixture/weak-prose.html"
+        "http://fixture/ssr-rich.html"
       ],
       "points_lost": 30.0,
-      "priority": 11,
+      "priority": 10,
       "remediation": "Add og:title, og:description and og:image to every page. Engines and the apps around them build the link preview from these; without them the preview falls back to whatever the page happens to start with, which is usually navigation.",
       "severity": "medium",
       "title": "Pages have no preview card"
@@ -471,17 +465,18 @@
       "effort": "medium",
       "excerpt": null,
       "id": "citability.evidence_density",
-      "impact": 2.18,
+      "impact": 2.19,
+      "page_level": false,
       "pages": [
         "http://fixture/csr-shell.html",
         "http://fixture/hub.html",
         "http://fixture/injection.html",
+        "http://fixture/listing.html",
         "http://fixture/schema-broken.html",
-        "http://fixture/schema-none.html",
-        "http://fixture/weak-prose.html"
+        "http://fixture/schema-none.html"
       ],
-      "points_lost": 8.73,
-      "priority": 12,
+      "points_lost": 8.75,
+      "priority": 11,
       "remediation": "Add the specific figure, date, version or measurement to each claim, and link the primary source. Passages carrying a checkable fact are the ones engines quote.",
       "severity": "medium",
       "title": "Claims arrive without numbers, dates or sources"
@@ -490,17 +485,18 @@
       "effort": "low",
       "excerpt": null,
       "id": "citability.attribution",
-      "impact": 2.0,
+      "impact": 1.96,
+      "page_level": false,
       "pages": [
         "http://fixture/csr-shell.html",
         "http://fixture/hub.html",
         "http://fixture/injection.html",
+        "http://fixture/listing.html",
         "http://fixture/schema-broken.html",
-        "http://fixture/schema-none.html",
-        "http://fixture/weak-prose.html"
+        "http://fixture/schema-none.html"
       ],
-      "points_lost": 8.0,
-      "priority": 13,
+      "points_lost": 7.86,
+      "priority": 12,
       "remediation": "Add a visible byline, a published date and a last-modified date, and mirror them in Article or Organization JSON-LD. Attribution is what lets an engine decide the page is safe to quote.",
       "severity": "medium",
       "title": "The page does not say who wrote it or when"
@@ -508,33 +504,34 @@
     {
       "effort": "medium",
       "excerpt": null,
-      "id": "citability.answer_first",
+      "id": "citability.self_containment",
       "impact": 1.43,
+      "page_level": true,
       "pages": [
-        "http://fixture/csr-shell.html",
-        "http://fixture/weak-prose.html"
+        "http://fixture/csr-shell.html"
       ],
-      "points_lost": 5.71,
-      "priority": 14,
-      "remediation": "Put the direct answer in the first sentence under each heading, then explain. Move throat-clearing openers below the answer or delete them.",
+      "points_lost": 5.74,
+      "priority": 13,
+      "remediation": "Rewrite the opening sentence of each passage so it names its own subject. An engine lifts one paragraph, not the page: a paragraph that starts with \"This also means...\" arrives at the reader with nothing to point at.",
       "severity": "medium",
-      "title": "Sections build up to the answer instead of leading with it"
+      "title": "Passages depend on the paragraph above them"
     },
     {
       "effort": "low",
       "excerpt": null,
       "id": "schema.article",
       "impact": 1.31,
+      "page_level": false,
       "pages": [
         "http://fixture/csr-shell.html",
         "http://fixture/hub.html",
         "http://fixture/injection.html",
+        "http://fixture/listing.html",
         "http://fixture/schema-broken.html",
-        "http://fixture/schema-none.html",
-        "http://fixture/weak-prose.html"
+        "http://fixture/schema-none.html"
       ],
       "points_lost": 13.14,
-      "priority": 15,
+      "priority": 14,
       "remediation": "Add Article or BlogPosting with headline, author, datePublished, dateModified and image. This is how an engine decides a page is datable, attributable content rather than a landing page.",
       "severity": "medium",
       "title": "Content pages are not described as articles"
@@ -544,11 +541,12 @@
       "excerpt": null,
       "id": "schema.validity",
       "impact": 1.25,
+      "page_level": false,
       "pages": [
         "http://fixture/schema-broken.html"
       ],
       "points_lost": 12.5,
-      "priority": 16,
+      "priority": 15,
       "remediation": "Fix the JSON syntax and add the required properties for each declared type. A block that does not parse is worth exactly as much as no block at all.",
       "severity": "medium",
       "title": "Structured data is malformed or missing required properties"
@@ -556,8 +554,24 @@
     {
       "effort": "medium",
       "excerpt": null,
+      "id": "citability.answer_first",
+      "impact": 0.71,
+      "page_level": true,
+      "pages": [
+        "http://fixture/csr-shell.html"
+      ],
+      "points_lost": 2.86,
+      "priority": 16,
+      "remediation": "Put the direct answer in the first sentence under each heading, then explain. Move throat-clearing openers below the answer or delete them.",
+      "severity": "medium",
+      "title": "Sections build up to the answer instead of leading with it"
+    },
+    {
+      "effort": "medium",
+      "excerpt": null,
       "id": "technical.status_health",
       "impact": 0.28,
+      "page_level": true,
       "pages": [
         "http://fixture/gone"
       ],
@@ -572,14 +586,15 @@
       "excerpt": null,
       "id": "schema.breadth",
       "impact": 1.0,
+      "page_level": false,
       "pages": [
         "http://fixture/csr-shell.html",
         "http://fixture/hub.html",
         "http://fixture/injection.html",
+        "http://fixture/listing.html",
         "http://fixture/schema-broken.html",
         "http://fixture/schema-none.html",
-        "http://fixture/ssr-rich.html",
-        "http://fixture/weak-prose.html"
+        "http://fixture/ssr-rich.html"
       ],
       "points_lost": 10.0,
       "priority": 18,
@@ -591,11 +606,12 @@
       "effort": "medium",
       "excerpt": null,
       "id": "content.readability",
-      "impact": 0.99,
+      "impact": 0.71,
+      "page_level": true,
       "pages": [
         "http://fixture/csr-shell.html"
       ],
-      "points_lost": 4.96,
+      "points_lost": 3.57,
       "priority": 19,
       "remediation": "Break sentences over about thirty-five words. A long sentence carries several claims at once, so an engine lifting it takes claims it did not want and a reader gets a paragraph where they asked for a fact.",
       "severity": "low",
@@ -604,53 +620,55 @@
     {
       "effort": "low",
       "excerpt": null,
-      "id": "citability.structure",
-      "impact": 0.76,
-      "pages": [
-        "http://fixture/csr-shell.html"
-      ],
-      "points_lost": 3.05,
-      "priority": 20,
-      "remediation": "Give the page one H1 and at least three H2s, each phrased as the question its section answers. Do not skip heading levels; split any section over 400 words.",
-      "severity": "low",
-      "title": "Heading structure does not segment the page into answerable sections"
-    },
-    {
-      "effort": "low",
-      "excerpt": null,
       "id": "platform.feeds",
       "impact": 0.71,
+      "page_level": false,
       "pages": [
         "http://fixture/csr-shell.html",
         "http://fixture/gone",
         "http://fixture/hub.html",
         "http://fixture/injection.html",
+        "http://fixture/listing.html",
         "http://fixture/schema-broken.html",
         "http://fixture/schema-none.html",
-        "http://fixture/ssr-rich.html",
-        "http://fixture/weak-prose.html"
+        "http://fixture/ssr-rich.html"
       ],
       "points_lost": 6.0,
-      "priority": 21,
+      "priority": 20,
       "remediation": "Advertise a sitemap in robots.txt and, if the site publishes regularly, link an RSS or Atom feed from the head. Both are how a crawler finds pages nothing links to yet.",
       "severity": "low",
       "title": "The site is hard to discover in bulk"
+    },
+    {
+      "effort": "low",
+      "excerpt": null,
+      "id": "citability.structure",
+      "impact": 0.58,
+      "page_level": true,
+      "pages": [
+        "http://fixture/csr-shell.html"
+      ],
+      "points_lost": 2.33,
+      "priority": 21,
+      "remediation": "Give the page one H1 and at least three H2s, each phrased as the question its section answers. Do not skip heading levels; split any section over 400 words.",
+      "severity": "low",
+      "title": "Heading structure does not segment the page into answerable sections"
     }
   ],
-  "normalizer_version": 1,
+  "normalizer_version": 2,
   "observed_at": "<volatile>",
   "ok": true,
   "run_id": "<volatile>",
   "schema_version": 1,
   "scores": {
     "categories": {
-      "citability": 54,
-      "content": 34,
+      "citability": 61,
+      "content": 36,
       "platform": 16,
       "schema": 24,
-      "technical": 80
+      "technical": 82
     },
-    "composite": 45,
+    "composite": 48,
     "tier": "weak",
     "tier_meaning": "Answers exist on the page but are buried in context that does not travel."
   },
@@ -660,7 +678,7 @@
       "class": "heuristic",
       "detail": {
         "max": 25.0,
-        "mean": 16.02,
+        "mean": 19.26,
         "min": 0.0,
         "pages_measured": 7,
         "pages_total": 7,
@@ -669,13 +687,13 @@
       "id": "citability.self_containment",
       "max": 25,
       "page": null,
-      "value": 16.02
+      "value": 19.26
     },
     {
       "class": "heuristic",
       "detail": {
         "max": 20.0,
-        "mean": 14.29,
+        "mean": 17.14,
         "min": 0.0,
         "pages_measured": 7,
         "pages_total": 7,
@@ -684,30 +702,31 @@
       "id": "citability.answer_first",
       "max": 20,
       "page": null,
-      "value": 14.29
+      "value": 17.14
     },
     {
       "class": "deterministic",
       "detail": {
         "max": 15.0,
         "max_section_words": 400,
-        "mean": 11.95,
+        "mean": 12.67,
         "min": 0.0,
         "oversized_sections": 0,
         "pages_measured": 7,
         "pages_total": 7,
+        "skipped_levels": 0,
         "worst_page": "http://fixture/csr-shell.html"
       },
       "id": "citability.structure",
       "max": 15,
       "page": null,
-      "value": 11.95
+      "value": 12.67
     },
     {
       "class": "heuristic",
       "detail": {
         "max": 11.67,
-        "mean": 6.27,
+        "mean": 6.25,
         "min": 0.0,
         "pages_measured": 7,
         "pages_total": 7,
@@ -716,7 +735,7 @@
       "id": "citability.evidence_density",
       "max": 15,
       "page": null,
-      "value": 6.27
+      "value": 6.25
     },
     {
       "class": "deterministic",
@@ -738,7 +757,7 @@
       "class": "deterministic",
       "detail": {
         "max": 10.0,
-        "mean": 2.0,
+        "mean": 2.14,
         "min": 0.0,
         "pages_measured": 7,
         "pages_total": 7,
@@ -754,7 +773,7 @@
       "id": "citability.attribution",
       "max": 10,
       "page": null,
-      "value": 2.0
+      "value": 2.14
     },
     {
       "class": "heuristic",
@@ -793,7 +812,7 @@
       "class": "deterministic",
       "detail": {
         "max": 20.0,
-        "mean": 17.14,
+        "mean": 17.71,
         "meta_robots": null,
         "min": 16.0,
         "nofollow": false,
@@ -806,7 +825,7 @@
       "id": "technical.indexability",
       "max": 20,
       "page": null,
-      "value": 17.14
+      "value": 17.71
     },
     {
       "class": "deterministic",
@@ -825,7 +844,7 @@
           ]
         },
         "max": 20.0,
-        "mean": 15.14,
+        "mean": 15.86,
         "min": 8.5,
         "pages_measured": 7,
         "pages_total": 8,
@@ -834,7 +853,7 @@
       "id": "technical.metadata",
       "max": 20,
       "page": null,
-      "value": 15.14
+      "value": 15.86
     },
     {
       "class": "deterministic",
@@ -994,7 +1013,7 @@
       "class": "heuristic",
       "detail": {
         "max": 20.26,
-        "mean": 7.39,
+        "mean": 7.86,
         "min": 0.06,
         "min_chars": 900,
         "pages_measured": 7,
@@ -1004,7 +1023,7 @@
       "id": "content.depth",
       "max": 25,
       "page": null,
-      "value": 7.39
+      "value": 7.86
     },
     {
       "class": "deterministic",
@@ -1047,7 +1066,7 @@
       "class": "heuristic",
       "detail": {
         "max": 25.0,
-        "mean": 20.04,
+        "mean": 21.43,
         "min": 0.0,
         "pages_measured": 7,
         "pages_total": 7,
@@ -1056,7 +1075,7 @@
       "id": "content.readability",
       "max": 25,
       "page": null,
-      "value": 20.04
+      "value": 21.43
     },
     {
       "class": "deterministic",

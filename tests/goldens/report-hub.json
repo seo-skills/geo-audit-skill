@@ -36,8 +36,8 @@
   "data_version": "2026.09",
   "error": null,
   "evidence": {
-    "content_hash": "7dbcfb495b0a226e12fa4afe86ea427fb1458fbf12d96627619cfc034b4fcd88",
-    "normalizer_version": 1,
+    "content_hash": "45191b9ec6312f355ad06aed39d9492c26d21eaded15cd8514bb082c973263fe",
+    "normalizer_version": 2,
     "pages_failed": [
       {
         "reason": "not_found",
@@ -54,7 +54,7 @@
     "stamp": "PARTIAL"
   },
   "findings": [],
-  "normalizer_version": 1,
+  "normalizer_version": 2,
   "observed_at": "<volatile>",
   "ok": true,
   "report": {
@@ -66,7 +66,7 @@
       "source": null,
       "warnings": []
     },
-    "bytes": 30906,
+    "bytes": 30738,
     "from_run": "<volatile>",
     "mode": "client",
     "observed_at": "<volatile>",
@@ -79,13 +79,13 @@
   "schema_version": 1,
   "scores": {
     "categories": {
-      "citability": 54,
-      "content": 34,
+      "citability": 61,
+      "content": 36,
       "platform": 16,
       "schema": 24,
-      "technical": 80
+      "technical": 82
     },
-    "composite": 45,
+    "composite": 48,
     "tier": "weak",
     "tier_meaning": "Answers exist on the page but are buried in context that does not travel."
   },

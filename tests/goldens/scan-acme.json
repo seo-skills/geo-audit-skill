@@ -19,6 +19,7 @@
       "excerpt": null,
       "id": "brand.encyclopedic",
       "impact": null,
+      "page_level": false,
       "pages": [
         "Acme"
       ],
@@ -29,7 +30,7 @@
       "title": "The brand has no encyclopedic entity to resolve to"
     }
   ],
-  "normalizer_version": 1,
+  "normalizer_version": 2,
   "observed_at": "<volatile>",
   "ok": true,
   "run_id": "<volatile>",

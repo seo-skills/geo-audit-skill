@@ -11,14 +11,14 @@
   "data_version": "2026.09",
   "error": null,
   "evidence": {
-    "content_hash": "c9717fc0e3c2fc302dc88443899cf0ac44a8ceae639853a27c01cf7816bed977",
-    "normalizer_version": 1,
+    "content_hash": "fb0f593c34f60115898506becee6b95d8276cc25f7400c9541981eab28cf8426",
+    "normalizer_version": 2,
     "pages_failed": [],
     "pages_ok": 1,
     "stamp": "CURRENT"
   },
   "findings": [],
-  "normalizer_version": 1,
+  "normalizer_version": 2,
   "observed_at": "<volatile>",
   "ok": true,
   "page": {

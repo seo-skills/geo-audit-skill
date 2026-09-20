@@ -4,13 +4,13 @@
   "compare": {
     "categories": {
       "citability": {
-        "after": 54,
-        "before": 54,
+        "after": 61,
+        "before": 61,
         "delta": 0
       },
       "content": {
-        "after": 34,
-        "before": 34,
+        "after": 36,
+        "before": 36,
         "delta": 0
       },
       "platform": {
@@ -24,8 +24,8 @@
         "delta": 0
       },
       "technical": {
-        "after": 80,
-        "before": 80,
+        "after": 82,
+        "before": 82,
         "delta": 0
       }
     },
@@ -60,7 +60,7 @@
       "resolved_titles": []
     },
     "from": {
-      "composite": 45,
+      "composite": 48,
       "observed_at": "<volatile>",
       "pages_ok": 7,
       "run_id": "<volatile>",
@@ -75,7 +75,7 @@
     "signals": [],
     "tier_changed": false,
     "to": {
-      "composite": 45,
+      "composite": 48,
       "observed_at": "<volatile>",
       "pages_ok": 7,
       "run_id": "<volatile>",
@@ -84,12 +84,12 @@
     "versions": {
       "from": {
         "data_version": "2026.09",
-        "normalizer_version": 1,
+        "normalizer_version": 2,
         "scoring_version": "1.0"
       },
       "to": {
         "data_version": "2026.09",
-        "normalizer_version": 1,
+        "normalizer_version": 2,
         "scoring_version": "1.0"
       }
     }
@@ -98,8 +98,8 @@
   "data_version": "2026.09",
   "error": null,
   "evidence": {
-    "content_hash": "7dbcfb495b0a226e12fa4afe86ea427fb1458fbf12d96627619cfc034b4fcd88",
-    "normalizer_version": 1,
+    "content_hash": "45191b9ec6312f355ad06aed39d9492c26d21eaded15cd8514bb082c973263fe",
+    "normalizer_version": 2,
     "pages_failed": [
       {
         "reason": "not_found",
@@ -116,20 +116,20 @@
     "stamp": "PARTIAL"
   },
   "findings": [],
-  "normalizer_version": 1,
+  "normalizer_version": 2,
   "observed_at": "<volatile>",
   "ok": true,
   "run_id": "<volatile>",
   "schema_version": 1,
   "scores": {
     "categories": {
-      "citability": 54,
-      "content": 34,
+      "citability": 61,
+      "content": 36,
       "platform": 16,
       "schema": 24,
-      "technical": 80
+      "technical": 82
     },
-    "composite": 45,
+    "composite": 48,
     "tier": "weak",
     "tier_meaning": "Answers exist on the page but are buried in context that does not travel."
   },

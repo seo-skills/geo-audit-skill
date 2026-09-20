@@ -7,6 +7,31 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed — from the second practitioner eval
+
+Round two ran five sites of *different shapes* — SaaS, publisher, ecommerce,
+non-profit, reference — because round one's own finding was that five technical
+sites tell you nothing about whether the tool generalises. It found two defects,
+one of them serious.
+
+- **The normalizer discarded most of a page whenever the page had several
+  `<article>` elements.** The content root took the first one. On eff.org — no
+  `<main>`, thirteen article teasers — that was fifty characters of a single card.
+  The site was scored on 100 characters, discovered one link instead of
+  eighty-eight, crawled two pages instead of eight, and was reported as 32/100
+  *Poor*. It is 56/100 *Fair* on eight pages now, and MDN moved 47 to 57 for the
+  same reason. `<article>` is the content root only when the page has exactly one.
+  **`normalizer_version` is now 2**, so every affected evidence hash moves, by design.
+- **A blocking finding affecting one page led the whole report.** MDN had a single
+  page of eight carrying a `noindex`, worth 0.38 composite points, ranked first,
+  because blocking findings were exempt from the page-level severity cap. A blocker
+  on the site still leads; a blocker on one page is a page to go and look at. The
+  cap and the flag now live in one method so they cannot disagree.
+
+Neither round counts toward the 1.0 gate: both changed the tool, and a round that
+changes the tool tested a different tool than the one it finished with. The protocol
+now says so.
+
 ### Changed — from the first practitioner eval
 
 The eval was run against five real sites. It found four defects that the test

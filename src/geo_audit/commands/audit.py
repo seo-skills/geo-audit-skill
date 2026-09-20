@@ -31,7 +31,6 @@ from geo_audit.scoring.model import (
     Signal,
     aggregate,
     apply_impact,
-    demote,
     composite,
     findings_for,
     merge,
@@ -99,13 +98,6 @@ def _site_facts(result, args) -> dict:
     facts["llms_present"] = bool(found.get("present"))
     facts["llms_valid"] = bool(found.get("valid")) if found.get("present") else None
     return facts
-
-
-_SEVERITY_RANK = ("critical", "high", "medium", "low")
-
-
-def _at_most(severity: str, ceiling: str) -> str:
-    return severity if _SEVERITY_RANK.index(severity) >= _SEVERITY_RANK.index(ceiling) else ceiling
 
 
 def _forced(signal: Signal) -> Signal:
@@ -285,20 +277,10 @@ def _assemble(
                 pages = sorted(set(severe.get(signal.id) or []))
                 if not pages:
                     continue
-                blocking = set(
-                    (data.load("findings").get("blocking") or {}).get("ids") or []
-                )
                 for finding in findings_for([_forced(signal)], site):
-                    # A minority of bad pages is not a site-severity problem.
-                    # Capped at medium unless the finding is a blocker, which
-                    # is ordered ahead of everything regardless: two of eight
-                    # pages a crawler cannot read still stops the site being
-                    # cited from those two.
-                    finding.severity = (
-                        finding.severity
-                        if finding.id in blocking
-                        else _at_most(demote(finding.severity), "medium")
-                    )
+                    # A blocker on the whole site still leads; a blocker on one
+                    # page of forty is a page to go and look at.
+                    finding.mark_page_level()
                     finding.pages = pages
                     finding.points_lost = signal.max - (signal.value or 0.0)
                     findings.append(finding)
