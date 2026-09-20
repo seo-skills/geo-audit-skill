@@ -457,7 +457,7 @@ Appended as milestones close. Each entry records the gate evidence, not the inte
 | **D3** — agency kit | **Deferred to M4 behind the go/no-go gate**, as drafted. No Flask, `rich` or `portalocker` dependency in 0.1.0. |
 | **D4** — license and copyright | **MIT, © 2026 seo-skills.** No upstream copyright line is carried, which the D1 agreement permits. *Open:* confirm the holder should be the GitHub org rather than a legal entity, and re-read the written agreement before choosing any licence other than MIT — a notice waiver and a relicensing grant are different rights. |
 | §1.2 positioning | **Still `TODO(maintainer)`.** The provisional text stands. The README ships a positioning section written around it that names no other project. |
-| Plugin spike | **Not yet run against a live marketplace.** The manifests are written and version-linted; installing them from a public GitHub marketplace requires the repo to be public, which is the next action. |
+| Plugin spike | **Partly done.** The repo is public and both manifests resolve over `raw.githubusercontent.com` with the skill path they declare returning 200, so the marketplace has something valid to read. The remaining half - `/plugin marketplace add` then `/plugin install geo`, and confirming the namespace and update behaviour - has to be run by a human inside Claude Code. |
 
 ### M1 — Walking skeleton → 0.1.0 · closed 2026-09-20
 
@@ -474,10 +474,26 @@ Appended as milestones close. Each entry records the gate evidence, not the inte
 | **Kill criterion: fetch/parse parity with the reference implementation** | **Passed. 11 of 11 fixture routes agree on every comparable field** (status, redirect chain, title, full heading structure, canonical, description, JSON-LD types after `@graph` flattening, malformed-JSON-LD detection, external link set, internal link count, client-rendering verdict). Extracted text and word count are deliberately non-comparable; see divergence 5. The run found one real gap — an empty framework mount point with no noscript notice — which is now detected and tested. |
 | **Kill criterion: every score explainable line by line** | **Passed.** Each signal returns a `detail` payload of the counts behind its number; the fixtures rank ssr-rich 94 → schema-none 73 → weak-prose 13 → csr-shell 0, and each step is attributable to named signals. |
 | Divergence table exists | Done. Ten entries in `docs/concepts/score-divergence.md`, each with the reason. |
-| Quickstart passes in CI on 3 OSes | Workflow written; first run lands with the initial push. |
-| PyPI publish | **Not done.** `release.yml` publishes on a `v*` tag through trusted publishing. Requires the PyPI project and its trusted publisher to be configured once, by hand. |
+| Quickstart passes in CI on 3 OSes | **Passed on all three from the first run**, against a built wheel rather than the source tree, so the artifact that is tested is the artifact that ships. |
+| PyPI publish | **Not done, and blocked on a human.** `release.yml` publishes on a `v*` tag through trusted publishing; its tag/VERSION and changelog gates pass locally. The PyPI project and its trusted publisher have to be configured once by hand. `geo-audit-cli` was still unclaimed on 2026-09-20. Until then the README points at the git install, which is verified working. |
 
 **Test suite at 0.1.0:** 263 passing, 2 skipped (both environment-gated).
+
+### First CI, and what it cost
+
+The suite passed on the first push locally and failed everywhere in CI. Three
+rounds, worth recording because two of the three fixes were wrong.
+
+| Round | Symptom | Diagnosis | Outcome |
+|---|---|---|---|
+| 1 | every job failed except Windows | `uv pip install --system` targets the runner's system Python, and the Ubuntu and macOS images mark it externally managed under PEP 668. Behind it, nothing ever installed the interpreter the matrix asked for, so two matrix cells tested one Python. | Fixed with `setup-python`, plus an in-workflow assertion that the running version is the requested one. 9 of 11 jobs green. |
+| 2 | Ubuntu only, connection failures clustered around redirect tests | Guessed twice: that abandoned redirect responses closed with RST rather than FIN, and that half-read responses poisoned the connection pool. Both plausible, both shipped, neither verified against the bug. | Both reverted. Neither changed a measured connection count, and `requests.Response.close()` already closes an unconsumed body. |
+| 3 | same | Spent the round trip on the error message instead of a fix: `GEO_E_CONNECT` had been collapsing six distinct failures into "refused or reset". CI then named it - *the server closed the connection before sending a response*. Python's `http.server` honours a client's `Connection: close` by closing the socket but never sends the header back, so urllib3 pools a socket the server is dropping. Whether it fires depends on whether the FIN arrived before urllib3's dropped-connection check, which is exactly why macOS and Windows passed. | Dropped `Connection: close` from the client - keep-alive is what a crawler wants anyway - added one retry for the same race against real servers, and made the fixture server echo the header. The regression test counts connections at the server: seven requests on a warm session open seven connections with the old header and none without it. |
+
+Two rules came out of it, both now habits in this repo: **make a failure name its
+own cause before guessing at a fix**, and **verify a regression test fails with
+the fix removed**. Applying the second is what identified rounds 1 and 2 as
+wrong.
 
 ### Open before 0.2.0
 
