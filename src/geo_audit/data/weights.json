@@ -110,14 +110,49 @@
           "requires": "site"
         }
       }
+    },
+    "content": {
+      "weight": 20,
+      "signals": {
+        "content.depth": {
+          "max": 25,
+          "class": "heuristic"
+        },
+        "content.expertise": {
+          "max": 25,
+          "class": "deterministic"
+        },
+        "content.freshness": {
+          "max": 25,
+          "class": "deterministic"
+        },
+        "content.readability": {
+          "max": 25,
+          "class": "heuristic"
+        }
+      },
+      "advisory": {
+        "content.advisory.experience": {
+          "question": "Does the page show first-hand experience of the thing it describes?",
+          "rubric": [
+            "Names specific situations, tools, versions or constraints the author met.",
+            "Reports what happened, including what did not work.",
+            "Could not have been written by summarising other pages on the topic."
+          ]
+        },
+        "content.advisory.helpfulness": {
+          "question": "Would a reader with this question leave satisfied, or keep searching?",
+          "rubric": [
+            "Answers the question the title asks, rather than the adjacent easier one.",
+            "States limits and cases where the advice does not apply.",
+            "Does not require reading another page to be actionable."
+          ]
+        }
+      }
     }
   },
   "planned_categories": {
     "comment": "Declared so the divergence table can reference them before they ship. Absent from every computation until their milestone lands.",
-    "content": {
-      "weight": 20,
-      "milestone": "M3"
-    },
     "platform": {
       "weight": 10,
       "milestone": "M3"

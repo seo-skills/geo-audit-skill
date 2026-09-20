@@ -107,19 +107,36 @@ def test_a_missing_canonical_costs_points_but_is_not_fatal():
 def test_metadata_rewards_the_documented_lengths():
     good = doc_of(
         '<html lang="en"><head><title>How server rendering changes crawling</title>'
-        '<meta name="description" content="' + "a" * 100 + '">'
-        '<meta property="og:title" content="x"></head>'
+        '<meta name="description" content="' + "a" * 100 + '"></head>'
         "<body><main><h1>One</h1><p>x</p></main></body></html>"
     )
     points, detail = technical.metadata(good)
     assert points == 20.0
-    assert detail["breakdown"]["title"] == 4
-    assert detail["breakdown"]["description"] == 4
+    assert detail["breakdown"]["title"] == 5
+    assert detail["breakdown"]["description"] == 5
+
+
+def test_open_graph_is_not_scored_twice():
+    """It belongs to the platform category; scoring it here as well would
+    count one tag in two places."""
+    plain = doc_of(
+        '<html lang="en"><head><title>How server rendering changes crawling</title>'
+        '<meta name="description" content="' + "a" * 100 + '"></head>'
+        "<body><main><h1>One</h1><p>x</p></main></body></html>"
+    )
+    with_og = doc_of(
+        '<html lang="en"><head><title>How server rendering changes crawling</title>'
+        '<meta name="description" content="' + "a" * 100 + '">'
+        '<meta property="og:title" content="x"></head>'
+        "<body><main><h1>One</h1><p>x</p></main></body></html>"
+    )
+    assert technical.metadata(plain)[0] == technical.metadata(with_og)[0]
+    assert "open_graph" not in technical.metadata(with_og)[1]["breakdown"]
 
 
 def test_a_title_outside_the_range_gets_partial_credit():
     short = doc_of("<html><head><title>Hi</title></head><body><main><p>x</p></main></body></html>")
-    assert technical.metadata(short)[1]["breakdown"]["title"] == 2
+    assert technical.metadata(short)[1]["breakdown"]["title"] == 2.5
 
 
 @pytest.mark.parametrize(

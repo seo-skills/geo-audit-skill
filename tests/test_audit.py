@@ -61,7 +61,7 @@ def test_a_category_nobody_computed_leaves_both_sides_of_the_fraction(site, geo_
     assert narrow["scores"]["composite"] == full["scores"]["categories"]["schema"]
     coverage = narrow["completeness"]["categories"]
     assert coverage["computed"] == ["schema"]
-    assert sorted(coverage["missing"]) == ["citability", "technical"]
+    assert sorted(coverage["missing"]) == sorted(set(SITE_CATEGORIES) - {"schema"})
 
 
 def test_only_accepts_several_categories(site, geo_home):

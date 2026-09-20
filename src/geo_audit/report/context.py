@@ -17,6 +17,7 @@ from dataclasses import dataclass, field
 
 from geo_audit import data
 from geo_audit._version import PRODUCT_NAME
+from geo_audit.report.advisory import merge as advisory_merge
 from geo_audit.report.brand import Brand
 
 CATEGORY_BLURB = {
@@ -137,6 +138,7 @@ def build(
     *,
     generated_on: str,
     record_path: str | None = None,
+    advisory_answers: dict[str, dict] | None = None,
 ) -> tuple[ClientContext, OperatorContext]:
     scores = envelope.get("scores") or {}
     evidence = envelope.get("evidence") or {}
@@ -177,11 +179,14 @@ def build(
         headlines=fixes[:3],
         top_fixes=fixes[:8],
         by_category=by_category,
-        advisory=[
-            signal
-            for signal in envelope.get("signals") or []
-            if signal.get("class") == "advisory"
-        ],
+        advisory=advisory_merge(
+            [
+                signal
+                for signal in envelope.get("signals") or []
+                if signal.get("class") == "advisory"
+            ],
+            advisory_answers or {},
+        ),
         methodology=[
             {
                 "name": name,

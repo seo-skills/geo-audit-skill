@@ -132,6 +132,30 @@
       "effort": "low",
       "title": "The site does not link itself to the profiles that identify it",
       "remediation": "Add the profiles found here to the `sameAs` array of your Organization JSON-LD. It is the one step in this category that is entirely within your control, and it is what tells an engine that this site and that entity are the same thing."
+    },
+    "content.depth": {
+      "severity": "high",
+      "effort": "high",
+      "title": "Pages are too thin to answer anything on their own",
+      "remediation": "An engine quoting a page has to find the whole answer on it. Cover the question, the constraints and at least one worked case, and use lists or a table where the content is genuinely tabular. Length is not the goal; completeness is, and length is what it costs."
+    },
+    "content.expertise": {
+      "severity": "high",
+      "effort": "medium",
+      "title": "Nothing on the page says who is qualified to have written it",
+      "remediation": "Give the author a named byline linked to a page that says what they have done, and mirror it in Person JSON-LD with jobTitle, description and sameAs. Anonymous advice is the first thing an engine discounts when it has to choose between two sources."
+    },
+    "content.freshness": {
+      "severity": "medium",
+      "effort": "low",
+      "title": "Pages do not say when they were last checked",
+      "remediation": "Publish a dateModified and update it when the content actually changes, not on every deploy. A page with no date is undatable, and an engine asked for current information cannot choose it over one that is."
+    },
+    "content.readability": {
+      "severity": "medium",
+      "effort": "medium",
+      "title": "Sentences are long enough to be hard to quote",
+      "remediation": "Break sentences over about thirty-five words. A long sentence carries several claims at once, so an engine lifting it takes claims it did not want and a reader gets a paragraph where they asked for a fact."
     }
   },
   "checks": {

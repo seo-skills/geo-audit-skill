@@ -1,27 +1,70 @@
 {
   "self_containment": {
     "min_block_words": 12,
-    "floor_ratio": 0.30,
+    "floor_ratio": 0.3,
     "good_ratio": 0.85,
     "dangling_openers": [
-      "it", "this", "that", "these", "those", "they", "them", "such",
-      "he", "she", "his", "her", "its", "their", "there", "here",
-      "and", "but", "so", "then", "also", "however", "therefore",
-      "the former", "the latter", "as mentioned", "as noted", "as above",
-      "as discussed", "as we saw", "in addition", "on the other hand",
-      "for this reason", "because of this", "which means", "that said"
+      "it",
+      "this",
+      "that",
+      "these",
+      "those",
+      "they",
+      "them",
+      "such",
+      "he",
+      "she",
+      "his",
+      "her",
+      "its",
+      "their",
+      "there",
+      "here",
+      "and",
+      "but",
+      "so",
+      "then",
+      "also",
+      "however",
+      "therefore",
+      "the former",
+      "the latter",
+      "as mentioned",
+      "as noted",
+      "as above",
+      "as discussed",
+      "as we saw",
+      "in addition",
+      "on the other hand",
+      "for this reason",
+      "because of this",
+      "which means",
+      "that said"
     ]
   },
   "answer_first": {
     "max_lead_words": 45,
-    "floor_ratio": 0.20,
+    "floor_ratio": 0.2,
     "good_ratio": 0.75,
     "filler_openers": [
-      "in this article", "in this post", "in this guide", "in today",
-      "before we", "let us", "let's", "welcome", "we all know",
-      "have you ever", "if you are like", "it goes without saying",
-      "in the world of", "in the fast-paced", "nowadays", "these days",
-      "first, a little", "a brief history"
+      "in this article",
+      "in this post",
+      "in this guide",
+      "in today",
+      "before we",
+      "let us",
+      "let's",
+      "welcome",
+      "we all know",
+      "have you ever",
+      "if you are like",
+      "it goes without saying",
+      "in the world of",
+      "in the fast-paced",
+      "nowadays",
+      "these days",
+      "first, a little",
+      "a brief history"
     ]
   },
   "structure": {
@@ -52,12 +95,34 @@
     }
   },
   "render_parity": {
-    "floor_ratio": 0.50,
-    "good_ratio": 0.90
+    "floor_ratio": 0.5,
+    "good_ratio": 0.9
   },
   "findings": {
-    "severity_ladder": ["critical", "high", "medium", "low"],
-    "no_finding_above": 0.70,
-    "full_severity_below": 0.40
+    "severity_ladder": [
+      "critical",
+      "high",
+      "medium",
+      "low"
+    ],
+    "no_finding_above": 0.7,
+    "full_severity_below": 0.4
+  },
+  "content": {
+    "depth": {
+      "good_chars": 3000,
+      "min_chars": 900,
+      "good_sections": 4
+    },
+    "freshness": {
+      "fresh_days": 180,
+      "stale_days": 730
+    },
+    "readability": {
+      "good_mean_words": 20,
+      "poor_mean_words": 30,
+      "long_sentence_words": 35,
+      "good_long_share": 0.1
+    }
   }
 }

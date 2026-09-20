@@ -113,8 +113,16 @@
     <p>Nothing in this section contributes to any score above. It is included because
        it is useful, and separated because it is judgement rather than measurement.</p>
     {% for item in client.advisory %}
-    <h3>{{ item.id }}</h3>
-    <p>{{ item.detail.get('note', '') }}</p>
+    <h3>{{ item.question }}</h3>
+    {% if item.answered %}
+    <p><strong>{{ item.verdict | capitalize }}.</strong> {{ item.note }}</p>
+    {% else %}
+    <p>Not assessed. This question is answered by a person or a model reading the
+       page, and no answer was supplied for this report.</p>
+    {% endif %}
+    {% if item.rubric %}
+    <p class="pages">Judged against: {{ item.rubric | join(' ') }}</p>
+    {% endif %}
     {% endfor %}
   </section>
   {% endif %}

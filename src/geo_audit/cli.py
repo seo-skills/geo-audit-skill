@@ -316,6 +316,12 @@ def build_parser() -> argparse.ArgumentParser:
     report.add_argument(
         "--brand-config", metavar="PATH", help="a brand.json of colours, logo and name"
     )
+    report.add_argument(
+        "--advisory",
+        metavar="PATH",
+        help="a JSON file of answers to the advisory questions; they are shown in "
+        "their own section and never enter a score",
+    )
     report.add_argument("--pdf", action="store_true", help="also write a PDF beside the HTML")
     # `--out` is inherited from the global flags and means the HTML path here,
     # which is why `report` is in OWNS_OUT.

@@ -75,6 +75,9 @@ Three consequences worth stating plainly:
 | answer_first | `good_ratio` | 0.75 |
 | answer_first | `max_lead_words` | 45 |
 | attribution | `points` | 5 entries |
+| content | `depth` | 3 entries |
+| content | `freshness` | 2 entries |
+| content | `readability` | 4 entries |
 | evidence_density | `floor_ratio` | 0.05 |
 | evidence_density | `good_external_domains` | 3 |
 | evidence_density | `good_ratio` | 0.35 |

@@ -19,6 +19,7 @@ from geo_audit.errors import GeoError
 from geo_audit.lib.evidence import short
 from geo_audit.lib.ids import is_run_id
 from geo_audit.lib.slug import host_of, project_slug
+from geo_audit.report import advisory as advisory_lib
 from geo_audit.report import brand as brand_lib
 from geo_audit.report import context as context_lib
 from geo_audit.report import pdf as pdf_lib
@@ -79,6 +80,7 @@ def run(args, run_id: str) -> dict:
     slug = project_slug(args.url)
     record = _record_for(slug, args.run)
     brand = brand_lib.load(args.brand_config)
+    advisory_answers = advisory_lib.load(args.advisory)
 
     for warning in brand.warnings:
         import sys
@@ -98,6 +100,7 @@ def run(args, run_id: str) -> dict:
         brand,
         generated_on=datetime.now(timezone.utc).strftime("%Y-%m-%d"),
         record_path=record_path,
+        advisory_answers=advisory_answers,
     )
 
     html = (
@@ -133,6 +136,7 @@ def run(args, run_id: str) -> dict:
                 "bytes": len(html.encode("utf-8")),
                 "pdf_path": str(pdf_path) if pdf_path else None,
                 "pdf_skipped": pdf_skipped,
+                "advisory_answered": sorted(advisory_answers),
                 "from_run": record.get("run_id"),
                 "observed_at": record.get("observed_at"),
                 "brand": {

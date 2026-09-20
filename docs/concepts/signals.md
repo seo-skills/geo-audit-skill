@@ -44,6 +44,17 @@ Out of **110**, or **100** when the optional inputs are absent.
 
 Out of **100**, or **60** when the optional inputs are absent.
 
+### content (category weight 20)
+
+| Signal | Class | Max | Requires | Question |
+|---|---|---|---|---|
+| `content.depth` | heuristic | 25 | — |  |
+| `content.expertise` | deterministic | 25 | — |  |
+| `content.freshness` | deterministic | 25 | — |  |
+| `content.readability` | heuristic | 25 | — |  |
+
+Out of **100**.
+
 ### technical (category weight 15)
 
 | Signal | Class | Max | Requires | Question |

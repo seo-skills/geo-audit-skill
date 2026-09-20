@@ -93,27 +93,25 @@ def metadata(doc: Document) -> tuple[float | None, dict]:
 
     title_points = 0.0
     if title:
-        title_points = 4.0 if MIN_TITLE <= len(title) <= MAX_TITLE else 2.0
+        title_points = 5.0 if MIN_TITLE <= len(title) <= MAX_TITLE else 2.5
     description_points = 0.0
     if description:
-        description_points = 4.0 if MIN_DESCRIPTION <= len(description) <= MAX_DESCRIPTION else 2.0
+        description_points = 5.0 if MIN_DESCRIPTION <= len(description) <= MAX_DESCRIPTION else 2.5
 
     lang_points = 3.0 if doc.lang else 0.0
-    h1_points = 3.0 if sum(1 for level, _ in doc.headings if level == 1) == 1 else 0.0
-    og_points = 3.0 if any(key.startswith("og:") for key in doc.meta) else 0.0
+    h1_points = 4.0 if sum(1 for level, _ in doc.headings if level == 1) == 1 else 0.0
     alt_points = 0.0
     if doc.images:
         alt_points = 3.0 * (doc.images_with_alt / doc.images)
     else:
         alt_points = 3.0
 
-    points = title_points + description_points + lang_points + h1_points + og_points + alt_points
+    points = title_points + description_points + lang_points + h1_points + alt_points
     return points, {
         "title_chars": len(title) or None,
         "description_chars": len(description) or None,
         "lang": doc.lang,
         "h1_count": sum(1 for level, _ in doc.headings if level == 1),
-        "open_graph": og_points > 0,
         "images": doc.images,
         "images_with_alt": doc.images_with_alt,
         "breakdown": {
@@ -121,7 +119,6 @@ def metadata(doc: Document) -> tuple[float | None, dict]:
             "description": round(description_points, 2),
             "lang": lang_points,
             "single_h1": h1_points,
-            "open_graph": og_points,
             "image_alt": round(alt_points, 2),
         },
         "limits": {

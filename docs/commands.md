@@ -144,7 +144,7 @@ options:
                         advertises
   --only CATEGORY[,CATEGORY]
                         score only these categories (citability, technical,
-                        schema, brand)
+                        schema, content, brand)
   --brand NAME          also score brand presence for this name, folding it
                         into the composite
   --rescore RUN_ID      recompute from a recorded audit instead of crawling;
@@ -334,7 +334,8 @@ Render a recorded audit as a single self-contained HTML file, optionally as a PD
 ```
 usage: geo report [-h] [--json] [--out PATH] [--config PATH] [--no-input]
                   [--quiet] [--verbose] [--allow-private] [--fail-on-partial]
-                  [--run RUN_ID] [--mode MODE] [--brand-config PATH] [--pdf]
+                  [--run RUN_ID] [--mode MODE] [--brand-config PATH]
+                  [--advisory PATH] [--pdf]
                   url
 
 Render a recorded audit as a single self-contained HTML file, optionally as a
@@ -359,6 +360,8 @@ options:
   --mode MODE          client (default) or operator; operator adds a
                        provenance section
   --brand-config PATH  a brand.json of colours, logo and name
+  --advisory PATH      a JSON file of answers to the advisory questions; they
+                       are shown in their own section and never enter a score
   --pdf                also write a PDF beside the HTML
 ```
 

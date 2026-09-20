@@ -20,7 +20,7 @@ from geo_audit.errors import GeoError
 from geo_audit.lib import crawl as crawl_lib
 from geo_audit.lib.ids import is_run_id
 from geo_audit.lib.slug import host_of, project_slug
-from geo_audit.scoring import citability, schema_org, technical
+from geo_audit.scoring import citability, content as content_scorer, schema_org, technical
 from geo_audit.scoring.model import (
     Signal,
     aggregate,
@@ -34,7 +34,7 @@ from geo_audit.scoring.model import (
 # What an audit can compute from a URL alone. `brand` needs a name, so it
 # joins the run only when --brand is given: a category the inputs cannot
 # reach is not "missing", it is out of scope for that run.
-SITE_CATEGORIES = ("citability", "technical", "schema")
+SITE_CATEGORIES = ("citability", "technical", "schema", "content")
 CATEGORIES = SITE_CATEGORIES + ("brand",)
 
 
@@ -76,6 +76,8 @@ def _score_page(page, robots, categories: tuple[str, ...]) -> dict[str, list[Sig
         scored["technical"] = technical.score(page, robots)
     if "schema" in categories and page.doc is not None:
         scored["schema"] = schema_org.score(page)
+    if "content" in categories and page.doc is not None:
+        scored["content"] = content_scorer.score(page)
     return scored
 
 
@@ -112,6 +114,8 @@ def run(args, run_id: str) -> dict:
             findings.extend(findings_for(signals, page.result.final_url if page.result else page.url))
         findings.extend(page.findings)
 
+    advisory = content_scorer.advisory_signals() if "content" in categories else []
+
     extra = None
     if "brand" in categories:
         from geo_audit.commands import scan as scan_cmd
@@ -147,6 +151,7 @@ def run(args, run_id: str) -> dict:
         evidence=crawl_cmd.evidence_block(result),
         record=True,
         available=available,
+        advisory=advisory,
         extra=extra,
     )
 
@@ -162,6 +167,7 @@ def _assemble(
     evidence: dict,
     record: bool,
     available: tuple[str, ...] | None = None,
+    advisory: list[Signal] | None = None,
     extra: dict | None = None,
 ) -> dict:
     weights = data.weights()
@@ -199,6 +205,11 @@ def _assemble(
         ),
         "categories": coverage,
     }
+
+    # Advisory signals ride along with the data so the rubric is never separated
+    # from what it is about. `composite()` filters on class, so they cannot
+    # reach a number by any path.
+    all_signals.extend(advisory or [])
 
     ranked = prioritize(merge(findings))
     result = envelope.build(
@@ -263,7 +274,10 @@ def rescore(args, run_id: str) -> dict:
     ]
 
     by_category: dict[str, list[list[Signal]]] = {}
+    stored_advisory = [signal for signal in stored_signals if signal.cls == "advisory"]
     for signal in stored_signals:
+        if signal.cls == "advisory":
+            continue
         name = signal.id.split(".", 1)[0]
         by_category.setdefault(name, [[]])[0].append(signal)
 
@@ -301,6 +315,7 @@ def rescore(args, run_id: str) -> dict:
         evidence=record.get("evidence") or {},
         record=False,
         available=categories,
+        advisory=stored_advisory,
         extra={"rescore": rescore_block},
     )
 
