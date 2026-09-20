@@ -31,7 +31,17 @@ python tools/lint_skills.py       # skill contracts and the key manifest
 python tools/gen_docs.py --check  # generated docs are current
 ```
 
-CI runs exactly these on Linux, macOS and Windows.
+CI runs exactly these on Linux, macOS and Windows, against Python 3.11 and 3.13.
+
+**3.11 is the declared minimum and it is not the version you are probably running.**
+Syntax that 3.12 accepts can fail there: a backslash inside an f-string expression is
+the one that has already caught us, since PEP 701 only lifted that restriction in
+3.12. If your interpreter is newer, check before pushing:
+
+```bash
+uv venv --python 3.11 /tmp/min && uv pip install --python /tmp/min/bin/python -e ".[dev]"
+/tmp/min/bin/python -m pytest -q
+```
 
 ## Where things live
 

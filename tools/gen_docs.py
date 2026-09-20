@@ -99,6 +99,11 @@ def commands_doc() -> str:
     return "\n".join(lines)
 
 
+# Python 3.11 is the declared minimum, and it does not allow a backslash inside
+# an f-string expression (PEP 701 lifted that in 3.12). Naming the character
+# here keeps the f-strings below portable.
+EM_DASH = "\u2014"
+
 QUESTIONS = {
     "citability.self_containment": "Does each passage name its own subject?",
     "citability.answer_first": "Does each section lead with the answer?",
@@ -144,7 +149,7 @@ def signals_region() -> str:
         for signal_id, meta in spec.items():
             lines.append(
                 f"| `{signal_id}` | {meta['class']} | {meta['max']:g} | "
-                f"{meta.get('requires', '\u2014')} | {QUESTIONS.get(signal_id, '')} |"
+                f"{meta.get('requires', EM_DASH)} | {QUESTIONS.get(signal_id, '')} |"
             )
         note = f"Out of **{total:g}**"
         if always != total:
