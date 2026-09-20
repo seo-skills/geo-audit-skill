@@ -523,6 +523,49 @@ passing suite:**
 
 Both are recorded as divergences 12 and 13.
 
+### M3 - Report and polish -> 0.3.0 - closed 2026-09-20
+
+| Gate | Result |
+|---|---|
+| `report` (HTML + PDF, two modes, brand tokens, a11y, print) | Done. Single self-contained file, print-to-PDF through the browser so report.css decides page breaks. |
+| `compare` | Done, including the refusal across a scoring or data version change. |
+| Skills `content`, `compare`, `report` | Done. Nine skills. |
+| Full docs IA with generated reference | Done. Command reference, signal tables per category, crawler table, schema type table and the advisory rubrics are all generated from code or data. |
+| **Client-leak golden passes** | **Passed, three ways.** The operator template rendered with only the client namespace raises UndefinedError; every field of OperatorContext is asserted absent from the client file; and a client report is checked for data from a second audited site. |
+| **XSS golden passes** | **Passed.** A page titled `</title><script>alert(1)</script>` produces a report with no script tag in the body, and the environment's autoescape is asserted directly. |
+| Every doc claim is CI-asserted | Done. The README's category table is checked against `data/weights.json`, every documented flag against the parser, every error code against its hint, and every identifier a skill names against a real envelope. |
+| **First recorded eval** | **Harness built, eval not run.** `tests/evals/` audits the sites, renders the reports and emits a blank two-person form. It cannot be run without a practitioner, which is the point. This gate is open. |
+
+**All six categories now compute**, with weights summing to 100: citability 25, brand
+20, content 20, technical 15, schema 10, platform 10.
+
+**Test suite at 0.3.0:** 532 passing, 1 skipped.
+
+**Three findings worth recording:**
+
+1. The contrast fallback the plan called for was unreachable. With header text chosen
+   automatically between black and white, the worst case over the entire sRGB cube is
+   4.58:1 - above AA - so no brand colour can fail there. The case that does fail
+   constantly is an accent on white, and nothing was checking it. Divergence 19.
+2. `--out` meant two different things: the JSON envelope globally, the HTML path in
+   `report`. So `geo report --out x.html` wrote the report and then overwrote it with
+   JSON. It now means one thing per command.
+3. Three skills shipped naming the old product in their preflight, because they were
+   generated after the rename from a helper holding the old text. The lint checked
+   frontmatter, contracts and identifiers but never the preflight. It does now.
+
+### Product naming
+
+The product is **SEOmator GEO Audit Skill**. The PyPI distribution is
+`seomator-geo-audit`, the crawler identifies itself as `SeomatorGeoAudit` with a link
+to the repository, and the licence is © 2026 SEOmator. Unchanged on purpose: the
+command is `geo`, the plugin is `geo`, the skills are `/geo:audit` and friends, and the
+import package is `geo_audit`. Those are the names people have to remember.
+
+All four candidate distribution names were unclaimed on PyPI and nothing had been
+published, so the identifiers were free to change. After the first release this needs
+a deprecation instead.
+
 ### Open before the next milestone
 
 1. Configure the PyPI trusted publisher, then tag `v0.2.0`. The release workflow's
@@ -532,5 +575,7 @@ Both are recorded as divergences 12 and 13.
    publicly and declare six skills.
 3. Write §1.2.
 4. Confirm the D4 copyright holder.
-5. M3: `report` (HTML and PDF, client and operator modes), `compare`, the content and
-   platform categories, and the first recorded eval.
+5. **Run the practitioner eval.** It is the only gate left before 1.0 and the only
+   check in the project that needs a person: `python tests/evals/run_eval.py`, five
+   sites the practitioner knows, two questions each.
+6. M4, if the go/no-go in D3 says yes: `crm`, `serve`, `import`, locking.
