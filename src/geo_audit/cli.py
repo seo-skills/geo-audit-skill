@@ -19,7 +19,9 @@ from geo_audit import envelope as envelope_mod
 from geo_audit import render, state
 from geo_audit._version import (
     CLI_VERSION,
+    DIST_NAME,
     NORMALIZER_VERSION,
+    PRODUCT_NAME,
     SCHEMA_VERSION,
     SCORING_VERSION,
 )
@@ -67,7 +69,7 @@ CONFIG_KEYS = (
 
 def version_line() -> str:
     return (
-        f"geo-audit-cli {CLI_VERSION} "
+        f"{DIST_NAME} {CLI_VERSION} "
         f"(schema {SCHEMA_VERSION}, scoring {SCORING_VERSION}, "
         f"data {data_version()}, normalizer {NORMALIZER_VERSION})"
     )
@@ -157,7 +159,7 @@ def build_parser() -> argparse.ArgumentParser:
     parent = _global_flags()
     parser = UsageParser(
         prog="geo",
-        description="Deterministic GEO audits. Every number traces to recorded evidence.",
+        description=f"{PRODUCT_NAME}. Deterministic GEO audits: every number traces to recorded evidence.",
     )
     parser.add_argument("--version", action="version", version=version_line())
     subparsers = parser.add_subparsers(dest="command", metavar="COMMAND")

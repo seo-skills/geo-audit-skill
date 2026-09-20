@@ -3,9 +3,9 @@ requires = ["hatchling>=1.24"]
 build-backend = "hatchling.build"
 
 [project]
-name = "geo-audit-cli"
+name = "seomator-geo-audit"
 version = "0.2.0"
-description = "Deterministic GEO (Generative Engine Optimization) audit CLI. Every number is reproducible from recorded evidence."
+description = "SEOmator GEO Audit Skill: a deterministic GEO (Generative Engine Optimization) audit CLI for Claude Code. Every number is reproducible from recorded evidence."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }

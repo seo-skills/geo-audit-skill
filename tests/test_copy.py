@@ -148,7 +148,9 @@ def test_the_recorded_path_is_one_a_user_can_open(site, geo_home):
 
 def test_doctor_headline_counts_checks(geo_home):
     _, output = render(["doctor"])
-    assert "geo-audit-cli" in output
+    from geo_audit._version import DIST_NAME
+
+    assert DIST_NAME in output
     assert "checks" in output
 
 

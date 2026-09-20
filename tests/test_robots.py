@@ -11,7 +11,9 @@ import pytest
 from geo_audit.lib import robots as robots_lib
 from tests.fixture_server import Reply
 
-UA = "geo-audit-cli"
+from geo_audit.lib.headers import PRODUCT_TOKEN
+
+UA = PRODUCT_TOKEN
 
 
 def parse(text: str):
@@ -163,6 +165,6 @@ def test_access_matrix_is_ordered_by_the_input_list():
 
 @pytest.mark.parametrize("path", ["/", "/page", "/deep/page.html"])
 def test_our_own_token_is_checked_separately_from_the_product_feature(path):
-    rules = parse("User-agent: geo-audit-cli\nDisallow: /\n")
+    rules = parse(f"User-agent: {PRODUCT_TOKEN}\nDisallow: /\n")
     assert not robots_lib.self_allows(rules, path)
     assert rules.allows("GPTBot", path)

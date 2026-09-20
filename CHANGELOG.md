@@ -55,6 +55,12 @@ The audit itself: a crawler, four scored categories, and five more skills.
 
 ### Changed
 
+- **The product is SEOmator GEO Audit Skill.** The PyPI distribution is
+  `seomator-geo-audit`, the crawler identifies itself as `SeomatorGeoAudit` with a
+  link back to this repository, and the licence is © 2026 SEOmator. Nothing a user
+  types changed: the command is still `geo`, the plugin is still `geo`, and the skills
+  are still `/geo:audit` and friends. The names live in `_version.py` and the lint
+  asserts every manifest agrees with them.
 - Connections are kept alive rather than closed per request. A crawl of fifty pages
   costs one connection, not fifty handshakes.
 - A 404 reached by following a link is its own finding. It is a broken link, not a

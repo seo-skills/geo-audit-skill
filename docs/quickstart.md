@@ -3,10 +3,10 @@
 ## Install
 
 ```bash
-uv tool install geo-audit-cli
+uv tool install seomator-geo-audit
 ```
 
-`pipx install geo-audit-cli` works too. Python 3.11 or newer. No browser needed.
+`pipx install seomator-geo-audit` works too. Python 3.11 or newer. No browser needed.
 
 ## Check the install
 

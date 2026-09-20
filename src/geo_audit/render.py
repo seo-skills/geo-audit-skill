@@ -14,6 +14,7 @@ import sys
 from typing import TextIO
 
 from geo_audit import copy as copytext
+from geo_audit._version import DIST_NAME
 from geo_audit.lib.slug import host_of
 
 _SEVERITY_MARK = {"critical": "!!", "high": "! ", "medium": "~ ", "low": ". "}
@@ -596,11 +597,11 @@ def _render_doctor(envelope: dict, out: TextIO, style: Style) -> None:
     failed = [c for c in checks if c["status"] != "ok"]
     headline = (
         copytext.DOCTOR_PROBLEMS.format(
-            version=envelope["cli_version"], failed=len(failed), total=len(checks)
+            dist=DIST_NAME, version=envelope["cli_version"], failed=len(failed), total=len(checks)
         )
         if failed
         else copytext.DOCTOR_OK.format(
-            version=envelope["cli_version"], passed=len(checks), total=len(checks)
+            dist=DIST_NAME, version=envelope["cli_version"], passed=len(checks), total=len(checks)
         )
     )
     print(style.bold(headline), file=out)

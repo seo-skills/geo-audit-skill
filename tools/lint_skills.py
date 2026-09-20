@@ -34,6 +34,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
 from geo_audit import data, envelope  # noqa: E402
+from geo_audit._version import DIST_NAME, PRODUCT_NAME  # noqa: E402
 from geo_audit.errors import ERRORS  # noqa: E402
 
 # The skill set, with the milestone each one arrives in. Adding a skill means
@@ -181,9 +182,25 @@ def lint_versions(report: Report, version: str) -> None:
         f"CLI_VERSION must be {version}",
     )
 
+    report.check(
+        re.search(rf'^name = "{re.escape(DIST_NAME)}"', pyproject, re.MULTILINE) is not None,
+        "pyproject.toml",
+        f"distribution name must be {DIST_NAME} (see _version.DIST_NAME)",
+    )
+    report.check(
+        PRODUCT_NAME in (ROOT / "README.md").read_text(encoding="utf-8"),
+        "README.md",
+        f"must name the product: {PRODUCT_NAME}",
+    )
+
     plugin = json.loads((ROOT / ".claude-plugin/plugin.json").read_text(encoding="utf-8"))
     report.check(plugin.get("version") == version, ".claude-plugin/plugin.json", f"version must be {version}")
     report.check(plugin.get("name") == "geo", ".claude-plugin/plugin.json", "name must be 'geo'")
+    report.check(
+        PRODUCT_NAME in plugin.get("description", ""),
+        ".claude-plugin/plugin.json",
+        f"description must name the product: {PRODUCT_NAME}",
+    )
 
     market = json.loads((ROOT / ".claude-plugin/marketplace.json").read_text(encoding="utf-8"))
     report.check(

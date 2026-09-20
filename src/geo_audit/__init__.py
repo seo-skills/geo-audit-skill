@@ -1,4 +1,4 @@
-"""geo-audit-cli: a deterministic GEO audit CLI."""
+"""SEOmator GEO Audit Skill: a deterministic GEO audit CLI."""
 
 from geo_audit._version import CLI_VERSION as __version__
 

@@ -5,7 +5,7 @@ Guidance for Claude Code when working in this repository.
 ## What this is
 
 A GEO (Generative Engine Optimization) audit toolkit: a deterministic Python CLI
-(`geo`, PyPI `geo-audit-cli`) plus thin Claude Code skills that call it. The skills
+(`geo`, PyPI `seomator-geo-audit`) plus thin Claude Code skills that call it. The skills
 narrate; the CLI computes.
 
 **The invariant everything else serves:** no number reaches a user that did not come

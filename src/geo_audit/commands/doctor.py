@@ -15,7 +15,7 @@ import sys
 from pathlib import Path
 
 from geo_audit import data, envelope, state
-from geo_audit._version import CLI_VERSION, STATE_VERSION
+from geo_audit._version import CLI_VERSION, DIST_NAME, STATE_VERSION
 from geo_audit.errors import GeoError
 from geo_audit.lib import browser
 
@@ -32,7 +32,7 @@ def _python_check() -> dict:
         "python",
         "fail",
         f"{version} is below the 3.11 minimum",
-        "Install geo-audit-cli with a 3.11+ interpreter: `uv tool install --python 3.12 geo-audit-cli`.",
+        "Install seomator-geo-audit with a 3.11+ interpreter: `uv tool install --python 3.12 seomator-geo-audit`.",
     )
 
 
@@ -52,7 +52,7 @@ def _path_check() -> dict:
             "warn",
             "no `geo` executable found on PATH",
             "This usually means the CLI was run as `python -m geo_audit`. "
-            "Install it with `uv tool install geo-audit-cli` to get the `geo` command.",
+            "Install it with `uv tool install seomator-geo-audit` to get the `geo` command.",
         )
     if len(found) > 1:
         return _check(
@@ -110,7 +110,7 @@ def _browser_check() -> dict:
         "browser_extra",
         "warn",
         "Playwright is not installed; render and PDF signals will be null",
-        "Optional. To enable: `uv tool install 'geo-audit-cli[browser]' && playwright install chromium`",
+        "Optional. To enable: `uv tool install 'seomator-geo-audit[browser]' && playwright install chromium`",
     )
 
 
@@ -121,7 +121,7 @@ def _data_check() -> dict:
         crawlers = len(data.crawlers())
     except Exception as exc:  # pragma: no cover - packaging failure
         return _check("data_files", "fail", f"package data could not be read: {exc}",
-                      "Reinstall with `uv tool install --force geo-audit-cli`.")
+                      "Reinstall with `uv tool install --force seomator-geo-audit`.")
     return _check(
         "data_files", "ok", f"data {version}: {signals} citability signals, {crawlers} crawler tokens"
     )
@@ -138,7 +138,7 @@ def _write_check() -> dict:
 def run(args, run_id: str) -> dict:
     checks = [
         _python_check(),
-        _check("cli_version", "ok", f"geo-audit-cli {CLI_VERSION}"),
+        _check("cli_version", "ok", f"{DIST_NAME} {CLI_VERSION}"),
         _path_check(),
         _data_check(),
         _home_check(),

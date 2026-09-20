@@ -5,7 +5,8 @@ Generated from the argument parser at version 0.2.0. Do not edit by hand; run `p
 ```
 usage: geo [-h] [--version] COMMAND ...
 
-Deterministic GEO audits. Every number traces to recorded evidence.
+SEOmator GEO Audit Skill. Deterministic GEO audits: every number traces to
+recorded evidence.
 
 positional arguments:
   COMMAND
@@ -357,11 +358,11 @@ options:
 | `GEO_E_BLOCKED_SCHEME` | 2 | Only http:// and https:// are fetched. file://, data://, ftp:// and the rest are refused by design. |
 | `GEO_E_CONNECT` | 3 | The message names which connection failure it was. Check the URL, the port, and any proxy or VPN on this machine. |
 | `GEO_E_DNS` | 3 | The hostname did not resolve. Check for a typo, or whether the domain is reachable from this machine. |
-| `GEO_E_INTERNAL` | 1 | This is a bug in geo-audit-cli. The log names the failing step; please open an issue with it. |
+| `GEO_E_INTERNAL` | 1 | This is a bug in seomator-geo-audit. The log names the failing step; please open an issue with it. |
 | `GEO_E_PARTIAL` | 5 | Some pages could not be evaluated. Drop --fail-on-partial to accept a partial result, or fix the blocked pages listed in the findings. |
 | `GEO_E_PRIVATE_ADDRESS` | 2 | This host resolves to a private, loopback or link-local address. Auditing localhost or a staging host is legitimate: re-run with --allow-private to opt in. |
 | `GEO_E_REDIRECT_BLOCKED` | 3 | A redirect pointed at a private, loopback or link-local address, which is never followed. Use --allow-private only if you control the whole chain. |
-| `GEO_E_STATE_NEWER` | 4 | Upgrade with `uv tool upgrade geo-audit-cli`. Nothing was changed. |
+| `GEO_E_STATE_NEWER` | 4 | Upgrade with `uv tool upgrade seomator-geo-audit`. Nothing was changed. |
 | `GEO_E_STATE_UNREADABLE` | 4 | Check permissions on GEO_HOME (it should be mode 0700 and owned by you), then run `geo doctor`. |
 | `GEO_E_STATE_WRITE` | 4 | GEO_HOME could not be written. Check disk space and permissions, then run `geo doctor`. |
 | `GEO_E_TIMEOUT` | 3 | Check the URL, or try again. Raise the budget with --timeout if the host is simply slow. |

@@ -132,7 +132,7 @@ ERRORS: dict[str, ErrorSpec] = {
         _spec(
             "GEO_E_STATE_NEWER",
             EXIT_STATE,
-            "Upgrade with `uv tool upgrade geo-audit-cli`. Nothing was changed.",
+            "Upgrade with `uv tool upgrade seomator-geo-audit`. Nothing was changed.",
         ),
         _spec(
             "GEO_E_STATE_UNREADABLE",
@@ -157,7 +157,7 @@ ERRORS: dict[str, ErrorSpec] = {
         _spec(
             "GEO_E_INTERNAL",
             EXIT_INTERNAL,
-            "This is a bug in geo-audit-cli. The log names the failing step; "
+            "This is a bug in seomator-geo-audit. The log names the failing step; "
             "please open an issue with it.",
         ),
     ]

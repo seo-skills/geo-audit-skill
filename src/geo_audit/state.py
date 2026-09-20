@@ -22,7 +22,7 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
-from geo_audit._version import CLI_VERSION, STATE_VERSION
+from geo_audit._version import CLI_VERSION, DIST_NAME, STATE_VERSION
 from geo_audit.errors import GeoError
 
 STATE_FILE = "state.json"
@@ -103,7 +103,7 @@ def check_version() -> None:
     written_by = state.get("cli_version", "a newer release")
     raise GeoError(
         "GEO_E_STATE_NEWER",
-        f"{display_home()} was written by geo-audit-cli {written_by} "
+        f"{display_home()} was written by {DIST_NAME} {written_by} "
         f"(state v{found}); this is {CLI_VERSION} (state v{STATE_VERSION}). "
         f"Nothing was changed.",
     )
@@ -208,5 +208,5 @@ def write_log(lines: list[str]) -> Path:
     path = log_path()
     path.parent.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    write_atomic(path, f"# geo-audit-cli {CLI_VERSION} — {stamp}\n" + "\n".join(lines) + "\n")
+    write_atomic(path, f"# {DIST_NAME} {CLI_VERSION} — {stamp}\n" + "\n".join(lines) + "\n")
     return path

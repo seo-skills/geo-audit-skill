@@ -1,22 +1,22 @@
 {
   "$schema": "https://code.claude.com/schemas/marketplace.json",
-  "name": "seo-skills",
+  "name": "seomator",
   "owner": {
-    "name": "seo-skills",
+    "name": "SEOmator",
     "url": "https://github.com/seo-skills"
   },
   "metadata": {
-    "description": "GEO and SEO audit tooling for Claude Code",
+    "description": "SEOmator GEO Audit Skill: GEO and SEO audit tooling for Claude Code",
     "version": "0.2.0"
   },
   "plugins": [
     {
       "name": "geo",
       "source": "./",
-      "description": "Deterministic GEO audits. Scores are computed by a Python CLI and explained by the model, never the other way round.",
+      "description": "SEOmator GEO Audit Skill. Scores are computed by a Python CLI and explained by the model, never the other way round.",
       "version": "0.2.0",
       "author": {
-        "name": "seo-skills"
+        "name": "SEOmator"
       },
       "keywords": [
         "geo",

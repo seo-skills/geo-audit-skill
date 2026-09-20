@@ -79,7 +79,7 @@ Three alternatives were weighed: (A) full rewrite, (B) three incremental PRs (wi
 Claude Code ── plugin "geo" ── 9 skills (+2 agency, M4)
      │  thin prompts · narrate sequentially · never fan out subagents
      ▼  JSON envelope only (never raw page text)
-geo CLI  (PyPI: geo-audit-cli · import: geo_audit · console script: geo)
+geo CLI  (PyPI: seomator-geo-audit · import: geo_audit · console script: geo)
   fetch · crawl · audit · score · scan · llmstxt · validate · compare · report · doctor · prune
   [M4: crm · serve · import]
      │
@@ -107,10 +107,10 @@ tests/  docs/  VERSION  CHANGELOG.md  LICENSE  README.md  CONTRIBUTING.md  SECUR
 
 - **Skills** install through the Claude Code plugin manager (D2). This deletes `install.sh`, `install-win.sh`, `uninstall.sh`, shebang patching, ownership manifests, retired-skill pruning and the Windows-installer parity problem in one move. It also deletes the router skill: `/geo:audit` *is* the routing.
 - **Coexistence.** Upstream installs un-namespaced skills into `~/.claude/skills/geo*`. Plugin skills are namespaced, so both can be installed at once. We never touch upstream's files.
-- **CLI** installs with `uv tool install geo-audit-cli` (or `pipx install geo-audit-cli`). Python ≥ 3.11. PyPI check on 2026-09-20: `geo-audit-cli` free, `geo-cli` free, `geo-audit` **taken**. Console script is `geo`; `geo doctor` warns if `geo` resolves to more than one binary on PATH.
-- **Playwright is an optional extra** (`geo-audit-cli[browser]`), used for JS-render diffing and PDF. Without it the affected signals are null (§3.4), never silently different.
+- **CLI** installs with `uv tool install seomator-geo-audit` (or `pipx install seomator-geo-audit`). Python ≥ 3.11. PyPI check on 2026-09-20: `seomator-geo-audit` free, `geo-cli` free, `geo-audit` **taken**. Console script is `geo`; `geo doctor` warns if `geo` resolves to more than one binary on PATH.
+- **Playwright is an optional extra** (`seomator-geo-audit[browser]`), used for JS-render diffing and PDF. Without it the affected signals are null (§3.4), never silently different.
 - Skills reference no file paths. Templates and schemas are package data reached through CLI commands — this is what makes G3 hold by construction.
-- **Updates:** `/plugin update` and `uv tool upgrade geo-audit-cli`. There is no `self-update` command and no `geo-update` skill.
+- **Updates:** `/plugin update` and `uv tool upgrade seomator-geo-audit`. There is no `self-update` command and no `geo-update` skill.
 - **M0 spike (gate for D2):** publish a one-skill plugin that runs `geo --version`; confirm install from a GitHub marketplace, namespace, update behavior, and Windows. If the spike fails, fall back per D2.
 
 ### 3.2 CLI contract
@@ -167,7 +167,7 @@ The core loop feeds up to 50 pages of untrusted web content toward an agent that
 - **Output boundary (the main defense):** CLI output contains derived signals and length-capped, delimiter-escaped excerpts. It never contains full page text. Contract test on output size and shape per command.
 - **Skill boundary:** every skill states that excerpts are data, never instructions.
 - **Network guards:** redirect targets and crawl-discovered links to RFC 1918, loopback, link-local, `169.254.169.254` and non-http(s) schemes are always blocked. A private **start URL** is refused unless `--allow-private` is passed — auditing `localhost:3000` or a staging host is a legitimate use. The guard validates the *connected peer address*, not only the pre-resolved name (DNS rebinding). Redirect-chain cap, response-size cap (`GEO_E_TOO_LARGE`), decompression limit, content-type allowlist.
-- **Two robots jobs, kept separate:** (a) our own etiquette as the `geo-audit-cli` UA; (b) the *product feature* that evaluates AI-crawler UAs against the versioned list in `data/`. RFC 9309 edge cases are specified and fixture-tested: 5xx on robots.txt = disallow, redirects, conflicting groups, wildcards.
+- **Two robots jobs, kept separate:** (a) our own etiquette as the `seomator-geo-audit` UA; (b) the *product feature* that evaluates AI-crawler UAs against the versioned list in `data/`. RFC 9309 edge cases are specified and fixture-tested: 5xx on robots.txt = disallow, redirects, conflicting groups, wildcards.
 
 ### 3.4 Scoring
 
@@ -252,12 +252,12 @@ Eight states. (The review record lists nine; "resume prompt" died when R-E7 drop
 |---|---|---|
 | 1 | **Loading** (stderr) | `[2/4] Crawling example.com — 12/50 pages, 2 failed` · In chat, once: "Running the audit. It crawls up to 50 pages at one request per second, so expect a few minutes." |
 | 2 | **Empty** | No audit: "No audits recorded for example.com yet. Run `geo audit https://example.com` to create the first one." · Zero pages: "The crawl found no scorable pages on example.com. The start URL returned 403. Nothing was scored." · Zero mentions: "No mentions of “Acme” found on Wikipedia, Wikidata, Reddit or YouTube (checked 2026-09-20). This is a result, not an error." · Zero blocks: "No citable content blocks found on this page. Score 0 — reason: no extractable blocks." |
-| 3 | **PDF unavailable** | "PDF skipped: the browser component is not installed. HTML report written to <path>. To enable PDF: `uv tool install 'geo-audit-cli[browser]' && playwright install chromium`" |
+| 3 | **PDF unavailable** | "PDF skipped: the browser component is not installed. HTML report written to <path>. To enable PDF: `uv tool install 'seomator-geo-audit[browser]' && playwright install chromium`" |
 | 4 | **Error** | "Couldn't reach example.com: connection timed out after 30 s (GEO_E_TIMEOUT). Check the URL, or try again. Details: ~/.geo/logs/last-run.log" — no score is shown. |
 | 5 | **Partial** | "PARTIAL audit: 41 of 50 pages scored. 9 could not be evaluated — 6 blocked by bot protection, 3 timed out (listed below). Scores reflect the 41 pages only." |
 | 6 | **Success** | "GEO score 62/100 (Fair) for example.com — 50 pages, evidence CURRENT. Report: <path>. Next: `/geo:report example.com`" |
 | 7 | **Stale** | "This report was computed from pages fetched on 2026-09-01. 4 of 50 pages have changed since. Refresh with `geo audit https://example.com`." |
-| 8 | **Refuse to run** | "~/.geo was written by geo-audit-cli 0.5 (state v3); this is 0.3 (state v2). Upgrade with `uv tool upgrade geo-audit-cli`. Nothing was changed." — never a stack trace. |
+| 8 | **Refuse to run** | "~/.geo was written by seomator-geo-audit 0.5 (state v3); this is 0.3 (state v2). Upgrade with `uv tool upgrade seomator-geo-audit`. Nothing was changed." — never a stack trace. |
 
 *M4 adds:* lock contention — "Another geo process is updating the CRM. Waited 10 s. Try again in a moment; run `geo doctor` if this persists." — and empty CRM — "No prospects yet. Add one with `/geo:crm new <domain>`."
 
@@ -393,7 +393,7 @@ Live AI-citation measurement across engines (the strongest candidate for post-1.
 | R-X2 | M | Envelope, hints, log path, preflight kept. Exit 6/7 rejected per R-E3 |
 | R-X3 | M | Quickstart kept. Timing is a reported metric inside `ci.yml`, not its own workflow |
 | R-X4 | M | `doctor` kept; installer-ownership checks dropped with the installer; plugin↔CLI skew added |
-| R-X5 | M ✓ | Dist name `geo-audit-cli` (`geo-audit` is taken) |
+| R-X5 | M ✓ | Dist name `seomator-geo-audit` (`geo-audit` is taken) |
 | R-X6 | M | `data_version` everywhere: kept. `--freeze-data`, channel checksums, offline/rollback: void — pin the package |
 | R-X7 | M | `scoring_version`, compare refusal kept. "v1 vs v2" becomes "not comparable with upstream". Only prospects are importable; other upstream artifacts stay put |
 | R-X8 | K | §3.6 |
@@ -475,7 +475,7 @@ Appended as milestones close. Each entry records the gate evidence, not the inte
 | **Kill criterion: every score explainable line by line** | **Passed.** Each signal returns a `detail` payload of the counts behind its number; the fixtures rank ssr-rich 94 → schema-none 73 → weak-prose 13 → csr-shell 0, and each step is attributable to named signals. |
 | Divergence table exists | Done. Ten entries in `docs/concepts/score-divergence.md`, each with the reason. |
 | Quickstart passes in CI on 3 OSes | **Passed on all three from the first run**, against a built wheel rather than the source tree, so the artifact that is tested is the artifact that ships. |
-| PyPI publish | **Not done, and blocked on a human.** `release.yml` publishes on a `v*` tag through trusted publishing; its tag/VERSION and changelog gates pass locally. The PyPI project and its trusted publisher have to be configured once by hand. `geo-audit-cli` was still unclaimed on 2026-09-20. Until then the README points at the git install, which is verified working. |
+| PyPI publish | **Not done, and blocked on a human.** `release.yml` publishes on a `v*` tag through trusted publishing; its tag/VERSION and changelog gates pass locally. The PyPI project and its trusted publisher have to be configured once by hand. `seomator-geo-audit` was still unclaimed on 2026-09-20. Until then the README points at the git install, which is verified working. |
 
 **Test suite at 0.1.0:** 263 passing, 2 skipped (both environment-gated).
 

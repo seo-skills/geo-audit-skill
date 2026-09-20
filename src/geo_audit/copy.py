@@ -54,5 +54,5 @@ NEXT_COMMAND = "Next: {command}"
 STATE_NEWER_SUFFIX = "Nothing was changed."
 
 # doctor
-DOCTOR_OK = "geo-audit-cli {version} — {passed} of {total} checks passed."
-DOCTOR_PROBLEMS = "geo-audit-cli {version} — {failed} of {total} checks need attention."
+DOCTOR_OK = "{dist} {version} — {passed} of {total} checks passed."
+DOCTOR_PROBLEMS = "{dist} {version} — {failed} of {total} checks need attention."

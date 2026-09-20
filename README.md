@@ -1,7 +1,12 @@
-# geo-audit-skill
+# SEOmator GEO Audit Skill
 
 A GEO (Generative Engine Optimization) audit toolkit for Claude Code: a deterministic
 Python CLI, plus thin skills that narrate what it computes.
+
+```
+plugin   /plugin marketplace add seo-skills/geo-audit-skill  ->  /plugin install geo
+CLI      uv tool install seomator-geo-audit                  ->  geo audit <url>
+```
 
 **The one claim:** every number in a report is reproducible from recorded evidence.
 The CLI computes; the model explains and prioritizes. No score is ever produced by
@@ -14,7 +19,7 @@ an LLM doing arithmetic in prose.
 ## Install
 
 ```bash
-uv tool install geo-audit-cli      # or: pipx install geo-audit-cli
+uv tool install seomator-geo-audit      # or: pipx install seomator-geo-audit
 ```
 
 Python 3.11 or newer. No browser required.
@@ -50,11 +55,12 @@ flag in a pipeline. Progress goes to stderr, always.
 ```
 /plugin marketplace add seo-skills/geo-audit-skill
 /plugin install geo
-/geo:citability https://example.com/pricing
+/geo:audit https://example.com
 ```
 
-The skills call the CLI and read its JSON. They never guess a number, and they
-never see raw page text.
+Six skills ship with the plugin: `/geo:audit`, `/geo:citability`, `/geo:technical`,
+`/geo:schema`, `/geo:llmstxt` and `/geo:brand`. They call the CLI and read its JSON.
+They never guess a number, and they never see raw page text.
 
 ## What it measures today
 
@@ -111,6 +117,10 @@ The core loop feeds untrusted web content toward an agent with tool access, so:
   `localhost:3000` is a legitimate thing to want.
 * The address we actually connected to is validated, not only the name we resolved.
 
+Crawls identify themselves as `SeomatorGeoAudit/<version>` with a link back to this
+repository, hold to one request per second across the whole crawl, and respect
+robots.txt for every link they discover.
+
 Details and the threat model: [SECURITY.md](SECURITY.md).
 
 ## Exit codes
@@ -146,4 +156,4 @@ would abort exactly the sites that most need a report.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT, © 2026 SEOmator. See [LICENSE](LICENSE).

@@ -15,6 +15,16 @@ appears in every envelope, audit record and report footer:
 
 CLI_VERSION = "0.2.0"
 
+# The product's public identifiers, in one place so they cannot drift apart.
+# `tools/lint_skills.py` asserts pyproject.toml and the plugin manifests agree.
+#
+# What is deliberately *not* renamed: the console script stays `geo` because it
+# is what every command in every doc and skill types, the import package stays
+# `geo_audit`, and the plugin stays `geo` so skills remain `/geo:audit`.
+PRODUCT_NAME = "SEOmator GEO Audit Skill"
+DIST_NAME = "seomator-geo-audit"
+REPO_URL = "https://github.com/seo-skills/geo-audit-skill"
+
 SCHEMA_VERSION = 1
 SCORING_VERSION = "1.0"
 NORMALIZER_VERSION = 1

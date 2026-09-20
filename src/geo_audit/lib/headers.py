@@ -7,14 +7,14 @@ request imports it.
 
 from __future__ import annotations
 
-from geo_audit._version import CLI_VERSION
+from geo_audit._version import CLI_VERSION, REPO_URL
 
-PRODUCT_TOKEN = "geo-audit-cli"
+# The token site owners see in their logs and match in robots.txt. It names
+# the product so it can be looked up, and carries the repository URL so an
+# operator who has never heard of it can find out what it is in one click.
+PRODUCT_TOKEN = "SeomatorGeoAudit"
 
-USER_AGENT = (
-    f"{PRODUCT_TOKEN}/{CLI_VERSION} "
-    "(+https://github.com/seo-skills/geo-audit-skill)"
-)
+USER_AGENT = f"{PRODUCT_TOKEN}/{CLI_VERSION} (+{REPO_URL})"
 
 DEFAULT_HEADERS: dict[str, str] = {
     "User-Agent": USER_AGENT,

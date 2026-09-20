@@ -2,7 +2,7 @@
 
 Two jobs live here and they are kept apart on purpose:
 
-(a) our own etiquette, as the `geo-audit-cli` product token, when crawling;
+(a) our own etiquette, as the `SeomatorGeoAudit` product token, when crawling;
 (b) the product feature, which answers "can GPTBot read this page?" by
     evaluating the AI crawler tokens in data/ai_crawlers.json against the
     same parsed file.

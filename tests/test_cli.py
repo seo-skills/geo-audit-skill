@@ -8,7 +8,7 @@ import json
 import pytest
 
 from geo_audit import state
-from geo_audit._version import CLI_VERSION, STATE_VERSION
+from geo_audit._version import CLI_VERSION, DIST_NAME, STATE_VERSION
 from geo_audit.cli import build_parser, main
 
 
@@ -202,7 +202,7 @@ def test_version_line_is_parseable_and_names_every_contract_version(capsys):
         main(["--version"])
     assert raised.value.code == 0
     out = capsys.readouterr().out
-    assert out.split()[0] == "geo-audit-cli"
+    assert out.split()[0] == DIST_NAME
     assert out.split()[1] == CLI_VERSION
     for label in ("schema", "scoring", "data", "normalizer"):
         assert label in out

@@ -9,7 +9,7 @@ context that does not fit in a hint.
 The CLI is installed but not on PATH, or not installed.
 
 ```bash
-uv tool install geo-audit-cli        # or: pipx install geo-audit-cli
+uv tool install seomator-geo-audit        # or: pipx install seomator-geo-audit
 uv tool update-shell                 # if uv says PATH needs updating
 python -m geo_audit --version        # works without the console script
 ```
@@ -60,7 +60,7 @@ defect: a crawler gives up in the same place.
 `$GEO_HOME` was written by a newer release. Nothing was changed. Upgrade:
 
 ```bash
-uv tool upgrade geo-audit-cli
+uv tool upgrade seomator-geo-audit
 ```
 
 Downgrading is not supported. If you need the old CLI, point it at a different

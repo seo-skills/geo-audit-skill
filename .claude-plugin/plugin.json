@@ -1,9 +1,10 @@
 {
   "name": "geo",
-  "description": "Deterministic GEO (Generative Engine Optimization) audits for Claude Code. Thin skills over a Python CLI: every number traces to recorded evidence.",
+  "description": "SEOmator GEO Audit Skill: deterministic GEO audits for Claude Code. Thin skills over a Python CLI, so every number traces to recorded evidence.",
   "version": "0.2.0",
   "author": {
-    "name": "seo-skills"
+    "name": "SEOmator",
+    "url": "https://seomator.com"
   },
   "homepage": "https://github.com/seo-skills/geo-audit-skill",
   "repository": "https://github.com/seo-skills/geo-audit-skill",

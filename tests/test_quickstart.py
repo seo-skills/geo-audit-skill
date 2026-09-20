@@ -34,8 +34,10 @@ def quickstart_commands() -> list[str]:
 
 def geo_invocation() -> list[str]:
     """Prefer the installed console script: it is the shipped artifact."""
+    from geo_audit._version import DIST_NAME
+
     console = shutil.which("geo")
-    if console and "geo-audit" in subprocess.run(
+    if console and DIST_NAME in subprocess.run(
         [console, "--version"], capture_output=True, text=True
     ).stdout:
         return [console]
@@ -85,4 +87,6 @@ def test_quickstart_runs_clean(site, geo_home, tmp_path, capsys):
 def test_the_console_script_is_the_shipped_artifact():
     result = subprocess.run([shutil.which("geo"), "--version"], capture_output=True, text=True)
     assert result.returncode == 0
-    assert result.stdout.startswith("geo-audit-cli ")
+    from geo_audit._version import DIST_NAME
+
+    assert result.stdout.startswith(f"{DIST_NAME} ")
