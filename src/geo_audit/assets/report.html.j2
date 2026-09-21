@@ -181,7 +181,7 @@
           {% if signal.percent is not none %}
           <td class="num label" data-label="Score">{{ signal.value }} of {{ signal.max }} <span class="bar" aria-hidden="true"><span style="width: {{ signal.percent }}%"></span></span></td>
           {% else %}
-          <td class="label" data-label="Score">Not measured{% if signal.note %}: {{ signal.note }}{% endif %}</td>
+          <td class="label" data-label="Score">{{ signal.status }}{% if signal.note %}: {{ signal.note }}{% endif %}</td>
           {% endif %}
         </tr>
       {% endfor %}

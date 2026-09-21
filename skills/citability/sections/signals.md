@@ -75,6 +75,9 @@ crawler got.
 
 **Question:** does the page say who wrote it and when?
 
+Scored on articles only: on a home page, an index of the pages beneath it, or a page
+that declares itself a product, an app or a profile, it is `null` and not applicable.
+
 Byline 3 · published date 3 · modified date 1 · an Organization or Person node in
 JSON-LD 2 · canonical 1. The JSON-LD check walks nested nodes, so
 `Article { publisher: Organization }` counts.

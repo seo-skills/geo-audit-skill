@@ -16,6 +16,7 @@ from typing import TextIO
 from geo_audit import copy as copytext
 from geo_audit._version import DIST_NAME
 from geo_audit.lib.slug import host_of
+from geo_audit.scoring.model import NOT_APPLICABLE
 
 _SEVERITY_MARK = {"critical": "!!", "high": "! ", "medium": "~ ", "low": ". "}
 
@@ -150,7 +151,8 @@ def _render_score(envelope: dict, out: TextIO, style: Style) -> None:
     width = max((len(s["id"]) for s in envelope.get("signals", [])), default=0)
     for signal in envelope.get("signals", []):
         if signal["value"] is None:
-            value = "not measured"
+            applies = not (signal.get("skipped_reason") or "").startswith(NOT_APPLICABLE)
+            value = "not measured" if applies else "not applicable"
         else:
             value = f"{signal['value']:g}/{signal['max']:g}"
         print(

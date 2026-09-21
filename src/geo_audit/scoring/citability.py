@@ -15,6 +15,7 @@ from urllib.parse import urlsplit
 
 from geo_audit import data
 from geo_audit.lib.extract import Block, Document, excerpt
+from geo_audit.scoring import articles
 from geo_audit.scoring.model import DETERMINISTIC, HEURISTIC, Signal, ramp
 
 _MONTHS = (
@@ -307,6 +308,9 @@ def _jsonld_has(doc: Document, key: str) -> bool:
 
 
 def attribution(doc: Document) -> tuple[float | None, dict]:
+    exempt = articles.exempt(doc)
+    if exempt:
+        return exempt
     points_table = data.thresholds("attribution")["points"]
     types = _jsonld_types(doc)
 

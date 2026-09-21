@@ -25,7 +25,8 @@
         },
         "citability.attribution": {
           "max": 10,
-          "class": "deterministic"
+          "class": "deterministic",
+          "requires": "an article"
         },
         "citability.render_parity": {
           "max": 10,
@@ -80,7 +81,8 @@
         },
         "schema.article": {
           "max": 15,
-          "class": "deterministic"
+          "class": "deterministic",
+          "requires": "an article"
         },
         "schema.breadth": {
           "max": 10,
@@ -120,7 +122,8 @@
         },
         "content.expertise": {
           "max": 25,
-          "class": "deterministic"
+          "class": "deterministic",
+          "requires": "an article"
         },
         "content.freshness": {
           "max": 25,

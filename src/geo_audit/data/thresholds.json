@@ -130,5 +130,8 @@
     "soft_404": {
       "max_content_chars": 500
     }
+  },
+  "articles": {
+    "index_min_children": 5
   }
 }

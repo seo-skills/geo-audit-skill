@@ -6,6 +6,11 @@ A page audited without the browser extra is scored out of the signals that
 were computed, never scored zero for the ones that were not. "We could not
 measure it" and "you failed it" are different sentences and must be different
 numbers.
+
+A signal that does not apply is a third case. A home page has no byline to find,
+so authorship there is None like an unmeasured signal, and it leaves the
+composite the same way - but it is not missing, so it leaves the completeness
+count as well.
 """
 
 from __future__ import annotations
@@ -21,6 +26,9 @@ LIVE = "live"
 ADVISORY = "advisory"
 
 SCORED_CLASSES = frozenset({DETERMINISTIC, HEURISTIC, LIVE})
+
+# How a skipped reason says "does not apply here" rather than "could not measure".
+NOT_APPLICABLE = "not applicable"
 
 _SEVERITY_ORDER = ("critical", "high", "medium", "low")
 _EFFORT_ORDER = ("low", "medium", "high")
@@ -39,6 +47,10 @@ class Signal:
     @property
     def computed(self) -> bool:
         return self.value is not None
+
+    @property
+    def applicable(self) -> bool:
+        return not (self.skipped_reason or "").startswith(NOT_APPLICABLE)
 
     @property
     def ratio(self) -> float | None:
@@ -142,7 +154,7 @@ def ramp(value: float, floor: float, good: float) -> float:
 
 
 def composite(signals: list[Signal]) -> tuple[int, dict]:
-    scored = [s for s in signals if s.cls in SCORED_CLASSES]
+    scored = [s for s in signals if s.cls in SCORED_CLASSES and s.applicable]
     computed = [s for s in scored if s.computed]
     available = sum(s.max for s in computed)
     earned = sum(s.value or 0.0 for s in computed)
@@ -236,14 +248,18 @@ def aggregate(per_page: list[list[Signal]]) -> list[Signal]:
         first = group[0]
         computed = [s for s in group if s.computed]
         if not computed:
+            # Not applicable only when it applied to no page. A page it applied
+            # to and could not be measured on makes the whole signal unmeasured.
+            unmeasured = [s for s in group if s.applicable]
+            reason = (unmeasured[0] if unmeasured else first).skipped_reason or "not measured on any page"
             out.append(
                 Signal(
                     id=signal_id,
                     cls=first.cls,
                     max=first.max,
                     value=None,
-                    detail={"reason": first.skipped_reason or "not measured on any page"},
-                    skipped_reason=first.skipped_reason or "not measured on any page",
+                    detail={"reason": reason},
+                    skipped_reason=reason,
                 )
             )
             continue

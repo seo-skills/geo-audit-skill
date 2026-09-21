@@ -64,14 +64,14 @@ measurement that knows nothing about intent.
 | Version | Bumps when | Effect |
 |---|---|---|
 | `schema_version` | an envelope field is removed or renamed | announced two releases ahead; additive changes do not bump it |
-| `scoring_version` | the formula changes | `compare` refuses across a major change |
+| `scoring_version` | the formula changes; a major bump when the composite of a site that did not change would move | `compare` refuses across a major change |
 | `data_version` | a weight, threshold, tier or crawler token changes | ships as a patch release; pinning data means pinning the package |
 | `normalizer_version` | extraction changes | every evidence hash moves, by design |
 
 ## Current constants
 
 <!-- generated:constants:begin -->
-*Generated from `data/` at data_version 2026.09, scoring_version 1.0, normalizer_version 2, schema_version 1.*
+*Generated from `data/` at data_version 2026.09, scoring_version 2.0, normalizer_version 2, schema_version 1.*
 
 ### Tiers
 
@@ -91,6 +91,7 @@ measurement that knows nothing about intent.
 | answer_first | `floor_ratio` | 0.2 |
 | answer_first | `good_ratio` | 0.75 |
 | answer_first | `max_lead_words` | 45 |
+| articles | `index_min_children` | 5 |
 | attribution | `points` | 5 entries |
 | content | `depth` | 3 entries |
 | content | `freshness` | 2 entries |

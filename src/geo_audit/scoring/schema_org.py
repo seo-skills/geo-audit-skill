@@ -14,6 +14,7 @@ from __future__ import annotations
 
 from geo_audit import data
 from geo_audit.lib.extract import Document
+from geo_audit.scoring import articles
 from geo_audit.scoring.model import Signal
 
 
@@ -167,6 +168,9 @@ def organization(doc: Document) -> tuple[float | None, dict]:
 
 
 def article(doc: Document) -> tuple[float | None, dict]:
+    exempt = articles.exempt(doc)
+    if exempt:
+        return exempt
     requirements = _requirements()
     nodes = _nodes_of(doc, set(requirements["article_types"]))
     if not nodes:

@@ -1,5 +1,5 @@
 {
-  "comment": "Properties schema.org marks required or strongly recommended for the types that matter to AI answers. Sourced from schema.org type pages and Google's structured data documentation; the check is presence, not value validation.",
+  "comment": "Properties schema.org marks required or strongly recommended for the types that matter to AI answers. Sourced from schema.org type pages and Google's structured data documentation; the check is presence, not value validation. not_article_types are what a page can declare itself to be that rules out a byline - a product, an app, a profile, an index or a site page - so a page declaring one of them and no article type is not scored on authorship, attribution or Article markup.",
   "types": {
     "Organization":      { "required": ["name"], "recommended": ["url", "logo", "sameAs", "description"] },
     "LocalBusiness":     { "required": ["name", "address"], "recommended": ["telephone", "openingHours", "url", "geo"] },
@@ -20,5 +20,6 @@
   },
   "answer_types": ["FAQPage", "HowTo", "QAPage", "BreadcrumbList", "Product", "Event", "Recipe", "VideoObject", "SoftwareApplication", "LocalBusiness"],
   "entity_types": ["Organization", "LocalBusiness", "NewsMediaOrganization", "Person"],
-  "article_types": ["Article", "BlogPosting", "NewsArticle", "TechArticle", "ScholarlyArticle", "Report"]
+  "article_types": ["Article", "BlogPosting", "NewsArticle", "TechArticle", "ScholarlyArticle", "Report"],
+  "not_article_types": ["Product", "ProductGroup", "SoftwareApplication", "WebApplication", "MobileApplication", "ProfilePage", "CollectionPage", "SearchResultsPage", "AboutPage", "ContactPage", "CheckoutPage"]
 }

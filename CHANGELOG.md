@@ -7,6 +7,22 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **Authorship, attribution and Article markup are scored on articles only**
+  (`scoring_version` 2.0). A home page, an index of the pages beneath it, or a page
+  that declares itself a product, an app or a profile has no byline to find, and
+  scoring it at zero put home pages and calculators first in every practitioner
+  eval's authorship finding. On those pages the three signals are `null` with a
+  `skipped_reason` of `not applicable: articles only`, and reports say *not
+  applicable*, not *not measured*; on a site where no audited page is an article they
+  leave the completeness count as well as the composite. Any other page is presumed an
+  article, so no article is lost: sampled on 79 pages from eight real sites, the rule
+  kept all 31 articles and excluded 27 of the 48 other pages. Rescoring those eight
+  sites from their stored pages moved composites by 0 to +4 points, and a shop's
+  authorship finding went away. A major scoring bump, so `compare` refuses to set a new
+  run against an older one and report the rule change as the site moving.
+
 ## [0.5.0] - 2026-09-21
 
 ### Added

@@ -80,7 +80,7 @@
     "tier": "poor",
     "tier_meaning": "There is little here an engine can quote without inventing the surrounding meaning."
   },
-  "scoring_version": "1.0",
+  "scoring_version": "2.0",
   "signals": [
     {
       "class": "live",

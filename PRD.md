@@ -657,6 +657,14 @@ No score moves.
 7. ~~The ETag revalidation shortcut.~~ **Built and withdrawn 2026-09-21.** A 304 vouches
    for a page's bytes, not for the headers two signals are scored from, so a re-audit
    trusting it could not see a header-only fix (§3.5). Every page is downloaded again.
-8. A design question, not a defect: authorship, attribution and article-markup
-   findings apply to every page, so hub and tool pages are listed beside articles.
-   Scoping them to articles needs a reliable article test and a `scoring_version` bump.
+8. ~~A design question: authorship, attribution and article-markup findings apply to
+   every page.~~ **Resolved 2026-09-21, scoring 2.0.** They are scored on articles only.
+   A page is excluded only on evidence the site gives - the home page, an index linking
+   to five or more pages beneath its own path, or a declared product, app or profile type
+   with no article type - and presumed an article otherwise, which is what makes the test
+   reliable: sampled on 79 pages from eight real sites, it kept all 31 articles and
+   excluded 27 of the 48 other pages. What it leaves in - an about page, an index with
+   flat links, a tool that declares nothing - is scored as before. *Not applicable* is a
+   third state beside computed and not measured: it leaves the composite and the
+   completeness count. A major scoring bump, because it moves the composite of a site
+   that did not change (divergence 24).

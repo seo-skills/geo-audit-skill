@@ -44,7 +44,10 @@ def install_target(extra: str | None = None) -> str:
     return f"'{DIST_NAME}[{extra}] @ {source}'" if extra else source
 
 SCHEMA_VERSION = 1
-SCORING_VERSION = "1.0"
+# 2.0: authorship, attribution and Article markup are scored on articles only. A
+#      major bump because it moves the composite of a site that did not change,
+#      and `compare` must refuse to report that as the site moving.
+SCORING_VERSION = "2.0"
 # 2: `<article>` is only the content root when the page has exactly one. Taking
 #    the first of many reduced every listing page to a single teaser card.
 NORMALIZER_VERSION = 2

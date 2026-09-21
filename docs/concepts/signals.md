@@ -28,10 +28,10 @@ ships no advisory signals; the first arrive with `geo audit`.
 | `citability.structure` | deterministic | 15 | — | Do the headings segment the page into answerable parts? |
 | `citability.evidence_density` | heuristic | 15 | — | Do claims carry numbers, dates and sources? |
 | `citability.extractability` | deterministic | 15 | — | Is the content in the HTML a crawler receives? |
-| `citability.attribution` | deterministic | 10 | — | Does the page say who wrote it and when? |
+| `citability.attribution` | deterministic | 10 | an article | Does the page say who wrote it and when? |
 | `citability.render_parity` | heuristic | 10 | browser | How much text appears only after JavaScript? |
 
-Out of **110**, or **100** when the optional inputs are absent.
+Out of **110**, or **90** when the optional inputs are absent.
 
 ### brand (category weight 20)
 
@@ -49,11 +49,11 @@ Out of **100**, or **60** when the optional inputs are absent.
 | Signal | Class | Max | Requires | Question |
 |---|---|---|---|---|
 | `content.depth` | heuristic | 25 | — |  |
-| `content.expertise` | deterministic | 25 | — |  |
+| `content.expertise` | deterministic | 25 | an article |  |
 | `content.freshness` | deterministic | 25 | — |  |
 | `content.readability` | heuristic | 25 | — |  |
 
-Out of **100**.
+Out of **100**, or **75** when the optional inputs are absent.
 
 ### technical (category weight 15)
 
@@ -75,10 +75,10 @@ Out of **100**.
 | `schema.presence` | deterministic | 30 | — | Did the page attempt JSON-LD at all? |
 | `schema.validity` | deterministic | 25 | — | Did the attempt succeed? |
 | `schema.organization` | deterministic | 20 | — | Is there a machine-readable publisher, with sameAs? |
-| `schema.article` | deterministic | 15 | — | Are content pages dated and attributed? |
+| `schema.article` | deterministic | 15 | an article | Are content pages dated and attributed? |
 | `schema.breadth` | heuristic | 10 | — | Are there types that answer a question directly? |
 
-Out of **100**.
+Out of **100**, or **85** when the optional inputs are absent.
 
 ### platform (category weight 10)
 
@@ -91,7 +91,7 @@ Out of **100**.
 
 Out of **100**, or **85** when the optional inputs are absent.
 
-The category composite is `earned / max-of-computed * 100`, and the site composite weights the categories that were computed. A signal or a category that was not measured leaves both sides of its fraction.
+The category composite is `earned / max-of-computed * 100`, and the site composite weights the categories that were computed. A signal or a category that was not measured leaves both sides of its fraction. A signal that requires an article is scored on the pages that are articles - not on a home page, an index of the pages beneath it, or a page declaring itself a product, an app or a profile - and on a site where none is, it does not apply: it leaves the fraction and the completeness count alike.
 <!-- generated:signals:end -->
 
 Definitions, thresholds and the reasoning behind each live with the skill that

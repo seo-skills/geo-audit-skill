@@ -670,7 +670,7 @@
     "tier": "weak",
     "tier_meaning": "Answers exist on the page but are buried in context that does not travel."
   },
-  "scoring_version": "1.0",
+  "scoring_version": "2.0",
   "signals": [
     {
       "class": "heuristic",

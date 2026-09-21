@@ -20,7 +20,7 @@ from geo_audit import data
 from geo_audit._version import PRODUCT_NAME
 from geo_audit.report.advisory import merge as advisory_merge
 from geo_audit.report.brand import Brand
-from geo_audit.scoring.model import Finding, for_site_kind, site_kinds
+from geo_audit.scoring.model import NOT_APPLICABLE, Finding, for_site_kind, site_kinds
 
 # On page one, under the number. Buried in an appendix it does not travel, and
 # the eval showed exactly what that costs: sqlite.org scores 44 with twenty of
@@ -369,10 +369,14 @@ def _category_detail(envelope: dict, categories: list[CategoryScore]) -> list[di
         for signal in grouped.get(name, []):
             value, maximum = signal.get("value"), signal.get("max")
             label = (templates.get(signal["id"]) or {}).get("name") or signal["id"].split(".", 1)[1].replace("_", " ")
+            reason = signal.get("skipped_reason") if value is None else None
+            # "Not measured" is a gap in the audit; "not applicable" is not.
+            applies = not (reason or "").startswith(NOT_APPLICABLE)
             rows.append({
                 "name": label, "value": _num(value), "max": _num(maximum),
                 "percent": round(100 * value / maximum) if value is not None and maximum else None,
-                "note": signal.get("skipped_reason") if value is None else None,
+                "status": None if value is not None else "Not measured" if applies else "Not applicable",
+                "note": reason if applies else reason.partition(": ")[2] or None,
             })
         if rows:
             out.append({"name": name, "score": scores.get(name), "signals": rows})

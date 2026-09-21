@@ -160,7 +160,11 @@ def signals_region() -> str:
     lines += [
         "The category composite is `earned / max-of-computed * 100`, and the site "
         "composite weights the categories that were computed. A signal or a category "
-        "that was not measured leaves both sides of its fraction.",
+        "that was not measured leaves both sides of its fraction. A signal that requires "
+        "an article is scored on the pages that are articles - not on a home page, an "
+        "index of the pages beneath it, or a page declaring itself a product, an app or "
+        "a profile - and on a site where none is, it does not apply: it leaves the "
+        "fraction and the completeness count alike.",
     ]
     return "\n".join(lines)
 

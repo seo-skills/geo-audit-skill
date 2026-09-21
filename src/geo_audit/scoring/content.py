@@ -19,6 +19,7 @@ from datetime import datetime, timezone
 
 from geo_audit import data
 from geo_audit.lib.extract import Document
+from geo_audit.scoring import articles
 from geo_audit.scoring.model import ADVISORY, Signal, ramp
 from geo_audit.scoring.schema_org import _nodes_of, types_in
 
@@ -58,6 +59,9 @@ def depth(doc: Document) -> tuple[float | None, dict]:
 
 def expertise(doc: Document) -> tuple[float | None, dict]:
     """Who is qualified to have written this, in a form a machine can read."""
+    exempt = articles.exempt(doc)
+    if exempt:
+        return exempt
     people = _nodes_of(doc, {"Person"})
     byline = doc.meta.get("author")
     person = people[0] if people else {}
