@@ -53,7 +53,9 @@ release can still be stopped, because PyPI never accepts the same version twice.
 
 The tag starts `release.yml`, which verifies the tag against `VERSION` and the
 changelog, runs the suite plus the skill lint on three operating systems, builds the
-wheel and the sdist, and publishes. A failure stops before the upload, and PyPI never
+wheel and the sdist, and publishes. It also starts `plugin.yml`, which installs the
+plugin from the published marketplace into a clean Claude Code config on the same three
+systems and checks that this version's nine skills registered. A failure stops before the upload, and PyPI never
 sees a version it did not accept, so the tag can be deleted and pushed again.
 
 A release is also the only way a skill change reaches someone who already installed

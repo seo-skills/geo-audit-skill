@@ -482,7 +482,7 @@ Appended as milestones close. Each entry records the gate evidence, not the inte
 | **D3** — agency kit | **Deferred to M4 behind the go/no-go gate**, as drafted. No Flask, `rich` or `portalocker` dependency in 0.1.0. |
 | **D4** — license and copyright | **MIT, © 2026 SEOmator** - renamed with the product (see *Product naming*). No upstream copyright line is carried, which the D1 agreement permits. **Confirmed by the maintainer, 2026-09-21: SEOmator holds the copyright.** Re-read the written agreement before choosing any licence other than MIT — a notice waiver and a relicensing grant are different rights. |
 | §1.2 positioning | **Still `TODO(maintainer)`.** The provisional text stands. The README ships a positioning section written around it that names no other project. |
-| Plugin spike | **Done except Windows and a live `/geo:` check** (2026-09-21, `claude plugin` CLI against a throwaway config dir; the real install was hash-checked untouched). `marketplace add seo-skills/geo-audit-skill` clones over HTTPS when SSH is not configured; `install geo@seomator` succeeds; `plugin details` reports nine skills at ~659 always-on tokens a session. **Update is keyed on `version`:** after a skill change pushed without a bump, `plugin update` reported "already at the latest version (0.4.0)" and left the installed copy stale while the marketplace clone had the change. A `github` plugin source clones over SSH with no HTTPS fallback; a `url` source over HTTPS honours both `ref` and `sha`. Consequences are in `RELEASING.md`: pin the marketplace to the release tag after the first publish. |
+| Plugin spike | **Done** (2026-09-21, `claude plugin` CLI against a throwaway config dir; the real install was hash-checked untouched). `marketplace add seo-skills/geo-audit-skill` clones over HTTPS when SSH is not configured; `install geo@seomator` succeeds; `plugin details` reports nine skills at ~659 always-on tokens a session. **Update is keyed on `version`:** after a skill change pushed without a bump, `plugin update` reported "already at the latest version (0.4.0)" and left the installed copy stale while the marketplace clone had the change. A `github` plugin source clones over SSH with no HTTPS fallback; a `url` source over HTTPS honours both `ref` and `sha`. Consequences are in `RELEASING.md`: pin the marketplace to the release tag after the first publish. A live `/geo:audit` ran on macOS. Windows is covered by `.github/workflows/plugin.yml`, which installs the published plugin into a clean config on Ubuntu, macOS and Windows on every release tag and checks for nine registered skills; it passed on all three for 0.5.0. |
 
 ### M1 — Walking skeleton → 0.1.0 · closed 2026-09-20
 
@@ -644,9 +644,10 @@ No score moves.
    the trusted publisher - verified, tested on three operating systems, built and
    published by `release.yml` - and the marketplace pinned to `v0.4.0`. The first
    milestone to end in a tagged release, as §4 asks of all of them.
-2. The plugin on Windows. Everything else in the spike is verified: install and update
-   from a clean config, and the nine `geo:` skills registered in a live session - the
-   first real `/geo:audit`, on seomator.com, 2026-09-21.
+2. ~~The plugin on Windows.~~ **Verified 2026-09-21** by `.github/workflows/plugin.yml`:
+   Claude Code installs the published 0.5.0 plugin from a clean config on Windows, as on
+   Ubuntu and macOS, and registers all nine skills. It reruns on every release tag. The
+   live session - the first real `/geo:audit`, on seomator.com - was on macOS.
 3. Write §1.2.
 4. ~~Confirm the D4 copyright holder.~~ **Confirmed 2026-09-21: SEOmator.**
 5. **Run the practitioner eval.** It is the only gate left before 1.0 and the only
