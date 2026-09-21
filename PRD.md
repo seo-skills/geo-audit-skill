@@ -20,7 +20,7 @@ This PRD is written under the **recommended default** for each. Every default is
 | **D1** | How does the new repo relate to upstream legally? | **Resolved 2026-09-20: derivative, by written agreement.** The maintainer confirmed the agreement with upstream's author (a) covers the Python scripts as well as structure and prompts, (b) waives attribution and/or permits relicensing, and (c) is in writing. Porting is unrestricted; clean-room is not needed. Standalone repo, not a GitHub fork (forks are excluded from default code search and carry a permanent "forked from" banner). | Nothing left to decide here. One check at M0: (b) was asked as a compound question, so read the written text before finalizing `LICENSE` — *waiving the notice* and *permitting a different license* are separate grants, and D4 depends on which you have. |
 | **D2** | How do users install the skills? | **Claude Code plugin** (`/plugin marketplace add seo-skills/geo-audit-skill` → `/plugin install geo`). Skills are namespaced `/geo:audit`, `/geo:citability`, … The CLI installs separately from PyPI. | Keep shell installers: R-E8 (copy + hash manifest, ownership-gated) and R-X10 (non-interactive flags, Windows parity job) return exactly as written in the review record, plus a router skill. |
 | **D3** | Is the agency kit (CRM, web UI, proposals) part of this project? | **Resolved 2026-09-20 at the gate: closed.** The gate asked for concrete demand - an issue from a non-maintainer, or the maintainer's own agency use - and at 0.3.0 there is neither, because nothing is published yet. §3.11 and M4 are deferred, not deleted: no Flask, `rich` or `portalocker` dependency ships, and the section stands as a design should the first real request arrive. | Reopen it when someone asks. The import mapping, the single status enum and the locking design in §3.11 are still the plan; only the decision to build now was made. |
-| **D4** | License and copyright line | **MIT, `© 2026 <you or your company>`** — placeholder, fill in at M0. The upstream copyright line is no longer required (D1). **Recommended anyway:** one README credit line to geo-seo-claude, if its author wants it — it is accurate, costs nothing, and pre-empts "isn't this a copy of…" issues. | A different license (e.g. Apache-2.0 for its patent grant) is possible only if the agreement permits relicensing, not merely notice removal. Decide at M0: changing license is trivial before the first outside contribution and needs every contributor's consent after it. |
+| **D4** | License and copyright line | **Decided: MIT, `© 2026 SEOmator`** (see `LICENSE`). The upstream copyright line is no longer required (D1). The optional README credit line was not included, at the maintainer's instruction. | A different license (e.g. Apache-2.0 for its patent grant) is possible only if the agreement permits relicensing, not merely notice removal. Decide at M0: changing license is trivial before the first outside contribution and needs every contributor's consent after it. |
 
 ---
 
@@ -177,7 +177,7 @@ The core loop feeds up to 50 pages of untrusted web content toward an agent that
 - **One pipeline, nullable signals.** A missing capability (no Playwright) nulls specific signals and lowers `completeness`; the report says "computed on 31 of 36 signals". There is no second scoring path.
 - **Upstream's scorer is a specification to correct, not to reproduce.** Upstream's six categories and weights (Citability 25 / Brand 20 / Content 20 / Technical 15 / Schema 10 / Platform 10) are the starting point. "Content" and "Platform" are largely LLM-judged upstream; the inventory decides which of their sub-signals are computable (byline, dates, outbound citations, `Person` schema → heuristic) and which become advisory. Every deliberate divergence is recorded in `docs/concepts/score-divergence.md`.
 - **Versions:** `scoring_version` (formula), `data_version` (thresholds, UA lists, tiers), `normalizer_version` (extraction). All three appear in every envelope, audit record and report footer. Weights, thresholds and tier boundaries live in `data/`, not in code and not in prose. **Data updates ship as a patch release on PyPI** — that channel is already versioned, checksummed and reversible. Pinning the data means pinning the package.
-- `geo compare` refuses to compare runs whose `scoring_version` major or `data_version` differ, or that lack a version. Scores are **not comparable with upstream geo-seo-claude scores**; README says so.
+- `geo compare` refuses to compare runs whose `scoring_version` major or `data_version` differ, or that lack a version. Scores are **not comparable with other tools' scores**; every report says so in its comparability note. (The README does not name upstream, at the maintainer's instruction.)
 
 ### 3.5 Evidence model
 
@@ -315,7 +315,7 @@ Tests required: golden envelope per command (canonicalized: timestamps, `run_id`
 
 - **Docs IA:** quickstart · commands (generated from code, CI-checked) · concepts (signals, evidence, score divergence) · troubleshooting (every exit code and `GEO_E_*` code mapped to a fix; `geo` PATH-collision note). Every command has one runnable example generated from golden fixtures. `docs/concepts/scoring-methodology.md` is hand-written rationale with a **marker region** for generated constants; the freshness check covers the marker region only.
 - **README quickstart** is a literal copy-paste block. Documented first success is `geo score <url>` — one page, no crawl, no Playwright, no Claude Code, under 30 seconds.
-- **M0 files:** `LICENSE` (per D4), `README.md` (with the optional upstream credit line and the "scores not comparable" note), `CONTRIBUTING.md`, `SECURITY.md` (the §3.3 threat model and a private reporting address), `CHANGELOG.md` (Keep a Changelog), `.gitattributes` for fixtures and generated regions, a fresh `CLAUDE.md`.
+- **M0 files:** `LICENSE` (per D4), `README.md` (the optional upstream credit line was not included, at the maintainer's instruction; comparability is stated in every report), `CONTRIBUTING.md`, `SECURITY.md` (the §3.3 threat model and a private reporting address), `CHANGELOG.md` (Keep a Changelog), `.gitattributes` for fixtures and generated regions, a fresh `CLAUDE.md`.
 - **Not carried over:** upstream's `examples/` (regenerate from the fixture site — upstream's samples have a client-data-leak history, PR #71), `pr-draft-*.md`, the star-history workflow, git history.
 
 ### 3.14 Versioning and releases
@@ -347,7 +347,7 @@ Each milestone ends in a tagged release. Lanes: after M1, M2's CLI work and M3's
 | Untrusted page content steers the agent | M | H | §3.3: no page text in CLI output; capped, escaped excerpts; skill data-only rule; injection fixture |
 | Skill prose drifts back to LLM scoring | M | H | Key-manifest lint; composite excludes advisory class by construction |
 | Plugin mechanics differ from assumption (D2) | M | M | M0 spike before any skill work; documented fallback |
-| Scores read as authoritative when they are heuristics | M | H | Signal-class labels; divergence doc; "not comparable with upstream" note; practitioner eval gates 1.0 |
+| Scores read as authoritative when they are heuristics | M | H | Signal-class labels; divergence doc; the report's "not comparable with other tools" note; practitioner eval gates 1.0 |
 | `LICENSE` claims more than the written agreement grants (notice waiver read as relicensing right) | L | H | D1 resolved with a written agreement covering code and prompts; the one M0 check is reading its text before choosing anything other than MIT (D4) |
 | Users expect parity with upstream's breadth | M | M | §1.2 positioning; README states what is deliberately absent |
 | `geo` binary name collides on PATH | L | M | `geo doctor` detects duplicates; troubleshooting entry |
@@ -418,7 +418,7 @@ Live AI-citation measurement across engines (the strongest candidate for post-1.
 | R-X4 | M | `doctor` kept; installer-ownership checks dropped with the installer; plugin↔CLI skew added |
 | R-X5 | M ✓ | Dist name `seomator-geo-audit` (`geo-audit` is taken) |
 | R-X6 | M | `data_version` everywhere: kept. `--freeze-data`, channel checksums, offline/rollback: void — pin the package |
-| R-X7 | M | `scoring_version`, compare refusal kept. "v1 vs v2" becomes "not comparable with upstream". Only prospects are importable; other upstream artifacts stay put |
+| R-X7 | M | `scoring_version`, compare refusal kept. "v1 vs v2" becomes the comparability note every report carries. Only prospects are importable; other upstream artifacts stay put |
 | R-X8 | K | §3.6 |
 | R-X9 | K | §3.13 |
 | R-X10 | C | `uv tool install` and `/plugin install` are already non-interactive and native on Windows. Returns if D2 is rejected |
@@ -478,7 +478,7 @@ Appended as milestones close. Each entry records the gate evidence, not the inte
 | §3.13 M0 files | Done: `LICENSE`, `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CHANGELOG.md`, `.gitattributes`, `CLAUDE.md`, and this document as `PRD.md`. |
 | **D2** — distribution | **Plugin.** `.claude-plugin/plugin.json` (name `geo`) and `marketplace.json` written against the observed manifest format. Shell installers cut, per §7. |
 | **D3** — agency kit | **Deferred to M4 behind the go/no-go gate**, as drafted. No Flask, `rich` or `portalocker` dependency in 0.1.0. |
-| **D4** — license and copyright | **MIT, © 2026 seo-skills.** No upstream copyright line is carried, which the D1 agreement permits. *Open:* confirm the holder should be the GitHub org rather than a legal entity, and re-read the written agreement before choosing any licence other than MIT — a notice waiver and a relicensing grant are different rights. |
+| **D4** — license and copyright | **MIT, © 2026 SEOmator** - renamed with the product (see *Product naming*). No upstream copyright line is carried, which the D1 agreement permits. *Open:* confirm SEOmator is the legal entity that should hold it, and re-read the written agreement before choosing any licence other than MIT — a notice waiver and a relicensing grant are different rights. |
 | §1.2 positioning | **Still `TODO(maintainer)`.** The provisional text stands. The README ships a positioning section written around it that names no other project. |
 | Plugin spike | **Done except Windows and a live `/geo:` check** (2026-09-21, `claude plugin` CLI against a throwaway config dir; the real install was hash-checked untouched). `marketplace add seo-skills/geo-audit-skill` clones over HTTPS when SSH is not configured; `install geo@seomator` succeeds; `plugin details` reports nine skills at ~659 always-on tokens a session. **Update is keyed on `version`:** after a skill change pushed without a bump, `plugin update` reported "already at the latest version (0.4.0)" and left the installed copy stale while the marketplace clone had the change. A `github` plugin source clones over SSH with no HTTPS fallback; a `url` source over HTTPS honours both `ref` and `sha`. Consequences are in `RELEASING.md`: pin the marketplace to the release tag after the first publish. |
 
@@ -631,12 +631,17 @@ sends `If-None-Match` yet.
 1. Configure the PyPI pending trusted publisher - `RELEASING.md` has the five fields -
    then tag `v0.4.0`. The tag/VERSION and changelog gates pass, and `uv build` plus
    `twine check` pass on both artifacts. Then pin the marketplace to the tag.
-2. Finish the plugin spike in a logged-in Claude Code: `/plugin marketplace add
-   seo-skills/geo-audit-skill`, `/plugin install geo@seomator`, and check that `/geo:`
-   completes to nine skills. Install and update behaviour are verified; Windows is not.
+2. The plugin on Windows. Everything else in the spike is verified: install and update
+   from a clean config, and the nine `geo:` skills registered in a live session - the
+   first real `/geo:audit`, on seomator.com, 2026-09-21.
 3. Write §1.2.
-4. Confirm the D4 copyright holder.
+4. Confirm SEOmator is the legal entity that should hold the D4 copyright.
 5. **Run the practitioner eval.** It is the only gate left before 1.0 and the only
    check in the project that needs a person: `python tests/evals/run_eval.py`, five
    sites the practitioner knows, two questions each.
 6. M4, if the go/no-go in D3 says yes: `crm`, `serve`, `import`, locking.
+7. Not built from §3.5: the ETag revalidation shortcut. Nothing sends `If-None-Match`;
+   the record's snapshot now holds what a 304 would need.
+8. A design question, not a defect: authorship, attribution and article-markup
+   findings apply to every page, so hub and tool pages are listed beside articles.
+   Scoping them to articles needs a reliable article test and a `scoring_version` bump.
