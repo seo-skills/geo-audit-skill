@@ -626,3 +626,13 @@ def test_every_partial_variant_triggers_on_parts_the_scorer_reports():
         known = set(detail.get("present") or []) | set(detail.get("missing") or [])
         unknown = set(templates[signal_id]["partial"]["when_present"]) - known
         assert not unknown, f"{signal_id}: {sorted(unknown)} is not a part the scorer reports"
+
+
+def test_every_signal_has_a_plain_name():
+    """The report's category detail may not print signal ids, so each signal
+    needs a name a client can read."""
+    import re
+
+    for signal_id, template in data.load("findings")["signals"].items():
+        name = template.get("name") or ""
+        assert name and not re.fullmatch(r"[a-z]+\.[a-z_]+", name), f"{signal_id}: {name!r}"

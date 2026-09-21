@@ -7,16 +7,28 @@ it costing me, what do I do on Monday.
 
 1. **The answer.** Brand header, site, date, the score as a number and a tier label
    together, one sentence on what that tier means, which kind of site it was ordered
-   for if one was given, then what is already working, what stands out and what to do
-   in order. *What is already working* names up to three strong signals from different
-   categories, and never one the report has a finding about; a site with none gets no
-   section rather than an empty one.
-2. **Category scores.** Number and rating together, with the weight each carried.
-3. **Everything found**, grouped by category, each with its pages and its remediation.
-4. **Advisory analysis**, visually distinct, stated as judgement, excluded from every
+   for if one was given, then a **summary** built from the numbers, what is already
+   working, what stands out and what to do in order. Each fix states its gain on the
+   *overall* score and the **evidence** the scorer recorded - which parts were found and
+   missing, whether one template decides it, and the worst passage quoted. *What is
+   already working* names up to three strong signals from different categories, and
+   never one the report has a finding about; a site with none gets no section.
+   **The plan** then lists every fix once, grouped this week / this month / this quarter
+   by effort, with blockers always first.
+2. **Category scores.** Number, rating and a bar together, the weight each carried and
+   what it adds to the overall score, with a total row. A category outside the run - brand
+   without a brand name - is named under the table.
+3. **AI crawler access.** Every crawler the robots matrix checked: who runs it, what it
+   is for, whether robots.txt lets it in, and what blocking it costs.
+4. **Category detail.** Every signal by plain name, with its score and a bar, and the
+   reason when one was not measured.
+5. **Everything found**, grouped by category, each with its pages, evidence and remediation.
+6. **Advisory analysis**, visually distinct, stated as judgement, excluded from every
    number above it.
-5. **How this was measured.** Categories, weights, signal classes, comparability.
-6. **Provenance** - operator copy only.
+7. **How this was measured.** Categories, weights, signal classes, comparability.
+8. **Pages analysed** - URL, status and how many findings name each page - and a
+   **glossary**.
+9. **Provenance** - operator copy only.
 
 ## Rules the layout follows
 

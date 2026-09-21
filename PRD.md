@@ -229,9 +229,10 @@ One pipeline: Jinja (autoescape **on**, asserted with an XSS-string fixture) →
 
 **Information architecture.** Reader order, not audit-decomposition order.
 
-1. **Page 1 — the answer.** Brand header · site · date · composite score as **number + tier label, always paired** (never color alone) · one sentence on what that tier means · three headline findings · **Top fixes**, ordered by `priority`: fix, expected impact, effort, pages affected.
-2. Category scores (six rows, number + label).
-3. Findings by category, each with page attribution and remediation copy.
+1. **Page 1 — the answer.** Brand header · site · date · composite score as **number + tier label, always paired** (never color alone) · one sentence on what that tier means · a summary built from the numbers · what is already working · three headline findings · **Top fixes**, ordered by `priority`: fix, gain on the overall score, effort, pages affected, evidence · **the plan** by horizon.
+2. Category scores (number + label + bar, weight, contribution to the composite, total row).
+3. AI crawler access; category detail, every signal by name.
+3a. Findings by category, each with page attribution, evidence and remediation copy.
 4. **Advisory analysis** — labeled as LLM judgment, visually distinct, excluded from scores.
 5. Appendix: methodology, signal classes, versions.
 6. *Operator mode only:* provenance — evidence hashes, per-signal class labels, failed-page list, brand-contrast warnings.
@@ -241,6 +242,27 @@ Page 1 carries the arc *where do I stand → what is it costing → what do I do
 **Two render modes, isolated by construction.** Operator data is assembled in a **separate context object** that the client template never receives — not hidden by a conditional. Golden test: client-mode HTML contains zero operator-only fields and zero data from any other project (the regression class of upstream PR #71).
 
 **Brand tokens** (`brand.json`): default palette when absent; foreground derived from luminance and validated at 4.5:1, falling back to defaults **loudly** (stderr warning + operator-view annotation; yellow-brand test); logo max-height and aspect constraints. Attribution footer "Generated with geo-audit-skill" is on by default and removable in config.
+
+**Reporting parity with the reference (2026-09-21).** The reference's deliverables - its
+PDF and its audit report format - were read as a behavioural spec for what a client
+report carries. Every detail it *measures* is adopted; details it only *asserts* are
+either rebuilt from measurements or left out, because a number the tool cannot trace
+to evidence breaks G1 whatever report it appears in.
+
+| The reference shows | Decision | Why |
+|---|---|---|
+| Executive summary | **Adopt, deterministic** | Two or three sentences built from the scores, the strongest and weakest categories and the largest single gain. Company background stays in the skill's narration. |
+| Weighted contribution per category, with a total row | **Adopt** | Shows how each category moves the composite; pure arithmetic on recorded scores. |
+| Category scores as bars | **Adopt** | Beside the number and the word, never instead of them. |
+| AI crawler access table | **Adopt, richer** | From the robots matrix plus `data/ai_crawlers.json`: operator, what the crawler is for, what blocking it costs, allowed or not. |
+| Per-AI-platform readiness scores | **Adapt** | The reference's are model estimates. Reachability per platform is a measured fact, so it is shown through the crawler table, grouped by operator, with no score. |
+| Action plan by time horizon | **Adopt, deterministic** | This week / this month / this quarter from each fix's effort, keeping the ranked order, with each fix's gain on the *overall* score from `impact`. |
+| Findings with concrete detail | **Adopt, from evidence** | What the scorer measured (the signal's own detail) and the worst passage it found, quoted and escaped, under each finding. |
+| Category deep dives | **Adopt, deterministic** | Every signal in the category with a plain name, its score and a bar. The narrative half belongs to the skill. |
+| Pages analysed appendix | **Adopt, without titles** | URL, status and how many findings name the page. The reference adds titles; the crawl record carries no page text by design, because the skill reads it and page text is an injection channel. |
+| Glossary | **Adopt** | Static terms: GEO, AI Overviews, E-E-A-T, JSON-LD, sameAs, llms.txt, SSR, robots.txt. |
+| Effort in hours | **Reject** | Precision the tool does not have; effort stays low/medium/high and the horizon says when. |
+| Competitor scores | **Reject** | Not measured. A real comparison means auditing the competitors, which is a separate feature. |
 
 **Layout:** no card mosaic. Readable at 390 px with one intentional breakpoint. Print CSS: page size, margins, running header, page numbers, `break-inside: avoid` on findings. Body contrast ≥ 4.5:1.
 

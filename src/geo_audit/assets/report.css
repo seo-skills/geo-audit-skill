@@ -110,3 +110,17 @@ a { color: var(--accent); }
   a { text-decoration: none; }
   a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 0.8em; color: var(--muted); word-break: break-all; }
 }
+
+/* Bars sit beside the number they draw, never instead of it. */
+.bar { display: inline-block; width: 6rem; height: .5rem; margin-left: .5rem;
+       vertical-align: middle; background: var(--rule); border-radius: 2px; overflow: hidden;
+       -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.bar > span { display: block; height: 100%; background: var(--accent); }
+.summary { font-size: 1.05rem; }
+.gain { color: var(--muted); font-weight: normal; font-size: .9em; }
+ol.plan { margin-top: .25rem; }
+.evidence { border-left: 3px solid var(--rule); padding-left: .75rem; margin: .5rem 0; }
+.evidence p { margin: .2rem 0; color: var(--muted); }
+.evidence blockquote { margin: .3rem 0; font-style: italic; }
+.access.blocked { color: var(--critical); font-weight: 600; }
+tfoot td { font-weight: 600; border-top: 2px solid var(--ink); }

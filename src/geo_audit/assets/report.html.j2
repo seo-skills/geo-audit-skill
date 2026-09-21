@@ -42,6 +42,11 @@
     <div class="note"><p>{{ client.ordered_for }}</p></div>
     {% endif %}
 
+    {% if client.summary %}
+    <h2>Summary</h2>
+    <p class="summary">{{ client.summary }}</p>
+    {% endif %}
+
     {% if client.strengths %}
     <h2>What is already working</h2>
     <ul>
@@ -69,13 +74,34 @@
         <span class="tag">{{ fix.severity }}</span>
         &middot; {{ fix.effort }} effort
         &middot; {{ fix.page_count }} page{{ '' if fix.page_count == 1 else 's' }}
-        {% if fix.points %}&middot; recovers up to {{ fix.points }} points in {{ fix.category }}{% endif %}
+        {% if fix.impact %}&middot; up to +{{ '%g' % fix.impact }} on the overall score{% elif fix.points %}&middot; recovers up to {{ fix.points }} points in {{ fix.category }}{% endif %}
       </p>
       <p>{{ fix.remediation }}</p>
+      {% if fix.evidence or fix.excerpt %}
+      <div class="evidence">
+        {% for line in fix.evidence %}<p>{{ line }}</p>{% endfor %}
+        {% if fix.excerpt %}<blockquote>{{ fix.excerpt }}</blockquote>{% endif %}
+      </div>
+      {% endif %}
       {% if fix.pages %}
       <p class="pages">{{ fix.pages[:3] | join(' · ') }}{% if fix.page_count > 3 %} and {{ fix.page_count - 3 }} more{% endif %}</p>
       {% endif %}
     </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if client.plan %}
+    <h2>The plan</h2>
+    <p class="caveat">Every fix in this report, grouped by what it costs - low, medium and high
+       effort - and kept in the order above within each group. Anything that stops a crawler
+       reading the site is in the first group whatever it costs.</p>
+    {% for group in client.plan %}
+    <h3>{{ group.name }} <span class="gain">{{ group.effort }} effort{% if group.gain %} &middot; up to +{{ '%g' % group.gain }} overall{% endif %}</span></h3>
+    <ol class="plan">
+      {% for fix in group.fixes %}
+      <li>{{ fix.title }}{% if fix.impact %} <span class="gain">+{{ '%g' % fix.impact }}</span>{% endif %}</li>
+      {% endfor %}
+    </ol>
     {% endfor %}
     {% endif %}
   </section>
@@ -85,19 +111,82 @@
   <section>
     <h2>Category scores</h2>
     <table>
-      <thead><tr><th>Category</th><th>Score</th><th>Rating</th><th>Weight</th><th>What it measures</th></tr></thead>
+      <thead><tr><th>Category</th><th>Score</th><th>Rating</th><th>Weight</th><th>Adds</th><th>What it measures</th></tr></thead>
       <tbody>
       {% for category in client.categories %}
         <tr>
           <td class="label" data-label="Category">{{ category.name }}</td>
-          <td class="num label" data-label="Score">{{ category.score }}/100</td>
+          <td class="num label" data-label="Score">{{ category.score }}/100 <span class="bar" aria-hidden="true"><span style="width: {{ category.score }}%"></span></span></td>
           <td class="label" data-label="Rating">{{ category.tier }}</td>
           <td class="num label" data-label="Weight">{{ category.weight if category.weight else '—' }}</td>
+          <td class="num label" data-label="Adds">{{ category.contribution }}</td>
           <td class="label" data-label="Measures">{{ category.blurb }}</td>
         </tr>
       {% endfor %}
       </tbody>
+      {% if client.composite is not none %}
+      <tfoot>
+        <tr>
+          <td class="label" data-label="Category">Overall</td>
+          <td class="num label" data-label="Score">{{ client.composite }}/100</td>
+          <td class="label" data-label="Rating">{{ client.tier or '' }}</td>
+          <td class="num label" data-label="Weight">{{ client.categories | map(attribute='weight') | select | sum }}</td>
+          <td class="num label" data-label="Adds">{{ client.composite }}</td>
+          <td class="label" data-label="Measures">Each category's score times its weight, over the total weight.</td>
+        </tr>
+      </tfoot>
+      {% endif %}
     </table>
+    {% if client.unscored %}
+    <p class="caveat">{% for category in client.unscored %}{{ category.name }} (weight {{ category.weight }}){{ ', ' if not loop.last }}{% endfor %} {{ 'was' if client.unscored | length == 1 else 'were' }} not part of this run, so the overall score is taken over the categories that were.</p>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  {# AI crawler access: who can reach the site, and what each refusal costs #}
+  {% if client.crawlers %}
+  <section>
+    <h2>AI crawler access</h2>
+    <p>Which AI crawlers robots.txt lets in. Blocking a search or answer crawler keeps the site
+       out of that engine's answers; a training crawler is a separate decision.</p>
+    <table>
+      <thead><tr><th>Crawler</th><th>Operator</th><th>Used for</th><th>Access</th><th>What to do</th></tr></thead>
+      <tbody>
+      {% for row in client.crawlers %}
+        <tr>
+          <td class="label" data-label="Crawler">{{ row.token }}</td>
+          <td class="label" data-label="Operator">{{ row.operator }}</td>
+          <td class="label" data-label="Used for">{{ row.purpose }}</td>
+          <td class="label access {{ 'allowed' if row.allowed else 'blocked' }}" data-label="Access">{{ 'Allowed' if row.allowed else 'Blocked' }}</td>
+          <td class="label" data-label="What to do">{{ row.advice }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+  {% endif %}
+
+  {# Category detail: every signal, by name #}
+  {% if client.category_detail %}
+  <section>
+    <h2>Category detail</h2>
+    {% for group in client.category_detail %}
+    <h3>{{ group.name }}{% if group.score is not none %} &mdash; {{ group.score }}/100{% endif %}</h3>
+    <table class="signals">
+      <tbody>
+      {% for signal in group.signals %}
+        <tr>
+          <td class="label" data-label="Measure">{{ signal.name }}</td>
+          {% if signal.percent is not none %}
+          <td class="num label" data-label="Score">{{ signal.value }} of {{ signal.max }} <span class="bar" aria-hidden="true"><span style="width: {{ signal.percent }}%"></span></span></td>
+          {% else %}
+          <td class="label" data-label="Score">Not measured{% if signal.note %}: {{ signal.note }}{% endif %}</td>
+          {% endif %}
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% endfor %}
   </section>
   {% endif %}
 
@@ -110,8 +199,14 @@
     {% for fix in fixes %}
     <div class="fix {{ fix.severity }}">
       <h3>{{ fix.title }}</h3>
-      <p class="tags"><span class="tag">{{ fix.severity }}</span> &middot; {{ fix.effort }} effort &middot; {{ fix.page_count }} page{{ '' if fix.page_count == 1 else 's' }}</p>
+      <p class="tags"><span class="tag">{{ fix.severity }}</span> &middot; {{ fix.effort }} effort &middot; {{ fix.page_count }} page{{ '' if fix.page_count == 1 else 's' }}{% if fix.impact %} &middot; up to +{{ '%g' % fix.impact }} on the overall score{% endif %}</p>
       <p>{{ fix.remediation }}</p>
+      {% if fix.evidence or fix.excerpt %}
+      <div class="evidence">
+        {% for line in fix.evidence %}<p>{{ line }}</p>{% endfor %}
+        {% if fix.excerpt %}<blockquote>{{ fix.excerpt }}</blockquote>{% endif %}
+      </div>
+      {% endif %}
       {% if fix.pages %}<p class="pages">{{ fix.pages | join(' · ') }}</p>{% endif %}
     </div>
     {% endfor %}
@@ -166,6 +261,31 @@
     <h3>Comparability</h3>
     <p>A score is comparable with another score from this tool at the same scoring and
        data version. Numbers from other tools measure different things.</p>
+  </section>
+
+  {% if client.pages_analysed %}
+  <section class="appendix">
+    <h2>Pages analysed</h2>
+    <table>
+      <thead><tr><th>Page</th><th>Status</th><th>Findings</th></tr></thead>
+      <tbody>
+      {% for page in client.pages_analysed %}
+        <tr>
+          <td class="label" data-label="Page">{{ page.url }}</td>
+          <td class="num label" data-label="Status">{{ page.status if page.status else '—' }}{% if not page.read %} (not read){% endif %}</td>
+          <td class="num label" data-label="Findings">{{ page.findings }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+  {% endif %}
+
+  <section class="appendix">
+    <h2>Glossary</h2>
+    <dl>
+      {% for entry in client.glossary %}<dt>{{ entry.term }}</dt><dd>{{ entry.meaning }}</dd>{% endfor %}
+    </dl>
   </section>
 
   {% block provenance %}{% endblock %}

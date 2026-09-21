@@ -13,6 +13,7 @@ someone added a field to a shared context and forgot which half it belonged to.
 
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import dataclass, field, fields
 
 from geo_audit import data
@@ -45,6 +46,23 @@ CATEGORY_BLURB = {
 
 SEVERITY_ORDER = ("critical", "high", "medium", "low")
 
+# The plan groups every fix by what it costs, in the ranked order. Time words,
+# because that is how a plan is read; the rule underneath, because the tool
+# knows effort and not anyone's calendar.
+HORIZONS = (("This week", "low"), ("This month", "medium"), ("This quarter", "high"))
+
+GLOSSARY = (
+    ("GEO", "Generative engine optimization: making pages easy for AI answer engines to find, read, quote and attribute."),
+    ("AI Overviews", "The AI-written answers Google shows above its search results."),
+    ("Crawler", "A program that fetches pages - for a search index, to train a model, or to answer one user's question."),
+    ("robots.txt", "The file at the root of a site that tells crawlers which parts they may fetch."),
+    ("llms.txt", "A markdown file at the root of a site telling AI systems what the site is and which pages matter."),
+    ("Structured data", "A machine-readable description embedded in a page, usually as JSON-LD, that engines read without interpreting the prose."),
+    ("sameAs", "A structured-data property linking an organization or person to their profiles elsewhere, so engines can tell which entity it is."),
+    ("E-E-A-T", "Experience, expertise, authoritativeness and trust: what search engines look for in who wrote a page and why to believe it."),
+    ("Server-side rendering", "Sending a page's content in the HTML itself, so a crawler that does not run JavaScript still sees it."),
+)
+
 
 @dataclass
 class Fix:
@@ -56,6 +74,13 @@ class Fix:
     pages: list[str]
     points: float
     category: str
+    # What fixing it is worth on the overall 0-100 score - the finding's
+    # `impact`. `points` is on the category's own scale, which a client misreads.
+    impact: float | None = None
+    # What the scorer measured, in sentences built from the signal's own detail.
+    evidence: list[str] = field(default_factory=list)
+    excerpt: str | None = None
+    blocking: bool = False
 
     @property
     def page_count(self) -> int:
@@ -69,6 +94,8 @@ class CategoryScore:
     tier: str
     weight: int | None
     blurb: str
+    # This category's share of the composite: score x weight / total weight.
+    contribution: float = 0.0
 
 
 @dataclass
@@ -94,6 +121,15 @@ class ClientContext:
     # Set when the findings were ordered for a kind of site. The scores never are.
     ordered_for: str | None = None
     strengths: list[dict] = field(default_factory=list)
+    summary: str = ""
+    plan: list[dict] = field(default_factory=list)
+    crawlers: list[dict] = field(default_factory=list)
+    category_detail: list[dict] = field(default_factory=list)
+    pages_analysed: list[dict] = field(default_factory=list)
+    # Categories this run did not reach, so the weights above add up to less
+    # than 100 - said on the page rather than left for a client to work out.
+    unscored: list[dict] = field(default_factory=list)
+    glossary: list[dict] = field(default_factory=list)
     methodology: list[dict] = field(default_factory=list)
     signal_classes: list[dict] = field(default_factory=list)
     versions: dict = field(default_factory=dict)
@@ -187,7 +223,44 @@ def strengths(
     return [{"id": key[-1], "text": sentence} for key, sentence in chosen[:3]]
 
 
-def _fixes_from(findings: list[dict]) -> list[Fix]:
+def _num(value: float | None) -> str:
+    return "-" if value is None else f"{value:g}"
+
+
+def _evidence(signal: dict | None) -> list[str]:
+    """What the scorer saw, from the recorded signal - never a model's reading.
+
+    The reference writes this part by hand for each client. Here it comes from
+    the detail the scorer already recorded: which parts were found, and whether
+    the score is the same everywhere or carried by a few weak pages.
+    """
+    if not signal:
+        return []
+    detail, lines = signal.get("detail") or {}, []
+    present, missing = detail.get("present"), detail.get("missing")
+    if isinstance(present, list) and present:
+        lines.append("Found: " + ", ".join(part.replace("_", " ") for part in present) + ".")
+    if isinstance(missing, list) and missing:
+        lines.append("Missing: " + ", ".join(part.replace("_", " ") for part in missing) + ".")
+    mean, measured = detail.get("mean"), detail.get("pages_measured")
+    if mean is not None and measured:
+        maximum = _num(signal.get("max"))
+        if detail.get("min") == detail.get("max"):
+            lines.append(
+                f"{_num(mean)} of {maximum} on every page measured ({measured}): "
+                "one shared template decides it, so one change fixes it everywhere."
+            )
+        else:
+            lines.append(
+                f"Averages {_num(mean)} of {maximum} over {measured} pages; the lowest, "
+                f"{_num(detail.get('min'))}, is {detail.get('worst_page')}."
+            )
+    return lines
+
+
+def _fixes_from(findings: list[dict], signals: dict[str, dict] | None = None) -> list[Fix]:
+    signals = signals or {}
+    blocking = set((data.load("findings").get("blocking") or {}).get("ids") or [])
     out: list[Fix] = []
     for finding in findings:
         out.append(
@@ -200,9 +273,119 @@ def _fixes_from(findings: list[dict]) -> list[Fix]:
                 pages=finding.get("pages") or [],
                 points=finding.get("points_lost", 0.0),
                 category=finding["id"].split(".", 1)[0],
+                impact=finding.get("impact"),
+                evidence=_evidence(signals.get(finding["id"])),
+                excerpt=finding.get("excerpt"),
+                blocking=finding["id"] in blocking and not finding.get("page_level"),
             )
         )
     return out
+
+
+def _summary(site: str, composite: int | None, tier: str | None, pages: int,
+             categories: list[CategoryScore], fixes: list[Fix]) -> str:
+    """Two or three sentences from the numbers: the reference's executive
+    summary, minus anything the tool did not measure."""
+    if composite is None:
+        return ""
+    parts = [f"{site} scores {composite}/100 ({tier}) over {pages} page{'' if pages == 1 else 's'}."]
+    if len(categories) > 1:
+        best = max(categories, key=lambda c: c.score)
+        worst = min(categories, key=lambda c: c.score)
+        if best.score != worst.score:
+            parts.append(f"Its strongest area is {best.name} ({best.score}) and its weakest is {worst.name} ({worst.score}).")
+    blocker = next((fix for fix in fixes if fix.blocking), None)
+    if blocker:
+        parts.append(f"One fix comes before every other: {blocker.title}.")
+    else:
+        gain = max((fix for fix in fixes if fix.impact), key=lambda fix: fix.impact, default=None)
+        if gain:
+            parts.append(f"The largest single gain is \u201c{gain.title}\u201d, worth up to {_num(gain.impact)} points on the overall score.")
+    return " ".join(parts)
+
+
+def _plan(fixes: list[Fix]) -> list[dict]:
+    """Every fix once, in ranked order, grouped by what it costs.
+
+    A blocker is in the first group whatever it costs: nothing else recovers
+    anything while a crawler cannot read the site.
+    """
+    by_effort = {effort: name for name, effort in HORIZONS}
+    groups: dict[str, list[Fix]] = {name: [] for name, _ in HORIZONS}
+    for fix in fixes:
+        name = HORIZONS[0][0] if fix.blocking else by_effort.get(fix.effort, HORIZONS[-1][0])
+        groups[name].append(fix)
+    return [
+        {"name": name, "effort": effort, "fixes": groups[name], "gain": round(sum(f.impact or 0 for f in groups[name]), 1)}
+        for name, effort in HORIZONS
+        if groups[name]
+    ]
+
+
+def _crawlers(envelope: dict) -> list[dict]:
+    """Who can reach the site, and what each refusal costs.
+
+    The reference prints a platform and a status. The data here also says what
+    the crawler is for and what blocking it rules out, which is the part a
+    client needs to decide - refusing a training crawler is a coherent choice,
+    refusing a search crawler is a decision to be absent from that engine.
+    """
+    access = (((envelope.get("crawl") or {}).get("robots") or {}).get("access")) or []
+    known = {entry["token"]: entry for entry in data.crawlers()}
+    rows = []
+    for entry in access:
+        meta = known.get(entry["agent"], {})
+        allowed, critical = bool(entry.get("allowed")), bool(meta.get("critical"))
+        if allowed:
+            advice = "Nothing to do."
+        elif critical:
+            advice = f"Allow it: blocking it rules out {meta.get('gates', 'its engine')}."
+        else:
+            advice = f"Your call: blocking it only affects {meta.get('gates', 'model training')}."
+        rows.append({
+            "token": entry["agent"], "operator": meta.get("operator", ""),
+            "purpose": meta.get("purpose", ""), "gates": meta.get("gates", ""),
+            "allowed": allowed, "critical": critical, "advice": advice,
+        })
+    return sorted(rows, key=lambda row: (row["operator"], not row["critical"], row["token"]))
+
+
+def _category_detail(envelope: dict, categories: list[CategoryScore]) -> list[dict]:
+    """Every signal under its category, by name: the deep dive, from the data."""
+    templates = data.load("findings")["signals"]
+    grouped: dict[str, list[dict]] = {}
+    for signal in envelope.get("signals") or []:
+        if signal.get("class") == "advisory":
+            continue
+        grouped.setdefault(signal["id"].split(".", 1)[0], []).append(signal)
+    order = [c.name for c in categories] + sorted(set(grouped) - {c.name for c in categories})
+    scores = {c.name: c.score for c in categories}
+    out = []
+    for name in order:
+        rows = []
+        for signal in grouped.get(name, []):
+            value, maximum = signal.get("value"), signal.get("max")
+            label = (templates.get(signal["id"]) or {}).get("name") or signal["id"].split(".", 1)[1].replace("_", " ")
+            rows.append({
+                "name": label, "value": _num(value), "max": _num(maximum),
+                "percent": round(100 * value / maximum) if value is not None and maximum else None,
+                "note": signal.get("skipped_reason") if value is None else None,
+            })
+        if rows:
+            out.append({"name": name, "score": scores.get(name), "signals": rows})
+    return out
+
+
+def _pages_analysed(envelope: dict, fixes: list[Fix]) -> list[dict]:
+    """Every crawled page and how many findings name it. No titles: the crawl
+    record carries no page text, because the skill reads it and page text is
+    an injection channel. The URL identifies the page."""
+    counts = Counter(url for fix in fixes for url in set(fix.pages))
+    return [
+        {"url": page["url"], "status": page.get("status"),
+         "read": bool(page.get("scorable")), "findings": counts.get(page["url"], 0)}
+        for page in (envelope.get("crawl") or {}).get("pages") or []
+    ]
 
 
 def _evidence_note(envelope: dict) -> str | None:
@@ -237,8 +420,10 @@ def build(
     crawl = envelope.get("crawl") or {}
     completeness = envelope.get("completeness") or {}
     weights = (completeness.get("categories") or {}).get("weights_used") or {}
+    total_weight = sum(weights.values())
 
-    fixes = _fixes_from(ordered_findings(envelope.get("findings") or [], site_kind))
+    recorded = {signal["id"]: signal for signal in envelope.get("signals") or []}
+    fixes = _fixes_from(ordered_findings(envelope.get("findings") or [], site_kind), recorded)
     by_category: dict[str, list[Fix]] = {}
     for fix in fixes:
         by_category.setdefault(fix.category, []).append(fix)
@@ -250,6 +435,7 @@ def build(
             tier=data.tier_for(value)["label"],
             weight=weights.get(name),
             blurb=CATEGORY_BLURB.get(name, ""),
+            contribution=round(value * weights.get(name, 0) / total_weight, 1) if total_weight else 0.0,
         )
         for name, value in sorted(
             (scores.get("categories") or {}).items(), key=lambda pair: -pair[1]
@@ -269,6 +455,21 @@ def build(
         evidence_stamp=evidence.get("stamp", "CURRENT"),
         evidence_note=_evidence_note(envelope),
         ordered_for=_ordered_for(site_kind),
+        summary=_summary(
+            crawl.get("site") or envelope.get("site") or "", scores.get("composite"),
+            (scores.get("tier") or "").capitalize() or None, evidence.get("pages_ok", 0),
+            categories, fixes,
+        ),
+        plan=_plan(fixes),
+        crawlers=_crawlers(envelope),
+        category_detail=_category_detail(envelope, categories),
+        pages_analysed=_pages_analysed(envelope, fixes),
+        glossary=[{"term": term, "meaning": meaning} for term, meaning in GLOSSARY],
+        unscored=[
+            {"name": name, "weight": spec["weight"]}
+            for name, spec in data.weights().items()
+            if weights and name not in weights
+        ],
         strengths=strengths(
             envelope.get("signals") or [], envelope.get("findings") or [], weights, site_kind
         ),

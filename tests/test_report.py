@@ -510,3 +510,93 @@ def test_strengths_are_spread_across_categories_before_repeating_one():
     shown = [s["id"] for s in context_lib.strengths(signals, [], weights, None)]
     assert shown[:2] == ["citability.self_containment", "technical.transport_security"]
     assert len(shown) == 3
+
+
+# --- reporting parity with the reference --------------------------------------
+
+
+def _client(audited, **kwargs):
+    client, _ = context_lib.build(audited, brand_lib.load(None), generated_on="2026-09-21", **kwargs)
+    return client
+
+
+def test_the_summary_is_built_from_the_numbers(audited):
+    client = _client(audited)
+    scores = audited["scores"]["categories"]
+    best, worst = max(scores, key=scores.get), min(scores, key=scores.get)
+    assert f"{audited['scores']['composite']}/100" in client.summary
+    assert best in client.summary and worst in client.summary
+
+
+def test_the_summary_leads_with_a_blocker_when_there_is_one(audited):
+    """The hub fixture has one: the client-rendered page no crawler can read."""
+    client = _client(audited)
+    blocker = next(f for f in client.top_fixes if f.blocking)
+    assert blocker.title in client.summary
+
+
+def test_category_contributions_add_up_to_the_score(audited):
+    client = _client(audited)
+    total = sum(category.contribution for category in client.categories)
+    # Each share is rounded to 0.1 and the composite to a whole number.
+    assert abs(total - audited["scores"]["composite"]) < 1.0
+
+
+def test_each_fix_carries_its_gain_on_the_overall_score_and_its_evidence(audited):
+    client = _client(audited)
+    signal_fixes = [f for f in client.top_fixes if f.impact is not None]
+    assert signal_fixes, "the fixture must have findings tied to signals"
+    for fix in signal_fixes:
+        assert fix.impact > 0
+        assert fix.evidence, f"{fix.title} says nothing about what was measured"
+
+
+def test_the_plan_places_every_fix_once_with_blockers_first(audited):
+    client = _client(audited)
+    planned = [fix.title for group in client.plan for fix in group["fixes"]]
+    everything = [fix.title for fixes in client.by_category.values() for fix in fixes]
+    assert sorted(planned) == sorted(everything)
+    first = client.plan[0]["fixes"]
+    blockers = [fix.title for fix in client.top_fixes if fix.blocking]
+    assert set(blockers) <= {fix.title for fix in first}, "a blocker must be in the first group"
+
+
+def test_the_crawler_table_covers_every_token_the_robots_matrix_checked(audited):
+    client = _client(audited)
+    checked = {entry["agent"] for entry in audited["crawl"]["robots"]["access"]}
+    assert {row["token"] for row in client.crawlers} == checked
+    for row in client.crawlers:
+        assert row["operator"] and row["purpose"]
+        if not row["allowed"] and row["critical"]:
+            assert row["advice"].startswith("Allow")
+
+
+def test_category_detail_names_every_signal_in_plain_words(audited):
+    client = _client(audited)
+    shown = [signal for group in client.category_detail for signal in group["signals"]]
+    measured = [s for s in audited["signals"] if s["class"] != "advisory"]
+    assert len(shown) == len(measured)
+    for signal in shown:
+        assert not re.fullmatch(r"[a-z]+\.[a-z_]+", signal["name"]), f"an id, not a name: {signal['name']}"
+
+
+def test_pages_analysed_lists_every_crawled_page(audited):
+    client = _client(audited)
+    assert [page["url"] for page in client.pages_analysed] == [p["url"] for p in audited["crawl"]["pages"]]
+    assert sum(page["findings"] for page in client.pages_analysed) > 0
+
+
+def test_the_report_carries_every_new_section(audited, site):
+    html = html_of(site)
+    for heading in ("Summary", "The plan", "AI crawler access", "Category detail",
+                    "Pages analysed", "Glossary"):
+        assert f">{heading}<" in html, f"missing section {heading!r}"
+
+
+def test_a_category_outside_the_run_is_named_not_left_to_guesswork(audited, site):
+    """seomator.com's table added up to a weight of 80, and nothing said why:
+    brand needs a brand name, and none was given. A client adding up the column
+    deserves the answer on the page."""
+    client = _client(audited)
+    assert client.unscored == [{"name": "brand", "weight": 20}]
+    assert "brand (weight 20) was not part of this run" in html_of(site)

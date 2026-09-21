@@ -6,35 +6,40 @@
       "effort": "medium",
       "title": "Passages depend on the paragraph above them",
       "remediation": "Rewrite the opening sentence of each passage so it names its own subject. An engine lifts one paragraph, not the page: a paragraph that starts with \"This also means...\" arrives at the reader with nothing to point at.",
-      "strength": "Passages stand on their own, so they can be lifted into an answer intact."
+      "strength": "Passages stand on their own, so they can be lifted into an answer intact.",
+      "name": "Self-contained passages"
     },
     "citability.answer_first": {
       "severity": "high",
       "effort": "medium",
       "title": "Sections build up to the answer instead of leading with it",
       "remediation": "Put the direct answer in the first sentence under each heading, then explain. Move throat-clearing openers below the answer or delete them.",
-      "strength": "Sections lead with the answer, so a passage can be quoted without its build-up."
+      "strength": "Sections lead with the answer, so a passage can be quoted without its build-up.",
+      "name": "Answer-first sections"
     },
     "citability.structure": {
       "severity": "medium",
       "effort": "low",
       "title": "Heading structure does not segment the page into answerable sections",
       "remediation": "Give the page one H1 and at least three H2s, each phrased as the question its section answers. Do not skip heading levels; split any section over 400 words.",
-      "strength": "Headings divide pages into sections an engine can answer from one at a time."
+      "strength": "Headings divide pages into sections an engine can answer from one at a time.",
+      "name": "Heading structure"
     },
     "citability.evidence_density": {
       "severity": "high",
       "effort": "medium",
       "title": "Claims arrive without numbers, dates or sources",
       "remediation": "Add the specific figure, date, version or measurement to each claim, and link the primary source. Passages carrying a checkable fact are the ones engines quote.",
-      "strength": "Claims carry numbers, dates and sources - the passages engines prefer to quote."
+      "strength": "Claims carry numbers, dates and sources - the passages engines prefer to quote.",
+      "name": "Evidence in claims"
     },
     "citability.extractability": {
       "severity": "critical",
       "effort": "high",
       "title": "Little usable content is present in the HTML the crawler receives",
       "remediation": "Server-render the main content, or pre-render it for crawlers. Most AI crawlers do not execute JavaScript, so content that only appears after hydration does not exist to them.",
-      "strength": "The content is in the HTML a crawler receives, without needing JavaScript."
+      "strength": "The content is in the HTML a crawler receives, without needing JavaScript.",
+      "name": "Content in the HTML"
     },
     "citability.attribution": {
       "severity": "medium",
@@ -50,70 +55,80 @@
         ],
         "title": "Pages say only part of who wrote them and when",
         "remediation": "Add whichever is missing of a visible byline, a published date and a last-modified date, and mirror them in Article or Organization JSON-LD. Attribution is what lets an engine decide the page is safe to quote."
-      }
+      },
+      "name": "Attribution"
     },
     "citability.render_parity": {
       "severity": "critical",
       "effort": "high",
       "title": "Much of the visible text only appears after JavaScript runs",
       "remediation": "Move the text that appears only after hydration into the server response. Compare the two yourself with `curl` and your browser's view-source.",
-      "strength": "What a reader sees is already in the HTML, before any JavaScript runs."
+      "strength": "What a reader sees is already in the HTML, before any JavaScript runs.",
+      "name": "Content without JavaScript"
     },
     "technical.crawler_access": {
       "severity": "critical",
       "effort": "low",
       "title": "robots.txt blocks crawlers that AI answers depend on",
       "remediation": "Allow the listed tokens in robots.txt. Training tokens and search tokens are separate decisions: refusing GPTBot while allowing OAI-SearchBot is a coherent position, but blocking the search tokens is a decision to be absent from that engine's answers.",
-      "strength": "robots.txt lets in the crawlers AI answers depend on."
+      "strength": "robots.txt lets in the crawlers AI answers depend on.",
+      "name": "AI crawler access"
     },
     "technical.indexability": {
       "severity": "critical",
       "effort": "low",
       "title": "Pages are not cleanly indexable",
       "remediation": "Check three things per page: no `noindex` in the meta robots tag or the X-Robots-Tag header, no blanket `nofollow`, and a self-referencing canonical. A page excluded from the index cannot be the source of an answer, and one without a canonical competes with its own variants.",
-      "strength": "Pages are cleanly indexable."
+      "strength": "Pages are cleanly indexable.",
+      "name": "Indexability"
     },
     "technical.metadata": {
       "severity": "medium",
       "effort": "low",
       "title": "Page metadata is missing or the wrong length",
       "remediation": "Give every page one H1, a title of 15 to 65 characters, a meta description of 70 to 160, a lang attribute, Open Graph tags and alt text on images. These are what a snippet is built from when an engine does not quote the body.",
-      "strength": "Titles and descriptions are present and a sensible length."
+      "strength": "Titles and descriptions are present and a sensible length.",
+      "name": "Titles and descriptions"
     },
     "technical.status_health": {
       "severity": "high",
       "effort": "medium",
       "title": "Pages do not return 200 directly",
       "remediation": "Return 200 on the canonical URL instead of redirecting to it. Every hop costs crawl budget and some crawlers stop following after one.",
-      "strength": "Pages answer 200 directly, without redirect chains or errors."
+      "strength": "Pages answer 200 directly, without redirect chains or errors.",
+      "name": "Status codes"
     },
     "technical.transport_security": {
       "severity": "high",
       "effort": "low",
       "title": "The site is not served securely",
       "remediation": "Serve everything over HTTPS and send a Strict-Transport-Security header. Engines discount, and some browsers block, content served over plain HTTP.",
-      "strength": "The site is served securely over HTTPS."
+      "strength": "The site is served securely over HTTPS.",
+      "name": "HTTPS"
     },
     "technical.url_structure": {
       "severity": "low",
       "effort": "medium",
       "title": "URLs are harder to read than they need to be",
       "remediation": "Keep paths under four segments and 100 characters, lowercase, hyphen-separated, with no session identifiers in the query. This is a readability convention rather than a ranking rule, which is why it is weighted lowest here.",
-      "strength": "URLs are short and readable."
+      "strength": "URLs are short and readable.",
+      "name": "URL structure"
     },
     "schema.presence": {
       "severity": "high",
       "effort": "medium",
       "title": "The page carries no structured data",
       "remediation": "Add JSON-LD describing what the page is. Structured data is the only part of a page an engine does not have to interpret, which makes it the cheapest way to be understood correctly.",
-      "strength": "Pages carry structured data, the one part of a page an engine does not have to interpret."
+      "strength": "Pages carry structured data, the one part of a page an engine does not have to interpret.",
+      "name": "Structured data present"
     },
     "schema.validity": {
       "severity": "high",
       "effort": "low",
       "title": "Structured data is malformed or missing required properties",
       "remediation": "Fix the JSON syntax and add the required properties for each declared type. A block that does not parse is worth exactly as much as no block at all.",
-      "strength": "Structured data is well formed and carries its required properties."
+      "strength": "Structured data is well formed and carries its required properties.",
+      "name": "Valid markup"
     },
     "schema.organization": {
       "severity": "high",
@@ -131,7 +146,8 @@
         ],
         "title": "The publisher's markup is missing properties that identify it",
         "remediation": "Complete the Organization node: name, url, logo, description, and sameAs links to the profiles that identify you. sameAs is what lets an engine connect this site to the entity it already knows about."
-      }
+      },
+      "name": "Publisher markup"
     },
     "schema.article": {
       "severity": "medium",
@@ -149,49 +165,56 @@
         ],
         "title": "Article markup is missing fields engines read",
         "remediation": "Complete the Article markup with headline, author, datePublished, dateModified and image - the fields an engine reads to date and attribute a page. Only on pages that are articles; a hub or tool page described as one is mislabelled."
-      }
+      },
+      "name": "Article markup"
     },
     "schema.breadth": {
       "severity": "low",
       "effort": "medium",
       "title": "No structured data that answers a question directly",
       "remediation": "Where the content fits, add FAQPage, HowTo, Product, Event or BreadcrumbList. These types map onto the shape of an answer, so an engine can lift them with no interpretation at all.",
-      "strength": "Structured data answers questions directly, beyond describing the page."
+      "strength": "Structured data answers questions directly, beyond describing the page.",
+      "name": "Answer markup"
     },
     "brand.encyclopedic": {
       "severity": "high",
       "effort": "high",
       "title": "The brand has no encyclopedic entity to resolve to",
       "remediation": "A Wikipedia article and a Wikidata item are how an engine turns a name into an entity it can reason about. Neither can be created to order, and writing your own is against Wikipedia's conflict-of-interest guidance. What you can do is earn the independent coverage those pages require, and make sure the facts an editor would need are easy to find on your own site.",
-      "strength": "The brand has an encyclopedic entry for engines to resolve it to."
+      "strength": "The brand has an encyclopedic entry for engines to resolve it to.",
+      "name": "Encyclopedic entry"
     },
     "brand.community": {
       "severity": "medium",
       "effort": "high",
       "title": "The brand is barely discussed anywhere public",
       "remediation": "AI answers lean on places where people discuss things in their own words. This is not a content task: it is whether anyone outside the company has reason to mention you. Treat a low number as a signal about the product's reach rather than something to fix with posts.",
-      "strength": "The brand is discussed in public communities, which engines read to judge who is trusted."
+      "strength": "The brand is discussed in public communities, which engines read to judge who is trusted.",
+      "name": "Community discussion"
     },
     "brand.video": {
       "severity": "low",
       "effort": "high",
       "title": "No video results for the brand",
       "remediation": "Video is one of the surfaces engines pull into answers for how-to and comparison questions. Worth considering only if your audience searches that way; it is the most expensive item on this list.",
-      "strength": "The brand appears in video results, a source several engines cite directly."
+      "strength": "The brand appears in video results, a source several engines cite directly.",
+      "name": "Video presence"
     },
     "brand.consistency": {
       "severity": "medium",
       "effort": "low",
       "title": "The site does not link itself to the profiles that identify it",
       "remediation": "Add the profiles found here to the `sameAs` array of your Organization JSON-LD. It is the one step in this category that is entirely within your control, and it is what tells an engine that this site and that entity are the same thing.",
-      "strength": "The site links itself to the profiles that identify it, so engines can tie the brand to one entity."
+      "strength": "The site links itself to the profiles that identify it, so engines can tie the brand to one entity.",
+      "name": "Profile links"
     },
     "content.depth": {
       "severity": "high",
       "effort": "high",
       "title": "Pages are too thin to answer anything on their own",
       "remediation": "An engine quoting a page has to find the whole answer on it. Cover the question, the constraints and at least one worked case, and use lists or a table where the content is genuinely tabular. Length is not the goal; completeness is, and length is what it costs.",
-      "strength": "Pages carry enough substance to answer a question on their own."
+      "strength": "Pages carry enough substance to answer a question on their own.",
+      "name": "Depth"
     },
     "content.expertise": {
       "severity": "high",
@@ -206,49 +229,56 @@
         ],
         "title": "Authors are named but not described",
         "remediation": "The author is named, but nothing machine-readable says who they are. In the Person markup add jobTitle and a description of what qualifies them, and link a profile page with sameAs to the author's other profiles - that is what lets an engine judge who stands behind the writing. Put it in the article template, not on hub or tool pages."
-      }
+      },
+      "name": "Authorship"
     },
     "content.freshness": {
       "severity": "medium",
       "effort": "low",
       "title": "Pages do not say when they were last checked",
       "remediation": "Publish a dateModified and update it when the content actually changes, not on every deploy. A page with no date is undatable, and an engine asked for current information cannot choose it over one that is.",
-      "strength": "Pages carry machine-readable dates, so an engine asked for current information can choose them."
+      "strength": "Pages carry machine-readable dates, so an engine asked for current information can choose them.",
+      "name": "Freshness"
     },
     "content.readability": {
       "severity": "medium",
       "effort": "medium",
       "title": "Sentences are long enough to be hard to quote",
       "remediation": "Break sentences over about thirty-five words. A long sentence carries several claims at once, so an engine lifting it takes claims it did not want and a reader gets a paragraph where they asked for a fact.",
-      "strength": "Sentences are short enough to quote cleanly."
+      "strength": "Sentences are short enough to quote cleanly.",
+      "name": "Readability"
     },
     "platform.llms_txt": {
       "severity": "medium",
       "effort": "low",
       "title": "The site publishes no llms.txt",
       "remediation": "Add /llms.txt: one H1, a blockquote summary, then sections of markdown links to the pages worth reading. It is a convention rather than a standard - but it is the only place you get to state your own priorities in your own words, and `geo llmstxt --generate` writes a first draft from your own pages.",
-      "strength": "The site publishes an llms.txt stating its own priorities in its own words."
+      "strength": "The site publishes an llms.txt stating its own priorities in its own words.",
+      "name": "llms.txt file"
     },
     "platform.social_cards": {
       "severity": "medium",
       "effort": "low",
       "title": "Pages have no preview card",
       "remediation": "Add og:title, og:description and og:image to every page. Engines and the apps around them build the link preview from these; without them the preview falls back to whatever the page happens to start with, which is usually navigation.",
-      "strength": "Pages carry preview cards, so a shared link arrives with a title, summary and image."
+      "strength": "Pages carry preview cards, so a shared link arrives with a title, summary and image.",
+      "name": "Preview cards"
     },
     "platform.feeds": {
       "severity": "low",
       "effort": "low",
       "title": "The site is hard to discover in bulk",
       "remediation": "Advertise a sitemap in robots.txt and, if the site publishes regularly, link an RSS or Atom feed from the head. Both are how a crawler finds pages nothing links to yet.",
-      "strength": "Feeds and sitemaps make the site easy to discover in bulk."
+      "strength": "Feeds and sitemaps make the site easy to discover in bulk.",
+      "name": "Feeds and sitemaps"
     },
     "platform.hreflang": {
       "severity": "medium",
       "effort": "medium",
       "title": "Language variants are not declared",
       "remediation": "Add reciprocal hreflang annotations to each language variant, including an x-default. Without them an engine has to guess which variant answers a question, and it guesses by traffic rather than by language.",
-      "strength": "Language versions are declared, so search can send readers to the right one."
+      "strength": "Language versions are declared, so search can send readers to the right one.",
+      "name": "Language versions"
     }
   },
   "checks": {

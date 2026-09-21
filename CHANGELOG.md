@@ -95,6 +95,19 @@ before a practitioner spends time on them (`tests/evals/results/eval-2026-09-21-
 
 ### Added
 
+- **Report detail on a par with the reference implementation**, from measurements
+  only. Its deliverables were read as a behavioural spec and the gaps recorded in the
+  PRD with a decision each. Adopted: a summary built from the numbers; each fix's gain
+  on the *overall* score and the evidence behind it (parts found and missing, whether one
+  template decides it, the worst passage); **the plan**, every fix grouped this week /
+  this month / this quarter by effort with blockers first; weighted contributions and a
+  total row in the category table, with bars; an **AI crawler access** table saying who
+  runs each crawler, what it is for and what blocking it costs; **category detail** with
+  every signal by plain name; **pages analysed**; a **glossary**; and a note naming any
+  category outside the run, so a weight column adding up to 80 explains itself. Left out
+  on purpose: the reference's per-platform scores, competitor scores and effort in hours,
+  none of which it measured, and page titles, which would carry page text into the
+  record the skill reads.
 - ***What is already working*, in every report** - the second deliberate exception to
   "no new features", and for the same reason as the first: three rounds of maintainer
   notes found reports that list only faults read as grudging, and the gate is reports
