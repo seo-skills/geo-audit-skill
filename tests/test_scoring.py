@@ -387,3 +387,31 @@ def test_the_declared_blocking_order_is_the_dependency_chain():
     assert ids.index("fetch.blocked") < ids.index("technical.crawler_access")
     assert ids.index("technical.crawler_access") < ids.index("technical.indexability")
     assert ids.index("technical.indexability") < ids.index("citability.extractability")
+
+
+def test_an_uncomputed_category_leaves_both_sides_of_the_fraction():
+    """The same rule as a null signal, one level up, and the only one untested.
+
+    `audit` cannot currently produce a null category - every category owns at
+    least one deterministic signal, so something is always computable - which
+    is exactly why the rule needs its own test rather than relying on a run to
+    exercise it.
+    """
+    from geo_audit.scoring.model import weighted_composite
+
+    weights = {"citability": 25, "content": 20}
+    total, coverage = weighted_composite(weights, {"citability": 80, "content": None})
+
+    assert total == 80, "content must not be averaged in as a zero"
+    assert coverage["computed"] == ["citability"]
+    assert coverage["missing"] == ["content"]
+    assert coverage["weights_used"] == {"citability": 25}
+
+
+def test_no_category_computed_is_not_a_score_of_zero_anybody_should_use():
+    """Guarded by the caller, which skips a category with no pages entirely."""
+    from geo_audit.scoring.model import weighted_composite
+
+    total, coverage = weighted_composite({"citability": 25}, {"citability": None})
+    assert coverage["computed"] == [] and coverage["missing"] == ["citability"]
+    assert total == 0, "the caller must read `computed`, not the number"
