@@ -5,11 +5,14 @@ person with account access, and only once.
 
 ## One-time: let GitHub publish to PyPI
 
+*Done for this project on 2026-09-21; 0.4.0 was the first release through it. Kept for
+a fork, or for moving the project to another PyPI account.*
+
 Publishing uses [trusted publishing](https://docs.pypi.org/trusted-publishers/), so no
 long-lived token is stored in this repository. Nothing can be published until the
 publisher exists on PyPI.
 
-The project has never been published, so use the *pending* publisher form at
+For a project that has never been published, use the *pending* publisher form at
 <https://pypi.org/manage/account/publishing/> and paste these exact values:
 
 | Field | Value |

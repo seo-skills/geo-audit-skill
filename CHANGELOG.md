@@ -7,7 +7,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-Nothing yet.
+### Changed
+
+- **The plugin marketplace serves the `v0.4.0` tag instead of `main`.** Every plugin
+  install is now exactly a release, so skills can never run ahead of the CLI on PyPI.
+  It is an HTTPS `url` source; the skill lint requires its `ref` to match `VERSION`.
 
 ## [0.4.0] - 2026-09-21
 

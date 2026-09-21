@@ -12,7 +12,11 @@
   "plugins": [
     {
       "name": "geo",
-      "source": "./",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/seo-skills/geo-audit-skill.git",
+        "ref": "v0.4.0"
+      },
       "description": "SEOmator GEO Audit Skill. Scores are computed by a Python CLI and explained by the model, never the other way round.",
       "version": "0.4.0",
       "author": {

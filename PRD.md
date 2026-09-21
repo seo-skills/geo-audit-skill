@@ -628,9 +628,10 @@ the open list.
 
 ### Open before the next milestone
 
-1. Configure the PyPI pending trusted publisher - `RELEASING.md` has the five fields -
-   then tag `v0.4.0`. The tag/VERSION and changelog gates pass, and `uv build` plus
-   `twine check` pass on both artifacts. Then pin the marketplace to the tag.
+1. ~~Publish to PyPI.~~ **Done 2026-09-21:** `seomator-geo-audit` 0.4.0 released through
+   the trusted publisher - verified, tested on three operating systems, built and
+   published by `release.yml` - and the marketplace pinned to `v0.4.0`. The first
+   milestone to end in a tagged release, as §4 asks of all of them.
 2. The plugin on Windows. Everything else in the spike is verified: install and update
    from a clean config, and the nine `geo:` skills registered in a live session - the
    first real `/geo:audit`, on seomator.com, 2026-09-21.

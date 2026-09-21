@@ -91,9 +91,18 @@ def test_the_plugin_manifest_is_complete(field):
     assert plugin().get(field), f"plugin.json has no {field}"
 
 
-def test_the_marketplace_points_at_this_repository():
+def test_the_marketplace_points_at_this_repository_at_this_release():
+    """The plugin lives in this repo, and since the first PyPI release the
+    marketplace serves a tag rather than `main`, so every install is exactly a
+    release. Over HTTPS: a `github` source clones over SSH, and fails for anyone
+    without GitHub keys."""
+    from geo_audit._version import REPO_URL
+
     for entry in marketplace()["plugins"]:
-        assert entry["source"] == "./", "the plugin lives in this repo, not elsewhere"
+        source = entry["source"]
+        assert source["source"] == "url"
+        assert source["url"] == f"{REPO_URL}.git"
+        assert source["ref"] == f"v{CLI_VERSION}"
 
 
 def test_the_skill_namespace_is_stable():
