@@ -7,6 +7,13 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.4.0] - 2026-09-21
+
+No new features. The envelope contract stops being a promise in prose and becomes
+something the build checks, and two rounds of practitioner eval are folded in.
+
 ### Fixed — hardening toward 1.0
 
 - **Arithmetic still decided the order inside the blocking tier**, which is the one
@@ -93,11 +100,6 @@ should outrank an expensive high-severity one. Ordering by value-per-effort was
 tried and put *add a modified date* first on five sites out of five. That is a taste
 call about what an audit is for, and it belongs to the practitioner rather than to
 whoever last edited the sort.
-
-## [0.4.0] - 2026-09-20
-
-No new features. The envelope contract stops being a promise in prose and becomes
-something the build checks.
 
 ### Added
 

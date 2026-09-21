@@ -110,6 +110,10 @@ that they do. The four contract versions (`schema`, `scoring`, `data`, `normaliz
 move independently and are documented in
 [scoring-methodology.md](docs/concepts/scoring-methodology.md).
 
+Cutting a release is [RELEASING.md](RELEASING.md). The tag does the work; the only
+steps needing a person are one-time account setup, and they are spelled out there
+field by field.
+
 ## Scope
 
 The cut list is binding. Not built, and not accepted without a change to the project

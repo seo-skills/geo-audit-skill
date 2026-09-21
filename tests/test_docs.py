@@ -125,6 +125,29 @@ def test_the_roadmap_only_names_flags_that_do_not_exist_yet():
         assert flag not in COMMANDS, f"{flag} already exists; move it out of the roadmap"
 
 
+def test_the_release_guide_names_what_the_workflow_actually_uses():
+    """The guide exists so one person can paste five fields without guessing.
+
+    Every one of those fields is also declared somewhere in the repository, so
+    a rename that misses the guide is the failure worth catching: a mismatch
+    only surfaces as a rejected OIDC token, at the end of a release run, after
+    the build has already succeeded.
+    """
+    from geo_audit._version import DIST_NAME, REPO_URL
+
+    guide = (ROOT / "RELEASING.md").read_text(encoding="utf-8")
+    workflow = (ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
+    owner, repo = REPO_URL.rstrip("/").split("/")[-2:]
+
+    environments = re.findall(r"^\s*environment:\s*(\S+)\s*$", workflow, re.MULTILINE)
+    assert len(environments) == 1, f"expected one gated job, found {environments}"
+
+    assert f"`{DIST_NAME}`" in guide, "the guide must name the distribution being published"
+    assert f"`{owner}`" in guide and f"`{repo}`" in guide
+    assert "`release.yml`" in guide
+    assert f"`{environments[0]}`" in guide
+
+
 def test_doc_links_resolve():
     for target in re.findall(r"\]\(([^)#][^)]*)\)", README):
         if target.startswith("http"):
