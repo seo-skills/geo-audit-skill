@@ -74,6 +74,14 @@ def parse(text: str) -> dict:
 
 
 def _fetch_optional(url: str, options: Options) -> dict:
+    return _fetch_text(url, options)[0]
+
+
+def _fetch_text(url: str, options: Options) -> tuple[dict, str | None]:
+    """The report on an optional file, and its text for the page store.
+
+    Kept apart because the report is printed and the text never is.
+    """
     try:
         result = http.fetch(
             url,
@@ -83,12 +91,12 @@ def _fetch_optional(url: str, options: Options) -> dict:
             accept_types=None,
         )
     except GeoError as error:
-        return {"url": url, "present": False, "status": None, "error": error.code}
+        return {"url": url, "present": False, "status": None, "error": error.code}, None
     if not result.ok:
-        return {"url": url, "present": False, "status": result.status, "error": None}
+        return {"url": url, "present": False, "status": result.status, "error": None}, None
     report = parse(result.body)
     report.update({"url": url, "present": True, "status": result.status, "error": None})
-    return report
+    return report, result.body
 
 
 def _markdown_safe(text: str, limit: int) -> str:

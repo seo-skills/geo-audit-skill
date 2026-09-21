@@ -74,8 +74,8 @@ def parse_only(value: str | None, available: tuple[str, ...] = CATEGORIES) -> tu
     return chosen
 
 
-def _site_facts(result, args) -> dict:
-    """What is true of the site rather than of any one page.
+def _site_facts(result, args) -> tuple[dict, tuple[dict, str | None]]:
+    """What is true of the site rather than of any one page, and the llms.txt it came from.
 
     Fetched once per run. Identical on every page, so `aggregate` carries it up
     to the site-level signal verbatim instead of averaging it away.
@@ -87,39 +87,28 @@ def _site_facts(result, args) -> dict:
     from urllib.parse import urlsplit
 
     parts = urlsplit(args.url)
-    found = llmstxt_cmd._fetch_optional(
+    found, text = llmstxt_cmd._fetch_text(
         f"{parts.scheme}://{parts.netloc}{llmstxt_cmd.CANONICAL_PATH}", options
     )
-    observed = {
-        "llms_present": bool(found.get("present")),
-        "llms_valid": bool(found.get("valid")) if found.get("present") else None,
-    }
-    return _site_facts_from(result.robots, result.ok_pages, observed)
+    return _site_facts_from(result.robots, result.ok_pages, _llms_seen(found)), (found, text)
 
 
-def _previous_fetches(slug: str) -> dict:
-    """The last audit's responses by URL, for asking each page whether it changed."""
-    from geo_audit.lib.crawl import normalize_url
-
-    records, _ = state.read_audits(slug)
-    for record in reversed(records):
-        fetches = (record.get("snapshot") or {}).get("fetches")
-        if record.get("command") == "audit" and fetches:
-            return {normalize_url(fetch["requested_url"]): fetch for fetch in fetches}
-    return {}
+def _llms_seen(found: dict) -> dict:
+    present = bool(found.get("present"))
+    return {"llms_present": present, "llms_valid": bool(found.get("valid")) if present else None}
 
 
-def _site_facts_from(robots, pages, observed: dict) -> dict:
-    """Site facts from robots.txt and the pages, plus what was observed live.
+def _site_facts_from(robots, pages, llms: dict) -> dict:
+    """Site facts from robots.txt, the pages, and what llms.txt was judged to be.
 
-    Sitemaps and languages are recomputed from what was read; llms.txt was
-    fetched on its own and is taken as observed, like any live signal.
+    All three are recomputed from what was read, so a rescore applies today's
+    rules to each of them.
     """
     return {
         "sitemaps": list(robots.sitemaps) if robots else [],
         "languages": {page.doc.lang for page in pages if page.doc and page.doc.lang},
-        "llms_present": observed.get("llms_present"),
-        "llms_valid": observed.get("llms_valid"),
+        "llms_present": llms.get("llms_present"),
+        "llms_valid": llms.get("llms_valid"),
     }
 
 
@@ -147,7 +136,16 @@ def _replay(record: dict):
         if body is None:
             return None
         replayed.append(classify(Page(url=fetch["requested_url"], robots=robots), pages_lib.fetch_result(fetch, body)))
-    facts = _site_facts_from(robots, [page for page in replayed if page.doc], snapshot.get("observed") or {})
+    seen: dict = {}
+    entry = snapshot.get("llms")
+    if entry:
+        from geo_audit.commands import llmstxt as llmstxt_cmd
+
+        text = pages_lib.get(slug, entry["body"]) if entry.get("body") else None
+        if entry.get("body") and text is None:
+            return None
+        seen = _llms_seen({**llmstxt_cmd.parse(text), "present": True} if text is not None else {})
+    facts = _site_facts_from(robots, [page for page in replayed if page.doc], seen)
     return replayed, robots, facts
 
 
@@ -199,28 +197,22 @@ def run(args, run_id: str) -> dict:
                 file=sys.stderr,
             )
 
-    options.store = project_slug(args.url)
-    options.previous = _previous_fetches(options.store)
     result = crawl_lib.crawl(args.url, options, progress=progress)
-    site_facts = _site_facts(result, args) if "platform" in categories else {}
+    site_facts, llms = _site_facts(result, args) if "platform" in categories else ({}, None)
 
     rules = data.thresholds("findings")
     per_category, findings, snapshot = _score_pages(result.pages, result.robots, categories, site_facts)
     offenders, severe = _classify(snapshot, rules)
     # What the scorer read, not only what it computed: each page's response with
-    # its body in the page store, robots.txt beside it, and what llms.txt showed.
+    # its body in the page store, with robots.txt and llms.txt beside them.
     slug = project_slug(args.url)
     snapshot["fetches"] = [
-        {**pages_lib.fetch_record(page.result, pages_lib.put(slug, page.result.body) if page.result.body else None),
-         "revalidated": page.revalidated}
+        pages_lib.fetch_record(page.result, pages_lib.put(slug, page.result.body) if page.result.body else None)
         for page in result.pages
         if page.result is not None
     ]
     snapshot["robots"] = pages_lib.robots_record(result.robots, slug)
-    snapshot["observed"] = {
-        "llms_present": site_facts.get("llms_present"),
-        "llms_valid": site_facts.get("llms_valid"),
-    }
+    snapshot["llms"] = pages_lib.file_record(*llms, slug) if llms else None
 
     advisory = content_scorer.advisory_signals() if "content" in categories else []
 
@@ -255,9 +247,7 @@ def run(args, run_id: str) -> dict:
         categories=categories,
         per_category=per_category,
         findings=findings,
-        # How many pages answered 304 and were read from the page store.
-        crawl_block={**crawl_cmd.crawl_block(result, options),
-                     "revalidated": sum(1 for page in result.pages if page.revalidated)},
+        crawl_block=crawl_cmd.crawl_block(result, options),
         evidence=crawl_cmd.evidence_block(result),
         record=True,
         available=available,

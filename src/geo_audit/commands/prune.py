@@ -27,6 +27,7 @@ def _limits(args) -> dict:
         "keep_days": args.older_than if args.older_than is not None else defaults["keep_days"],
         "max_project_bytes": defaults["max_project_bytes"],
         "max_page_bytes": defaults["max_page_bytes"],
+        "page_grace_hours": defaults["page_grace_hours"],
     }
 
 
@@ -66,30 +67,47 @@ def plan_for(records: list[dict], limits: dict, now: datetime) -> tuple[list[dic
     return kept, dropped
 
 
+def _bytes(path) -> int:
+    return path.stat().st_size if path.exists() else 0
+
+
 def _project_report(slug: str, limits: dict, now: datetime, apply: bool) -> dict:
     records, damaged = state.read_audits(slug)
     path = state.audits_path(slug)
-    before_bytes = path.stat().st_size if path.exists() else 0
+    before_bytes = _bytes(path)
     kept, dropped = plan_for(records, limits, now)
 
-    reasons: dict[str, int] = {}
-    for entry in dropped:
-        reasons[entry["reason"]] = reasons.get(entry["reason"], 0) + 1
-
-    keep_pages = pages_lib.plan_keep(slug, kept, limits["max_page_bytes"])
-    pages_deleted, page_bytes = pages_lib.collect(slug, keep_pages, apply)
-
+    skipped = False
     after_bytes = before_bytes
     if apply and (dropped or damaged):
         payload = "".join(
             json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n"
             for record in sorted(kept, key=lambda r: r.get("run_id") or "")
         )
-        state.write_atomic(path, payload)
-        after_bytes = path.stat().st_size
+        # The rewrite replaces the file with what was read above, so a record
+        # appended since - an audit finishing while this ran - would be erased.
+        # So if the file grew, change nothing, and the next prune plans with that
+        # record in view. This narrows the window rather than closing it; closing
+        # it takes a lock every audit would wait on.
+        if _bytes(path) != before_bytes:
+            skipped = True
+            kept, dropped, damaged = records, [], 0
+        else:
+            state.write_atomic(path, payload)
+            after_bytes = path.stat().st_size
+
+    reasons: dict[str, int] = {}
+    for entry in dropped:
+        reasons[entry["reason"]] = reasons.get(entry["reason"], 0) + 1
+
+    keep_pages = pages_lib.plan_keep(slug, kept, limits["max_page_bytes"])
+    spare_since = (now - timedelta(hours=limits["page_grace_hours"])).timestamp()
+    # A skipped project's pages wait with its file: their plan came from the same read.
+    pages_deleted, page_bytes = (0, 0) if skipped else pages_lib.collect(slug, keep_pages, apply, spare_since)
 
     return {
         "project": slug,
+        "skipped": skipped,
         "runs_before": len(records),
         "runs_kept": len(kept),
         "runs_dropped": len(dropped),

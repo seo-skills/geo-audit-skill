@@ -5,7 +5,8 @@ sequence — plus `normalizer_version`. It deliberately does not cover ETag or
 Last-Modified: those change on every redeploy even when the content is
 identical, and flipping a client's report to STALE because someone rebuilt the
 site is the exact noise block-hashing exists to remove. They are kept as
-metadata and used only as a revalidation shortcut.
+metadata. They are not a revalidation shortcut either: a 304 vouches for a
+page's bytes, not its headers, and an audit scores headers too.
 """
 
 from __future__ import annotations
@@ -46,15 +47,6 @@ def site_digest(
 
 def short(full_digest: str) -> str:
     return full_digest[:8]
-
-
-def revalidation_headers(etag: str | None, last_modified: str | None) -> dict[str, str]:
-    out: dict[str, str] = {}
-    if etag:
-        out["If-None-Match"] = etag
-    if last_modified:
-        out["If-Modified-Since"] = last_modified
-    return out
 
 
 def stamp_for(pages_ok: int, pages_failed: list[dict], changed: int = 0) -> str:

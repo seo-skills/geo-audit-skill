@@ -49,14 +49,6 @@ def test_block_kind_matters():
     assert evidence.digest(a) != evidence.digest(b)
 
 
-def test_etag_is_not_part_of_identity_only_a_revalidation_shortcut():
-    headers = evidence.revalidation_headers("W/\"abc\"", "Wed, 21 Oct 2026 07:28:00 GMT")
-    assert headers == {
-        "If-None-Match": 'W/"abc"',
-        "If-Modified-Since": "Wed, 21 Oct 2026 07:28:00 GMT",
-    }
-
-
 def test_stamps():
     assert evidence.stamp_for(1, []) == evidence.CURRENT
     assert evidence.stamp_for(1, [{"url": "x", "reason": "bot_blocked"}]) == evidence.PARTIAL

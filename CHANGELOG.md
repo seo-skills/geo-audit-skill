@@ -12,30 +12,38 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Audits keep the pages they read**, lifting the PRD's no-pages-on-disk rule at the
   maintainer's decision. Each page body is gzipped into `projects/<slug>/pages/`, stored
   once under the SHA-256 of its bytes - an unchanged page costs nothing on a re-audit -
-  with robots.txt beside it. The record names them by hash; it never contains them, so
-  sharing `audits.jsonl` shares no one's pages, and nothing is ever printed. `geo prune`
-  deletes a page once no kept run names it and reports how many. Pages have their own
+  with robots.txt and llms.txt beside it. The record names them by hash; it never
+  contains them, so sharing `audits.jsonl` shares no one's pages, and nothing is ever
+  printed. `geo prune` deletes a page once no kept run names it and reports how many.
+  Pages have their own
   budget, 100 MB a project (`max_page_bytes`): storing a page once bounds nothing for a
   site whose pages change every run, and a measured page ran to 62 KB gzipped. Past the
   budget the oldest runs lose their pages first and keep their records, which then
-  rescore from the recorded ratios; a run keeps all its pages or none.
+  rescore from the recorded ratios; a run keeps all its pages or none. The store is
+  safe beside other runs: no page is deleted within a day of being written or reused
+  (`page_grace_hours`), because an audit stores its pages before it appends the record
+  that names them; a page is read back only if its bytes still match its hash, so a
+  damaged copy counts as missing rather than crashing a rescore; and the store's
+  `.gitignore` keeps a `GEO_HOME` inside a git repository from committing client pages.
 - **`--rescore` recomputes from the stored pages.** It reads back the pages an audit
   read and runs extraction, every signal and every finding again with today's code, so
   a rule changed since the audit is re-applied to the exact bytes rather than replaying
-  what the audit concluded. `rescore.from` says what it used: `pages`, or `ratios` when
-  a page was pruned, or `record` for runs older than both.
-- **A re-audit asks each page whether it changed** - the revalidation shortcut PRD §3.5
-  always described and nothing sent. Pages the last run kept are fetched with
-  `If-None-Match` / `If-Modified-Since`; a `304` reads the stored copy through the same
-  classification as a download, and a 304 for a copy that was pruned is asked again
-  without the condition. `crawl.revalidated` counts them. It spares the site's
-  bandwidth; at one request per second it does not make the crawl faster.
+  what the audit concluded - llms.txt included, which is judged again from the stored
+  file. `rescore.from` says what it used: `pages`, or `ratios` when a page was pruned or
+  damaged, or `record` for runs older than both.
 
 ### Changed
 
 - **The plugin marketplace serves the `v0.4.0` tag instead of `main`.** Every plugin
   install is now exactly a release, so skills can never run ahead of the CLI on PyPI.
   It is an HTTPS `url` source; the skill lint requires its `ref` to match `VERSION`.
+
+### Fixed
+
+- **`geo prune` could erase an audit that finished while it ran.** It rewrites
+  `audits.jsonl` from what it read, so a record appended in between was lost. It now
+  re-checks the file's size before the rewrite and leaves a file that grew alone: the
+  project is reported `skipped`, and the next prune plans with that record in view.
 
 ## [0.4.0] - 2026-09-21
 

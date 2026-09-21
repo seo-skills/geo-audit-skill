@@ -1,7 +1,8 @@
 {
-  "comment": "Defaults for `geo prune`. History is evidence, so the defaults are generous: a year, a hundred runs per project, ten megabytes of records. The point of pruning is that an append-only file does not grow without bound, not that old audits are worthless. Stored pages have their own budget, a hundred megabytes a project: a page is stored once, but one that changes on every run is stored every run, and a measured page ran to 62 KB gzipped. Past the budget the oldest runs lose their pages first and keep their records.",
+  "comment": "Defaults for `geo prune`. History is evidence, so the defaults are generous: a year, a hundred runs per project, ten megabytes of records. The point of pruning is that an append-only file does not grow without bound, not that old audits are worthless. Stored pages have their own budget, a hundred megabytes a project: a page is stored once, but one that changes on every run is stored every run, and a measured page ran to 62 KB gzipped. Past the budget the oldest runs lose their pages first and keep their records. No stored page is deleted within a day of being written or reused, because an audit stores its pages before it appends the record that names them.",
   "keep_runs": 100,
   "keep_days": 365,
   "max_project_bytes": 10485760,
-  "max_page_bytes": 104857600
+  "max_page_bytes": 104857600,
+  "page_grace_hours": 24
 }

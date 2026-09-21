@@ -40,10 +40,16 @@ content change.
 
 ## ETag and Last-Modified
 
-Stored as metadata, used only as a revalidation shortcut (`If-None-Match` → 304 means
-"skip the download"). **Not part of hash identity.** They change on every redeploy
+Stored as metadata. **Not part of hash identity.** They change on every redeploy
 even when the content is identical, and flipping a client's report to STALE because
 someone pushed a CSS fix is exactly the noise block-hashing exists to remove.
+
+**Not a revalidation shortcut either.** A re-audit downloads every page again rather
+than asking `If-None-Match`. A `304 Not Modified` vouches for a page's bytes, not its
+headers, and `X-Robots-Tag` and HSTS are scored from headers. Dropping a `noindex`
+header from a server's config leaves the bytes and the ETag as they were, so a
+re-audit that trusted the 304 would go on reporting the blocker - on the very run made
+to confirm the fix. The download it would have saved was the site's, not yours.
 
 ## Stamps
 
@@ -95,22 +101,20 @@ stored record with no network access.
 
 The record holds every scorer input, not only the envelope that was printed: the
 pages themselves. Each page an audit read is kept in `projects/<slug>/pages/`, stored
-once under the hash of its bytes, beside robots.txt and what llms.txt showed - never
-inside `audits.jsonl`, and never printed. A rescore reads those pages back and runs
+once under the hash of its bytes, beside robots.txt and llms.txt - never inside
+`audits.jsonl`, and never printed. A rescore reads those pages back and runs
 the whole pipeline again with today's code: extraction, every signal, every finding.
 A scoring rule that changed since the audit is re-applied to the exact bytes the audit
 read, which is what makes an old score defensible rather than merely repeatable.
 
-The same store makes a re-audit cheaper on the server. Every page the last run kept is
-fetched with `If-None-Match` and `If-Modified-Since`; a server that answers `304 Not
-Modified` has confirmed the page is unchanged, and the stored copy is read through
-exactly the classification a download would go through. `crawl.revalidated` counts
-those pages. Each is still one request, so the crawl is no faster at one request per
-second - what it saves is the site's bandwidth, not your time.
+A page is read back only if its bytes still hash to the name it is stored under, so
+a damaged or altered copy counts as missing, the same as one `geo prune` removed. The
+store also carries a `.gitignore`: a `GEO_HOME` inside a git repository - a dotfiles
+repo, say - does not commit a client's pages by accident.
 
 `rescore.from` says what a rescore recomputed from. `pages` is the full recomputation.
-`ratios` means a page is gone - `geo prune` removed it - so the rescore fell back to
-the per-page ratios recorded beside the envelope: every finding still rebuilds, but
-signal values are the recorded ones. `record` is a run older than both, which rebuilds
+`ratios` means a page is gone - `geo prune` removed it, or its copy no longer matches -
+so the rescore fell back to the per-page ratios recorded beside the envelope: every
+finding still rebuilds, but signal values are the recorded ones. `record` is a run older than both, which rebuilds
 the number from the recorded signals and can rebuild neither page-level nor check
 findings.

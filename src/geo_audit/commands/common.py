@@ -17,7 +17,6 @@ from geo_audit._version import NORMALIZER_VERSION
 from geo_audit.errors import GeoError
 from geo_audit.lib import evidence as evidence_lib
 from geo_audit.lib import http, robots as robots_lib
-from geo_audit.lib import pages as pages_lib
 from geo_audit.lib.extract import Document, extract
 from geo_audit.scoring.model import Finding
 
@@ -33,18 +32,12 @@ class Options:
     max_redirects: int = http.DEFAULT_MAX_REDIRECTS
     check_robots: bool = True
     render: bool = False
-    # A re-audit's previous responses by URL, and the project whose page store
-    # holds their bodies: what lets a page be asked whether it changed.
-    previous: dict | None = None
-    store: str | None = None
 
 
 @dataclass
 class Page:
     url: str
     result: http.FetchResult | None = None
-    # Answered 304 and read from the page store rather than downloaded.
-    revalidated: bool = False
     doc: Document | None = None
     robots: robots_lib.RobotsFile | None = None
     failure: dict | None = None
@@ -113,30 +106,6 @@ def classify(page: Page, result: http.FetchResult) -> Page:
     return page
 
 
-def _previous_for(url: str, options: Options) -> dict | None:
-    """The last audit's response for this URL, when it can be revalidated."""
-    if not options.previous or not options.store:
-        return None
-    from geo_audit.lib.crawl import normalize_url  # crawl imports this module
-
-    entry = options.previous.get(normalize_url(url))
-    headers = (entry or {}).get("headers") or {}
-    if not entry or not entry.get("body") or not (headers.get("etag") or headers.get("last-modified")):
-        return None
-    return entry
-
-
-def _conditional(previous: dict | None) -> dict | None:
-    if previous is None:
-        return None
-    headers, conditional = previous.get("headers") or {}, {}
-    if headers.get("etag"):
-        conditional["If-None-Match"] = headers["etag"]
-    if headers.get("last-modified"):
-        conditional["If-Modified-Since"] = headers["last-modified"]
-    return conditional or None
-
-
 def load_page(
     url: str,
     options: Options,
@@ -182,30 +151,14 @@ def load_page(
                 )
             )
 
-        previous = _previous_for(url, options)
-
-        def download(conditional: dict | None) -> http.FetchResult:
-            return http.fetch(
-                url,
-                allow_private=options.allow_private,
-                timeout=options.timeout,
-                max_bytes=options.max_bytes,
-                max_redirects=options.max_redirects,
-                extra_headers=conditional,
-                session=session,
-            )
-
-        result = download(_conditional(previous))
-        if result.status == 304 and previous is not None:
-            # PRD §3.5: unchanged, so read the stored copy instead of downloading.
-            body = pages_lib.get(options.store, previous["body"])
-            if body is not None:
-                result = pages_lib.fetch_result(previous, body)
-                page.revalidated = True
-            else:
-                # The server says unchanged, but prune took our copy. A 304 has
-                # no body, so ask again without the condition.
-                result = download(None)
+        result = http.fetch(
+            url,
+            allow_private=options.allow_private,
+            timeout=options.timeout,
+            max_bytes=options.max_bytes,
+            max_redirects=options.max_redirects,
+            session=session,
+        )
         classify(page, result)
     finally:
         if owned:

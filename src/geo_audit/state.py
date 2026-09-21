@@ -9,8 +9,13 @@ Three properties this module has to hold:
   corruption.
 * State carries a version. A CLI that finds newer state refuses to run and
   changes nothing, rather than migrating someone's history downward.
-* Nothing here needs a cross-process lock. Core state is single-writer by
-  construction; locking arrives with the first multi-writer file.
+* Nothing takes a cross-process lock, because an audit must never wait on
+  another command. Appends need none: a record is one `write()` to a file
+  opened for append. The one rewrite, `geo prune`, re-checks the file's size
+  before replacing it and leaves a file that grew alone. Stored pages are
+  written by rename under the hash of their bytes, and prune spares any page
+  written or reused within its grace period, because an audit stores its pages
+  before it appends the record that names them.
 """
 
 from __future__ import annotations

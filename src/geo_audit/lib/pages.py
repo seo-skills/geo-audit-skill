@@ -8,13 +8,19 @@ changed. The PRD kept no pages on disk; the maintainer lifted that on
 - apart from `audits.jsonl`, so sharing an audit shares no client's pages;
 - never printed, so the CLI's output boundary is exactly what it was;
 - gzipped and content-addressed, so an unchanged page costs nothing on a
-  re-audit, and `geo prune` deletes a page once no kept run names it.
+  re-audit, and `geo prune` deletes a page once no kept run names it;
+- read back only if the bytes still match the name, so a damaged copy is
+  treated like a pruned one;
+- ignored by git, because a GEO_HOME inside a repository - a dotfiles repo, say -
+  must not commit other people's pages by accident.
 """
 
 from __future__ import annotations
 
 import gzip
 import hashlib
+import os
+import zlib
 from pathlib import Path
 
 from geo_audit import state
@@ -32,17 +38,38 @@ def put(slug: str, body: str) -> str:
     data = body.encode("utf-8")
     digest = hashlib.sha256(data).hexdigest()
     path = store_dir(slug) / f"{digest}{SUFFIX}"
-    if not path.exists():
+    try:
+        # Stored by an earlier run: renew its age rather than write it again, so
+        # prune's grace period covers a run that reuses a page as well as one
+        # that writes it.
+        os.utime(path)
+    except FileNotFoundError:
         # mtime=0 keeps the compressed bytes a function of the page alone.
         state.write_atomic_bytes(path, gzip.compress(data, mtime=0))
+    except OSError:
+        # Windows refuses while another process has the file open. Renewing is
+        # best-effort, and the copy itself is intact.
+        pass
+    ignore = store_dir(slug) / ".gitignore"
+    if not ignore.exists():
+        state.write_atomic(ignore, "*\n")
     return digest
 
 
 def get(slug: str, digest: str) -> str | None:
-    path = store_dir(slug) / f"{digest}{SUFFIX}"
-    if not path.exists():
+    """The stored page, or None if it is missing or is not the page stored.
+
+    The name is the hash of the bytes, so a damaged or altered copy is caught
+    here and reads as missing - which every caller already handles, the way it
+    handles a page prune removed.
+    """
+    try:
+        data = gzip.decompress((store_dir(slug) / f"{digest}{SUFFIX}").read_bytes())
+    except (OSError, EOFError, zlib.error):
         return None
-    return gzip.decompress(path.read_bytes()).decode("utf-8")
+    if hashlib.sha256(data).hexdigest() != digest:
+        return None
+    return data.decode("utf-8")
 
 
 def stored(slug: str) -> list[str]:
@@ -57,9 +84,9 @@ def referenced(records: list[dict]) -> set[str]:
     for record in records:
         snapshot = record.get("snapshot") or {}
         names.update(f["body"] for f in snapshot.get("fetches") or [] if f.get("body"))
-        robots = snapshot.get("robots") or {}
-        if robots.get("body"):
-            names.add(robots["body"])
+        for site_file in (snapshot.get("robots"), snapshot.get("llms")):
+            if site_file and site_file.get("body"):
+                names.add(site_file["body"])
     return names
 
 
@@ -89,15 +116,27 @@ def plan_keep(slug: str, newest_first: list[dict], budget: int) -> set[str]:
     return keep
 
 
-def collect(slug: str, keep: set[str], apply: bool) -> tuple[int, int]:
-    """Pages no kept run names: how many, how many bytes, deleted if `apply`."""
+def collect(slug: str, keep: set[str], apply: bool, spare_since: float) -> tuple[int, int]:
+    """Pages no kept run names: how many, how many bytes, deleted if `apply`.
+
+    A page written or reused at or after `spare_since` (a timestamp) is spared
+    all the same. An audit stores its pages before it appends the record that
+    names them, so a page no record names yet may belong to a run still in
+    progress - the reason git leaves young unreferenced objects alone.
+    """
     count = size = 0
     for digest in stored(slug):
         if digest in keep:
             continue
         path = store_dir(slug) / f"{digest}{SUFFIX}"
+        try:
+            info = path.stat()
+        except FileNotFoundError:
+            continue
+        if info.st_mtime >= spare_since:
+            continue
         count += 1
-        size += path.stat().st_size
+        size += info.st_size
         if apply:
             path.unlink(missing_ok=True)
     return count, size
@@ -132,6 +171,14 @@ def robots_record(robots: robots_lib.RobotsFile | None, slug: str) -> dict | Non
         "source_url": robots.source_url, "status": robots.status,
         "unreachable": robots.unreachable, "unavailable": robots.unavailable, "error": robots.error,
         "body": put(slug, robots.text) if robots.text is not None else None,
+    }
+
+
+def file_record(found: dict, text: str | None, slug: str) -> dict:
+    """A site file read beside the pages, such as llms.txt."""
+    return {
+        "url": found["url"], "status": found["status"], "error": found["error"],
+        "body": put(slug, text) if text is not None else None,
     }
 
 

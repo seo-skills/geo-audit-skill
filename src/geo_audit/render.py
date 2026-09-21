@@ -735,8 +735,17 @@ def _render_prune(envelope: dict, out: TextIO, style: Style) -> None:
         print(file=out)
         width = max(len(p["project"]) for p in projects)
         for project in projects:
+            if project.get("skipped"):
+                print(
+                    f"  {project['project']:<{width}}  skipped: an audit was recorded while this ran, "
+                    f"so nothing was changed. Run geo prune again.",
+                    file=out,
+                )
+                continue
             reasons = ", ".join(f"{count} by {why}" for why, count in sorted(project["dropped_by"].items()))
             tail = f"  ({reasons})" if reasons else ""
+            if project.get("pages_deleted"):
+                tail += f"  {project['pages_deleted']} stored page(s), {project['page_bytes_reclaimed'] // 1024} KiB"
             print(
                 f"  {project['project']:<{width}}  {project['runs_kept']:>4} kept  "
                 f"{project['runs_dropped']:>4} dropped{tail}",

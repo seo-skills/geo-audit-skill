@@ -94,6 +94,8 @@ geo CLI  (PyPI: seomator-geo-audit · import: geo_audit · console script: geo)
 
 We copy four patterns and nothing else (§7). **Deterministic gates in code, prose only narrates** — prevents defect 1, where scores vary run to run because a prompt did the arithmetic. **Evidence binding** — prevents handing a client a report computed from a page that has since changed, with no way to tell. **Append-only JSONL history** — prevents defect 6's read-modify-write corruption for the file written most often. **Lint-enforced skill contracts** — prevents defect 2's drift, where two copies of one document silently diverged to 28 vs 69 headings. gstack's template *generator* is not adopted: its forcing function was multi-host output, which is a non-goal.
 
+*Amended 2026-09-21, when pages came onto disk (§3.5 Retention).* Three storage rules join them - rules, not machinery. **A rewrite never erases a concurrent append:** gstack re-checks a log's size before compacting it, and `geo prune` now does the same before rewriting `audits.jsonl`, which prevents erasing an audit that finished while prune ran. **Nothing young is collected** (git's rule for loose objects): no stored page is deleted within a day of being written or reused, which prevents deleting the pages of an audit whose record is not yet written. **Content-addressed reads verify:** a stored page is read back only if its bytes still hash to its name, which prevents scoring a damaged copy. Still not adopted, per §7: gstack's JSONL merge driver (cross-machine sync), its event-sourced stores with compaction, and lock files.
+
 ### 3.1 Repo layout and distribution
 
 ```
@@ -173,7 +175,7 @@ The core loop feeds up to 50 pages of untrusted web content toward an agent that
 
 - **Signal inventory** (M1 pre-work, one page, `docs/concepts/signals.md`): every signal is classified **deterministic** (parsed fact), **heuristic** (code with stated weights), **live** (third-party API, carries `observed_at`), or **advisory** (LLM judgment under a fixed rubric). The envelope and the operator report label each signal's class.
 - **The composite sums deterministic + heuristic + live signals only.** Advisory output is displayed in its own clearly-labeled section and never enters a number.
-- **Purity (G1):** the snapshot holds every scorer input, including live signals as observed - since 2026-09-21 literally: the pages themselves, in the page store beside `audits.jsonl` (see Retention, §3.5). `geo audit --rescore <run_id>` recomputes from the snapshot with no network. *Reproducibility is claimed for rescoring a snapshot* — not for re-crawling a live site, which can legitimately differ.
+- **Purity (G1):** the snapshot holds every scorer input, including live signals as observed - since 2026-09-21 literally: the pages themselves, with robots.txt and llms.txt, in the page store beside `audits.jsonl` (see Retention, §3.5). `geo audit --rescore <run_id>` recomputes from the snapshot with no network. *Reproducibility is claimed for rescoring a snapshot* — not for re-crawling a live site, which can legitimately differ.
 - **One pipeline, nullable signals.** A missing capability (no Playwright) nulls specific signals and lowers `completeness`; the report says "computed on 31 of 36 signals". There is no second scoring path.
 - **Upstream's scorer is a specification to correct, not to reproduce.** Upstream's six categories and weights (Citability 25 / Brand 20 / Content 20 / Technical 15 / Schema 10 / Platform 10) are the starting point. "Content" and "Platform" are largely LLM-judged upstream; the inventory decides which of their sub-signals are computable (byline, dates, outbound citations, `Person` schema → heuristic) and which become advisory. Every deliberate divergence is recorded in `docs/concepts/score-divergence.md`.
 - **Versions:** `scoring_version` (formula), `data_version` (thresholds, UA lists, tiers), `normalizer_version` (extraction). All three appear in every envelope, audit record and report footer. Weights, thresholds and tier boundaries live in `data/`, not in code and not in prose. **Data updates ship as a patch release on PyPI** — that channel is already versioned, checksummed and reversible. Pinning the data means pinning the package.
@@ -182,9 +184,9 @@ The core loop feeds up to 50 pages of untrusted web content toward an agent that
 ### 3.5 Evidence model
 
 - **Hash = SHA-256 over the extracted content-block sequence** (the scorer's real inputs) **+ `normalizer_version`.** Golden test: the same fixture with a changed nonce, timestamp and ad slot still hashes identically.
-- **ETag / Last-Modified are *not* part of hash identity.** They change on every redeploy even when content is identical, which would flip reports to STALE for nothing — the exact noise block-hashing exists to avoid. They are stored as metadata and used only as a revalidation shortcut (`If-None-Match` → 304 ⇒ unchanged, skip the download). *Built 2026-09-21: a 304 reads the page from the page store (§3.5 Retention), and a 304 for a copy prune removed is asked again without the condition.*
+- **ETag / Last-Modified are *not* part of hash identity.** They change on every redeploy even when content is identical, which would flip reports to STALE for nothing — the exact noise block-hashing exists to avoid. They are stored as metadata. *They are not a revalidation shortcut either: one was built on 2026-09-21 and withdrawn the same day. A 304 vouches for a page's bytes, not its headers, and `X-Robots-Tag` and HSTS are scored from headers. A site that drops a `noindex` header from its server config serves the same bytes under the same ETag, so a re-audit that trusted the 304 went on reporting the blocker, on the run made to confirm the fix. The saving went to the audited site, never to the user.*
 - **Stamps:** `CURRENT` · `PARTIAL` (failed or changed pages enumerated) · `STALE`.
-- **Retention:** the record holds derived signals and capped excerpts. Page bodies are kept too - *the maintainer lifted "no raw HTML on disk" on 2026-09-21* - in a content-addressed store beside the record (`projects/<slug>/pages/<sha256>.html.gz`): never inside `audits.jsonl`, so sharing an audit shares no client's pages; never printed, so the §3.3 output boundary is unchanged; stored once per content, and deleted by `geo prune` when no kept run names them - or when they fall outside the page budget (`max_page_bytes`, 100 MB a project), oldest runs first, since a page that changes on every run is stored every run. The rule had no stated reason; its three likely ones - injection, client data, disk growth - are each met by that design rather than by a ban.
+- **Retention:** the record holds derived signals and capped excerpts. Page bodies are kept too - *the maintainer lifted "no raw HTML on disk" on 2026-09-21* - in a content-addressed store beside the record (`projects/<slug>/pages/<sha256>.html.gz`): never inside `audits.jsonl`, so sharing an audit shares no client's pages; never printed, so the §3.3 output boundary is unchanged; stored once per content, and deleted by `geo prune` when no kept run names them - or when they fall outside the page budget (`max_page_bytes`, 100 MB a project), oldest runs first, since a page that changes on every run is stored every run. The rule had no stated reason; its three likely ones - injection, client data, disk growth - are each met by that design rather than by a ban. robots.txt and llms.txt are kept beside the pages, so a rescore judges both by today's rules. The store is safe beside other runs by the three §3.0 storage rules - prune leaves a history that grew while it ran alone, spares pages younger than `page_grace_hours` (24), and reads a page back only if its bytes still match its name - and it carries a `.gitignore`, so a GEO_HOME inside a git repository (a dotfiles repo, say) never commits a client's pages.
 
 ### 3.6 State
 
@@ -430,7 +432,7 @@ Live AI-citation measurement across engines (the strongest candidate for post-1.
 | R-E3 | M | §3.2. Contiguous 0–5: "5 reserved, then 8" only avoided colliding with drafts that never shipped |
 | R-E4 | M ✓ | §3.7: 9 core + 2 agency. No router (namespacing routes), no aliases, no update skill |
 | R-E5 | K | §6 |
-| R-E6 | M | **ETag/Last-Modified removed from hash identity** — they change on redeploy with identical content and would cause false STALE. Kept as a revalidation shortcut (§3.5) |
+| R-E6 | M | **ETag/Last-Modified removed from hash identity** — they change on redeploy with identical content and would cause false STALE. Kept as metadata; a revalidation shortcut built on them was withdrawn, because a 304 does not vouch for headers (§3.5) |
 | R-E7 | K | §3.6 |
 | R-E8 | C | The plugin manager owns install, update, uninstall. Returns as written if D2 is rejected |
 | R-E9 | M | Kept, plus `--allow-private` for the start URL (localhost/staging audits are legitimate) and peer-address validation against DNS rebinding |
@@ -623,7 +625,8 @@ implementation found G1 half-met: the record held site-level signals, not every 
 input, so `--rescore` rebuilt the number but lost page-level and check findings. Closed
 with a record-only snapshot (per-page ratios, fetch and robots observations) and one
 classification function shared by a live run and a rescore. The ETag
-revalidation shortcut from §3.5 followed once pages were kept on disk - see the open list.
+revalidation shortcut from §3.5 was built once pages were kept on disk, then withdrawn - see
+the open list.
 
 ### Open before the next milestone
 
@@ -640,10 +643,9 @@ revalidation shortcut from §3.5 followed once pages were kept on disk - see the
    check in the project that needs a person: `python tests/evals/run_eval.py`, five
    sites the practitioner knows, two questions each.
 6. M4, if the go/no-go in D3 says yes: `crm`, `serve`, `import`, locking.
-7. ~~The ETag revalidation shortcut.~~ **Built 2026-09-21**, once the maintainer lifted the
-   no-pages-on-disk rule: a re-audit sends `If-None-Match` / `If-Modified-Since` for every
-   page the last run stored, and a 304 reads the stored copy through the same
-   classification as a download. `crawl.revalidated` counts them.
+7. ~~The ETag revalidation shortcut.~~ **Built and withdrawn 2026-09-21.** A 304 vouches
+   for a page's bytes, not for the headers two signals are scored from, so a re-audit
+   trusting it could not see a header-only fix (§3.5). Every page is downloaded again.
 8. A design question, not a defect: authorship, attribution and article-markup
    findings apply to every page, so hub and tool pages are listed beside articles.
    Scoping them to articles needs a reliable article test and a `scoring_version` bump.
