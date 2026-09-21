@@ -432,3 +432,43 @@ def test_a_start_url_that_redirects_into_the_sitemap_is_scored_once(serve):
     landed = [normalize_url(p.result.final_url if p.result else p.url) for p in result.pages]
     assert len(landed) == len(set(landed)), f"scored twice: {sorted(landed)}"
     assert normalize_url(f"{site.url}/schema-broken.html") in landed
+
+
+# --- bot challenges ------------------------------------------------------------
+
+
+def _challenge_site(serve):
+    from tests.fixture_server import Reply
+
+    interstitial = ("<html><head><title>Just a moment...</title></head><body>"
+                    "<div id='cf-chl-widget'>Checking your browser before accessing the site.</div></body></html>")
+    real = "<p>" + "A page that happens to carry a signup form with a challenge-platform widget. " * 30 + "</p>"
+    return serve({
+        "/challenge-503": Reply(status=503, body=interstitial),
+        "/challenge-header": Reply(body=interstitial, headers={"cf-mitigated": "challenge"}),
+        "/widget-page": Reply(body=f"<html><head><title>Sign up</title></head><body><main><h1>Sign up</h1>{real}</main></body></html>"),
+        "/down": Reply(status=503, body="<html><body><h1>Service Unavailable</h1></body></html>"),
+    })
+
+
+@pytest.mark.parametrize("path", ["/challenge-503", "/challenge-header"])
+def test_a_bot_challenge_is_blocked_whatever_its_status(serve, path):
+    """PRD §3.2: bot-blocked means 403 *or challenge*. A Cloudflare interstitial
+    served with 503 was called a server error - telling a client to repair a
+    server that works - and one served with 200 would have been scored."""
+    from geo_audit.commands.common import Options, load_page
+
+    site = _challenge_site(serve)
+    page = load_page(f"{site.url}{path}", Options(allow_private=True, check_robots=False))
+    assert page.failure["reason"] == "bot_blocked"
+    assert [f.id for f in page.findings] == ["fetch.blocked"]
+
+
+@pytest.mark.parametrize("path, reason", [("/widget-page", None), ("/down", "server_error")])
+def test_a_widget_or_a_real_outage_is_not_a_challenge(serve, path, reason):
+    """A real page may carry a captcha widget, and a real 503 is a real outage."""
+    from geo_audit.commands.common import Options, load_page
+
+    site = _challenge_site(serve)
+    page = load_page(f"{site.url}{path}", Options(allow_private=True, check_robots=False))
+    assert (page.failure or {}).get("reason") == reason

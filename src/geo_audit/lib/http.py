@@ -46,6 +46,9 @@ KEEP_HEADERS = (
     "content-length",
     "content-encoding",
     "etag",
+    # Set by Cloudflare on a challenge response: how a 503 or a 200 is known to
+    # be bot protection rather than an outage or a page.
+    "cf-mitigated",
     "last-modified",
     "cache-control",
     "x-robots-tag",

@@ -1,0 +1,17 @@
+{
+  "comment": "How a bot-protection challenge is recognised when its status code does not say so. A challenge answered with 503 is not a broken server and one answered with 200 is not content: both are the site refusing a crawler, and the fix is an allowlist, not a server repair. The header is set by the vendor on the challenge response itself. Markers are vendor strings that change, which is why they live here and not in code; on a 200 a marker only counts on a short page, because real pages embed captcha widgets.",
+  "headers": {"cf-mitigated": "challenge"},
+  "statuses": [200, 403, 429, 503],
+  "markers": [
+    "cf-chl",
+    "challenge-platform",
+    "Just a moment...",
+    "Checking your browser",
+    "Attention Required! | Cloudflare",
+    "_Incapsula_Resource",
+    "captcha-delivery.com",
+    "px-captcha",
+    "Access Denied - Sucuri Website Firewall"
+  ],
+  "max_content_chars_on_200": 500
+}

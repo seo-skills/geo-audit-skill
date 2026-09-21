@@ -131,6 +131,12 @@ Four different failures, and the message says which:
 All four exit 3, which means no HTTP response was obtained. A response that arrived
 and said 403 or 500 is a **finding**, not one of these.
 
+A bot-protection challenge is reported as blocked whatever status it arrives with. A
+Cloudflare interstitial answered with 503 is not an outage and one answered with 200 is
+not the page: both are the site refusing a crawler, and the fix is an allowlist rule,
+not a server repair. It is recognised by the vendor's `cf-mitigated` header or by a known
+challenge marker; the markers live in `data/bot_challenges.json`.
+
 ## `GEO_E_BAD_URL` and `GEO_E_BLOCKED_SCHEME`
 
 Pass an absolute `http://` or `https://` URL. `example.com` is not one, and

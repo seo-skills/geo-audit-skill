@@ -117,7 +117,7 @@ def load_page(
         )
         page.result = result
 
-        if result.status in BLOCKED_STATUSES:
+        if result.status in BLOCKED_STATUSES or _is_challenge(result):
             page.failure = {"url": result.final_url, "reason": "bot_blocked", "status": result.status}
             page.findings.append(
                 _check_finding("fetch.blocked", result.final_url, f"HTTP {result.status}")
@@ -154,6 +154,26 @@ def load_page(
             session.close()
 
     return page
+
+
+def _is_challenge(result: http.FetchResult) -> bool:
+    """A bot-protection challenge, whatever status it was served with.
+
+    PRD §3.2 says bot-blocked means 403 *or challenge*. A Cloudflare interstitial
+    answered with 503 was reported as a server error - a client told to repair a
+    server that works - and one answered with 200 would have been scored as the
+    page. The vendor header decides on its own; a marker decides on a refusing
+    status, and on a 200 only when the page is short enough to be nothing else.
+    """
+    spec = data.load("bot_challenges")
+    for header, value in spec["headers"].items():
+        if (result.headers.get(header) or "").strip().lower() == value:
+            return True
+    if result.status not in spec["statuses"] or not any(m in (result.body or "") for m in spec["markers"]):
+        return False
+    if result.status == 200:
+        return extract(result.body, result.final_url).content_chars < spec["max_content_chars_on_200"]
+    return True
 
 
 _MISSING = re.compile(r"\b(?:404|not found)\b", re.IGNORECASE)

@@ -16,6 +16,14 @@ something the build checks, and two rounds of practitioner eval are folded in.
 
 ### Fixed — hardening toward 1.0
 
+- **A bot challenge served with 503 was reported as a server error.** PRD §3.2 says
+  bot-blocked means 403 *or challenge*, but only the status code was checked: a
+  Cloudflare interstitial answered with 503 told the client to repair a server that
+  works, and one answered with 200 would have been scored as the page. A challenge is
+  now recognised by the vendor's `cf-mitigated` header - no longer dropped - or by a
+  known marker on a refusing status, and on a 200 only when the page is short enough to
+  be nothing else, since real pages embed captcha widgets. Markers live in
+  `data/bot_challenges.json`.
 - **Four of the PRD's eight interaction states had no test, and two were wrong.**
   Checking every PRD claim against the code found the report's PDF-unavailable message
   naming a PyPI package that does not exist before the first release, and the no-audit
