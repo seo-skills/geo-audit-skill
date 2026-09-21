@@ -27,7 +27,7 @@ REPO_URL = "https://github.com/seo-skills/geo-audit-skill"
 # Flip when the first release is on PyPI. `geo doctor` runs from the wheel and
 # cannot read the README, so it keeps this copy of the switch; a test holds it
 # to the README's "Not on PyPI yet" note, which rules every other install line.
-PUBLISHED_ON_PYPI = False
+PUBLISHED_ON_PYPI = True
 
 
 def install_target(extra: str | None = None) -> str:

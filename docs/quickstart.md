@@ -8,10 +8,6 @@ uv tool install seomator-geo-audit
 
 `pipx install seomator-geo-audit` works too. Python 3.11 or newer. No browser needed.
 
-> **Not on PyPI yet.** Until the first release is published, that command reports no
-> matching package. Install from source instead:
-> `uv tool install git+https://github.com/seo-skills/geo-audit-skill`
-
 ## Check the install
 
 ```bash

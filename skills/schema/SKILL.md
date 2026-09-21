@@ -20,7 +20,7 @@ geo --version
 
 Expected: `seomator-geo-audit 0.4.x` or newer.
 
-- **Command not found** -> stop and say: "The geo CLI is not installed. Install it with `uv tool install seomator-geo-audit` (or `pipx install seomator-geo-audit`), then run this again. If that reports no matching package, the first release is not on PyPI yet - install from source with `uv tool install git+https://github.com/seo-skills/geo-audit-skill`."
+- **Command not found** -> stop and say: "The geo CLI is not installed. Install it with `uv tool install seomator-geo-audit` (or `pipx install seomator-geo-audit`), then run this again."
 - **Older than 0.4.0** -> stop and say: "This skill needs seomator-geo-audit 0.4.0 or newer. Upgrade with `uv tool upgrade seomator-geo-audit`."
 - **Anything else odd** -> run `geo doctor` and relay what it reports.
 

@@ -32,26 +32,40 @@ release can still be stopped, because PyPI never accepts the same version twice.
 
 ## Each release
 
-1. `VERSION` holds the number. Update it, and give `CHANGELOG.md` a section with the
-   same number and today's date - the release workflow checks both and refuses a tag
-   that disagrees with either.
-2. Push to `main` and let CI go green. The release re-runs the suite on three
-   operating systems anyway, so a red `main` only wastes a tag.
-3. Tag and push:
+1. `VERSION` holds the number. Update it, give `CHANGELOG.md` a section with the same
+   number and today's date, and set `ref` in `.claude-plugin/marketplace.json` to the
+   new tag. The release workflow refuses a tag that disagrees with `VERSION` or the
+   changelog, and the skill lint fails if `ref` and `VERSION` disagree.
+2. Run the checks locally - `python tools/gen_docs.py --check`, `python tools/lint_skills.py`,
+   `pytest`, and the build check below.
+3. Commit, tag, and push the two together:
 
    ```bash
    git tag -a "v$(cat VERSION)" -m "v$(cat VERSION)"
-   git push origin "v$(cat VERSION)"
+   git push origin main "v$(cat VERSION)"
    ```
+
+   Together, because the marketplace on `main` now names the new tag: pushed apart,
+   a plugin install in between would look for a tag that does not exist yet.
 
 The tag starts `release.yml`, which verifies the tag against `VERSION` and the
 changelog, runs the suite plus the skill lint on three operating systems, builds the
-wheel and the sdist, and publishes. No step needs a person once the publisher exists.
+wheel and the sdist, and publishes. A failure stops before the upload, and PyPI never
+sees a version it did not accept, so the tag can be deleted and pushed again.
 
 A release is also the only way a skill change reaches someone who already installed
 the plugin. `/plugin update` compares `version` and nothing else: pushing a skill fix
 to `main` without a bump leaves every installed copy as it was, and reports it as
 current.
+
+## Why the marketplace names a tag
+
+The plugin's `source` in `.claude-plugin/marketplace.json` is the release tag, not
+`main`, so every install gets exactly a release: two users on one version have the same
+skills, and a skill never depends on a CLI change PyPI does not have yet. It is a `url`
+source, not `github`: a `github` source clones over SSH with no HTTPS fallback, so it
+fails for anyone without GitHub keys, and the lint rejects it. Both were verified by
+installing from a clean config.
 
 ## Checking a build without releasing
 
@@ -61,32 +75,3 @@ uv build && uvx twine check dist/*
 
 `twine check` validates the metadata PyPI will reject on upload, which is the failure
 that otherwise appears only after a tag is already pushed and public.
-
-## After the first publish
-
-**Pin the marketplace to the release.** Until now the plugin's `source` is `./`, so
-the marketplace serves whatever is on `main`: two users can both be on 0.4.0 with
-different skills, and a skill on `main` can depend on a CLI change PyPI does not have
-yet. Once the tag exists, point the entry in `.claude-plugin/marketplace.json` at it:
-
-```json
-"source": {
-  "source": "url",
-  "url": "https://github.com/seo-skills/geo-audit-skill.git",
-  "ref": "v0.4.0"
-}
-```
-
-From then on every release bumps `ref` alongside `VERSION`, and the skill lint fails
-if they disagree. Use `url`, not `github`: a `github` source clones over SSH with no
-HTTPS fallback, so it fails for anyone without GitHub keys - the lint rejects it.
-Both were verified by installing from a clean config, not assumed.
-
-`README.md` carries a note saying the package is not on PyPI yet. Delete it once the
-release lands. That note is the switch for every other install instruction: with it
-gone, the skill lint and the doc tests fail on each skill preflight and each doc page
-that still offers the source install, naming every one, so nothing is left pointing
-at a workaround. `test_the_prepublication_note_disappears_once_the_package_is_published`
-in `tests/test_docs.py` can go at the same time. Flip `PUBLISHED_ON_PYPI` in
-`src/geo_audit/_version.py` in the same commit - `geo doctor` carries its own copy of
-the switch because it runs from the wheel, and a test fails until the two agree.

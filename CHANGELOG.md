@@ -14,6 +14,10 @@ Nothing yet.
 No new features. The envelope contract stops being a promise in prose and becomes
 something the build checks, and two rounds of practitioner eval are folded in.
 
+**The first release published to PyPI.** `uv tool install seomator-geo-audit` works, so
+every install-from-source fallback - README, quickstart, troubleshooting, the nine skill
+preflights and `geo doctor` - is gone, and the tests that required them now reject them.
+
 ### Fixed — hardening toward 1.0
 
 - **Skill heuristics named their sources without linking them.** PRD §3.7 asks for
