@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GEO audit — fixture — 2026-01-01</title>
+<style>/* One column, no card mosaic. The report is read top to bottom and printed.
+   Every size is in rem against a 16px root so a reader&#39;s zoom works. */
+:root {
+  --primary: #1F3A5F;
+  --on-primary: #FFFFFF;
+  --accent: #0E7C66;
+  --ink: #14181F;
+  --muted: #5A6472;
+  --paper: #FFFFFF;
+  --rule: #E3E7EC;
+  --critical: #A3231C;
+  --high: #9A5B00;
+  --medium: #3F5266;
+  --low: #5A6472;
+}
+* { box-sizing: border-box; }
+html { font-size: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 1rem/1.6 -apple-system, BlinkMacSystemFont, &#34;Segoe UI&#34;, Roboto, Helvetica, Arial, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+.wrap { max-width: 46rem; margin: 0 auto; padding: 0 1.25rem 4rem; }
+
+header.masthead { background: var(--primary); color: var(--on-primary); padding: 1.5rem 0 1.75rem; }
+header.masthead .wrap { padding-bottom: 0; }
+.brandline { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.brandline img { max-height: 48px; max-width: 220px; width: auto; height: auto; }
+.brandline .who { font-weight: 600; font-size: 1.05rem; }
+header.masthead h1 { margin: 1rem 0 0.25rem; font-size: 1.6rem; line-height: 1.25; }
+header.masthead .meta { opacity: 0.85; font-size: 0.9rem; margin: 0; }
+
+.verdict { display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap; margin: 2rem 0 0.5rem; }
+.verdict .score { font-size: 3.25rem; font-weight: 700; line-height: 1; }
+.verdict .outof { font-size: 1.1rem; color: var(--muted); }
+/* Number and label always travel together. Colour is a third channel on top
+   of both, never the only thing carrying the verdict. */
+.verdict .tier {
+  font-size: 1.1rem; font-weight: 600; border: 2px solid currentColor;
+  border-radius: 999px; padding: 0.15rem 0.8rem;
+}
+.verdict-meaning { color: var(--muted); margin: 0 0 0.75rem; font-size: 1.05rem; }
+.caveat { color: var(--muted); margin: 0 0 1.5rem; font-size: 0.92rem;
+  border-left: 3px solid var(--rule); padding-left: 0.75rem; }
+
+h2 { font-size: 1.25rem; margin: 2.5rem 0 0.75rem; padding-bottom: 0.4rem; border-bottom: 2px solid var(--rule); }
+h3 { font-size: 1.05rem; margin: 1.5rem 0 0.35rem; }
+
+table { width: 100%; border-collapse: collapse; margin: 0.5rem 0 1rem; }
+th, td { text-align: left; padding: 0.55rem 0.5rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.fix { border-left: 4px solid var(--rule); padding: 0.1rem 0 0.1rem 1rem; margin: 1.25rem 0; break-inside: avoid; }
+.fix.critical { border-left-color: var(--critical); }
+.fix.high { border-left-color: var(--high); }
+.fix.medium { border-left-color: var(--medium); }
+.fix.low { border-left-color: var(--low); }
+.fix h3 { margin-top: 0; }
+.fix .tags { font-size: 0.85rem; color: var(--muted); margin: 0 0 0.4rem; }
+.fix .tag { font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; font-size: 0.75rem; }
+.fix.critical .tag { color: var(--critical); }
+.fix.high .tag { color: var(--high); }
+.fix p { margin: 0.35rem 0; }
+.fix .pages { font-size: 0.85rem; color: var(--muted); word-break: break-all; }
+
+.note { background: #F5F7F9; border-left: 4px solid var(--accent); padding: 0.75rem 1rem; margin: 1.25rem 0; }
+.note p { margin: 0; }
+
+.advisory { border: 2px dashed var(--accent); padding: 1rem 1.25rem; margin: 1.5rem 0; }
+.advisory h2 { border: 0; margin-top: 0; }
+.advisory .label { display: inline-block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--accent); margin-bottom: 0.4rem; }
+
+.appendix { color: var(--muted); font-size: 0.92rem; }
+.appendix dt { font-weight: 600; color: var(--ink); margin-top: 0.6rem; }
+.appendix dd { margin: 0.1rem 0 0; }
+
+footer.colophon { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule);
+  color: var(--muted); font-size: 0.85rem; }
+
+.provenance { margin-top: 3rem; border-top: 3px double var(--rule); padding-top: 1rem; }
+.provenance code { word-break: break-all; }
+
+a { color: var(--accent); }
+
+@media (max-width: 30rem) {
+  .wrap { padding: 0 1rem 3rem; }
+  .verdict .score { font-size: 2.5rem; }
+  header.masthead h1 { font-size: 1.3rem; }
+  table, thead, tbody, th, td, tr { display: block; }
+  thead { position: absolute; left: -9999px; }
+  td { border: 0; padding: 0.15rem 0; }
+  tr { border-bottom: 1px solid var(--rule); padding: 0.6rem 0; }
+  td.label::before { content: attr(data-label) &#34;: &#34;; color: var(--muted); }
+}
+
+@page { size: A4; margin: 18mm 16mm 20mm; }
+@media print {
+  html { font-size: 11pt; }
+  body { background: #fff; }
+  .wrap { max-width: none; padding: 0; }
+  header.masthead { background: #fff; color: var(--ink); border-bottom: 3px solid var(--primary); padding-top: 0; }
+  header.masthead .meta { opacity: 1; color: var(--muted); }
+  h2 { break-after: avoid; }
+  .fix, tr, .note, .advisory { break-inside: avoid; }
+  .provenance { break-before: page; }
+  a { text-decoration: none; }
+  a[href^=&#34;http&#34;]::after { content: &#34; (&#34; attr(href) &#34;)&#34;; font-size: 0.8em; color: var(--muted); word-break: break-all; }
+}
+
+/* Bars sit beside the number they draw, never instead of it. */
+.bar { display: inline-block; width: 6rem; height: .5rem; margin-left: .5rem;
+       vertical-align: middle; background: var(--rule); border-radius: 2px; overflow: hidden;
+       -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.bar &gt; span { display: block; height: 100%; background: var(--accent); }
+.summary { font-size: 1.05rem; }
+.gain { color: var(--muted); font-weight: normal; font-size: .9em; }
+ol.plan { margin-top: .25rem; }
+.evidence { border-left: 3px solid var(--rule); padding-left: .75rem; margin: .5rem 0; }
+.evidence p { margin: .2rem 0; color: var(--muted); }
+.evidence blockquote { margin: .3rem 0; font-style: italic; }
+.access.blocked { color: var(--critical); font-weight: 600; }
+tfoot td { font-weight: 600; border-top: 2px solid var(--ink); }</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    
+    <h1>GEO audit: fixture</h1>
+    <p class="meta">7 pages scored &middot; 2026-01-01</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  
+  <section aria-labelledby="verdict-heading">
+    <h2 id="verdict-heading" class="sr-only" style="position:absolute;left:-9999px">Result</h2>
+    <div class="verdict">
+      <span class="score">48</span>
+      <span class="outof">out of 100</span>
+      <span class="tier">Weak</span>
+    </div>
+    <p class="verdict-meaning">Answers exist on the page but are buried in context that does not travel.</p>
+    <p class="caveat">Computed on 24 of 26 signals. Not measured: Content without JavaScript, Language versions - the score is taken over the rest.</p>
+    <p class="caveat">This measures how readable and attributable these pages are to a machine: what a crawler can fetch, quote and attribute. It is not a measure of how often the site is cited today. A well-known site with sparse metadata will score below its reputation, and the categories below show where the difference sits.</p>
+
+    
+    <div class="note"><p>7 pages were scored. 2 could not be evaluated (1 not found, 1 not html), so the scores cover the pages that were.</p></div>
+    
+
+    
+    <div class="note"><p>Ordered for a publisher or blog. An engine choosing between two accounts of the same event picks the one it can date and attribute, so authorship and freshness count for more here. The scores are the same whatever the kind of site.</p></div>
+    
+
+    
+    <h2>Summary</h2>
+    <p class="summary">fixture scores 48/100 (Weak) over 7 pages. Its strongest area is technical (82) and its weakest is platform (16). One fix comes before every other: Little usable content is present in the HTML the crawler receives.</p>
+    
+
+    
+    <h2>What is already working</h2>
+    <ul>
+      
+      <li>robots.txt lets in the crawlers AI answers depend on.</li>
+      
+      <li>URLs are short and readable.</li>
+      
+    </ul>
+    
+
+    
+    <h2>What stands out</h2>
+    <ul>
+      
+      <li><strong>Little usable content is present in the HTML the crawler receives</strong> — critical, affects 6 pages.</li>
+      
+      <li><strong>Authorship is not machine-readable</strong> — high, affects 7 pages.</li>
+      
+      <li><strong>Pages do not say when they were last checked</strong> — high, affects 6 pages.</li>
+      
+    </ul>
+    
+
+    
+    <h2>What to do, in order</h2>
+    
+    <div class="fix critical">
+      <h3>1. Little usable content is present in the HTML the crawler receives</h3>
+      <p class="tags">
+        <span class="tag">critical</span>
+        &middot; high effort
+        &middot; 6 pages
+        &middot; up to +2.77 on the overall score
+      </p>
+      <p>Server-render the main content, or pre-render it for crawlers. Most AI crawlers do not execute JavaScript, so content that only appears after hydration does not exist to them.</p>
+      
+      <div class="evidence">
+        <p>Averages 3.93 of 15 over 7 pages; the lowest, 0.03, is http://fixture/csr-shell.html.</p>
+        
+      </div>
+      
+      
+      <p class="pages">http://fixture/csr-shell.html · http://fixture/hub.html · http://fixture/injection.html and 3 more</p>
+      
+    </div>
+    
+    <div class="fix high">
+      <h3>2. Authorship is not machine-readable</h3>
+      <p class="tags">
+        <span class="tag">high</span>
+        &middot; medium effort
+        &middot; 7 pages
+        &middot; up to +4.34 on the overall score
+      </p>
+      <p>A byline in prose is invisible to a parser. Give the author a named byline linked to a page that says what they have done, and mirror it in Person JSON-LD with jobTitle, description and sameAs. This finding fires even on pages that do name their author in the text, because that is not the form an engine reads.</p>
+      
+      <div class="evidence">
+        <p>Averages 3.29 of 25 over 7 pages; the lowest, 0, is http://fixture/hub.html.</p>
+        
+      </div>
+      
+      
+      <p class="pages">http://fixture/csr-shell.html · http://fixture/hub.html · http://fixture/injection.html and 4 more</p>
+      
+    </div>
+    
+    <div class="fix high">
+      <h3>3. Pages do not say when they were last checked</h3>
+      <p class="tags">
+        <span class="tag">high</span>
+        &middot; low effort
+        &middot; 6 pages
+        &middot; up to +4.29 on the overall score
+      </p>
+      <p>Publish a dateModified and update it when the content actually changes, not on every deploy. A page with no date is undatable, and an engine asked for current information cannot choose it over one that is.</p>
+      
+      <div class="evidence">
+        <p>Averages 3.57 of 25 over 7 pages; the lowest, 0, is http://fixture/hub.html.</p>
+        
+      </div>
+      
+      
+      <p class="pages">http://fixture/csr-shell.html · http://fixture/hub.html · http://fixture/injection.html and 3 more</p>
+      
+    </div>
+    
+    <div class="fix high">
+      <h3>4. Pages are too thin to answer anything on their own</h3>
+      <p class="tags">
+        <span class="tag">high</span>
+        &middot; high effort
+        &middot; 6 pages
+        &middot; up to +3.43 on the overall score
+      </p>
+      <p>An engine quoting a page has to find the whole answer on it. Cover the question, the constraints and at least one worked case, and use lists or a table where the content is genuinely tabular. Length is not the goal; completeness is, and length is what it costs.</p>
+      
+      <div class="evidence">
+        <p>Averages 7.86 of 25 over 7 pages; the lowest, 0.06, is http://fixture/csr-shell.html.</p>
+        
+      </div>
+      
+      
+      <p class="pages">http://fixture/csr-shell.html · http://fixture/hub.html · http://fixture/injection.html and 3 more</p>
+      
+    </div>
+    
+    <div class="fix high">
+      <h3>5. The page carries no structured data</h3>
+      <p class="tags">
+        <span class="tag">high</span>
+        &middot; medium effort
+        &middot; 5 pages
+        &middot; up to +2.14 on the overall score
+      </p>
+      <p>Add JSON-LD describing what the page is. Structured data is the only part of a page an engine does not have to interpret, which makes it the cheapest way to be understood correctly.</p>
+      
+      <div class="evidence">
+        <p>Averages 8.57 of 30 over 7 pages; the lowest, 0, is http://fixture/hub.html.</p>
+        
+      </div>
+      
+      
+      <p class="pages">http://fixture/csr-shell.html · http://fixture/hub.html · http://fixture/injection.html and 2 more</p>
+      
+    </div>
+    
+    <div class="fix high">
+      <h3>6. No machine-readable publisher identity</h3>
+      <p class="tags">
+        <span class="tag">high</span>
+        &middot; low effort
+        &middot; 7 pages
+        &middot; up to +1.93 on the overall score
+      </p>
+      <p>Add an Organization or Person node with name, url, logo, description and sameAs links to the profiles that identify you. sameAs is what lets an engine connect this site to the entity it already knows about.</p>
+      
+      <div class="evidence">
+        <p>Averages 0.71 of 20 over 7 pages; the lowest, 0, is http://fixture/hub.html.</p>
+        
+      </div>
+      
+      
+      <p class="pages">http://fixture/csr-shell.html · http://fixture/hub.html · http://fixture/injection.html and 4 more</p>
+      
+    </div>
+    
+    <div class="fix high">
+      <h3>7. The site is not served securely</h3>
+      <p class="tags">
+        <span class="tag">high</span>
+        &middot; low effort
+        &middot; 8 pages
+        &middot; up to +1.5 on the overall score
+      </p>
+      <p>Serve everything over HTTPS and send a Strict-Transport-Security header. Engines discount, and some browsers block, content served over plain HTTP.</p>
+      
+      <div class="evidence">
+        <p>0 of 10 on every page measured (8): one shared template decides it, so one change fixes it everywhere.</p>
+        
+      </div>
+      
+      
+      <p class="pages">http://fixture/csr-shell.html · http://fixture/gone · http://fixture/hub.html and 5 more</p>
+      
+    </div>
+    
+    <div class="fix high">
+      <h3>8. A link points at a page that does not exist</h3>
+      <p class="tags">
+        <span class="tag">high</span>
+        &middot; low effort
+        &middot; 1 page
+        
+      </p>
+      <p>Fix the link or remove it. A crawler that follows it spends part of its budget on a 404, and an engine that followed it from a citation sends the reader nowhere.</p>
+      
+      <div class="evidence">
+        
+        <blockquote>HTTP 404</blockquote>
+      </div>
+      
+      
+      <p class="pages">http://fixture/gone</p>
+      
+    </div>
+    
+    
+
+    
+    <h2>The plan</h2>
+    <p class="caveat">Every fix in this report, grouped by what it costs - low, medium and high
+       effort - and kept in the order above within each group. Anything that stops a crawler
+       reading the site is in the first group whatever it costs.</p>
+    
+    <h3>This week <span class="gain">low effort &middot; up to +23.9 overall</span></h3>
+    <ol class="plan">
+      
+      <li>Little usable content is present in the HTML the crawler receives <span class="gain">+2.77</span></li>
+      
+      <li>Pages do not say when they were last checked <span class="gain">+4.29</span></li>
+      
+      <li>No machine-readable publisher identity <span class="gain">+1.93</span></li>
+      
+      <li>The site is not served securely <span class="gain">+1.5</span></li>
+      
+      <li>A link points at a page that does not exist</li>
+      
+      <li>The site publishes no llms.txt <span class="gain">+4.12</span></li>
+      
+      <li>Pages have no preview card <span class="gain">+3.53</span></li>
+      
+      <li>The page does not say who wrote it or when <span class="gain">+1.96</span></li>
+      
+      <li>Content pages are not described as articles <span class="gain">+1.31</span></li>
+      
+      <li>Structured data is malformed or missing required properties <span class="gain">+1.25</span></li>
+      
+      <li>The site is hard to discover in bulk <span class="gain">+0.71</span></li>
+      
+      <li>Heading structure does not segment the page into answerable sections <span class="gain">+0.58</span></li>
+      
+    </ol>
+    
+    <h3>This month <span class="gain">medium effort &middot; up to +12.8 overall</span></h3>
+    <ol class="plan">
+      
+      <li>Authorship is not machine-readable <span class="gain">+4.34</span></li>
+      
+      <li>The page carries no structured data <span class="gain">+2.14</span></li>
+      
+      <li>Claims arrive without numbers, dates or sources <span class="gain">+2.19</span></li>
+      
+      <li>Passages depend on the paragraph above them <span class="gain">+1.43</span></li>
+      
+      <li>Sections build up to the answer instead of leading with it <span class="gain">+0.71</span></li>
+      
+      <li>Pages do not return 200 directly <span class="gain">+0.28</span></li>
+      
+      <li>No structured data that answers a question directly <span class="gain">+1</span></li>
+      
+      <li>Sentences are long enough to be hard to quote <span class="gain">+0.71</span></li>
+      
+    </ol>
+    
+    <h3>This quarter <span class="gain">high effort &middot; up to +3.4 overall</span></h3>
+    <ol class="plan">
+      
+      <li>Pages are too thin to answer anything on their own <span class="gain">+3.43</span></li>
+      
+    </ol>
+    
+    
+  </section>
+
+  
+  
+  <section>
+    <h2>Category scores</h2>
+    <table>
+      <thead><tr><th>Category</th><th>Score</th><th>Rating</th><th>Weight</th><th>Adds</th><th>What it measures</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td class="label" data-label="Category">technical</td>
+          <td class="num label" data-label="Score">82/100 <span class="bar" aria-hidden="true"><span style="width: 82%"></span></span></td>
+          <td class="label" data-label="Rating">good</td>
+          <td class="num label" data-label="Weight">15</td>
+          <td class="num label" data-label="Adds">15.4</td>
+          <td class="label" data-label="Measures">Whether a crawler can reach, read and index the page at all.</td>
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Category">citability</td>
+          <td class="num label" data-label="Score">61/100 <span class="bar" aria-hidden="true"><span style="width: 61%"></span></span></td>
+          <td class="label" data-label="Rating">fair</td>
+          <td class="num label" data-label="Weight">25</td>
+          <td class="num label" data-label="Adds">19.1</td>
+          <td class="label" data-label="Measures">Whether a passage can be lifted from the page and used as an answer.</td>
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Category">content</td>
+          <td class="num label" data-label="Score">36/100 <span class="bar" aria-hidden="true"><span style="width: 36%"></span></span></td>
+          <td class="label" data-label="Rating">weak</td>
+          <td class="num label" data-label="Weight">20</td>
+          <td class="num label" data-label="Adds">9.0</td>
+          <td class="label" data-label="Measures">Whether the writing says who stands behind it, when it was last checked, and enough to answer on its own.</td>
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Category">schema</td>
+          <td class="num label" data-label="Score">24/100 <span class="bar" aria-hidden="true"><span style="width: 24%"></span></span></td>
+          <td class="label" data-label="Rating">poor</td>
+          <td class="num label" data-label="Weight">10</td>
+          <td class="num label" data-label="Adds">3.0</td>
+          <td class="label" data-label="Measures">Whether the page describes itself in a form nobody has to interpret.</td>
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Category">platform</td>
+          <td class="num label" data-label="Score">16/100 <span class="bar" aria-hidden="true"><span style="width: 16%"></span></span></td>
+          <td class="label" data-label="Rating">poor</td>
+          <td class="num label" data-label="Weight">10</td>
+          <td class="num label" data-label="Adds">2.0</td>
+          <td class="label" data-label="Measures">Whether the site publishes what engines read around its pages: llms.txt, feeds, social cards and language versions.</td>
+        </tr>
+      
+      </tbody>
+      
+      <tfoot>
+        <tr>
+          <td class="label" data-label="Category">Overall</td>
+          <td class="num label" data-label="Score">48/100</td>
+          <td class="label" data-label="Rating">Weak</td>
+          <td class="num label" data-label="Weight">80</td>
+          <td class="num label" data-label="Adds">48</td>
+          <td class="label" data-label="Measures">Each category's score times its weight, over the total weight.</td>
+        </tr>
+      </tfoot>
+      
+    </table>
+    
+    <p class="caveat">brand (weight 20) was not part of this run, so the overall score is taken over the categories that were.</p>
+    
+  </section>
+  
+
+  
+  
+  <section>
+    <h2>AI crawler access</h2>
+    <p>Which AI crawlers robots.txt lets in. Blocking a search or answer crawler keeps the site
+       out of that engine's answers; a training crawler is a separate decision.</p>
+    <table>
+      <thead><tr><th>Crawler</th><th>Operator</th><th>Used for</th><th>Access</th><th>What to do</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td class="label" data-label="Crawler">Amazonbot</td>
+          <td class="label" data-label="Operator">Amazon</td>
+          <td class="label" data-label="Used for">search index</td>
+          <td class="label access allowed" data-label="Access">Allowed</td>
+          <td class="label" data-label="What to do">Nothing to do.</td>
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Crawler">Claude-SearchBot</td>
+          <td class="label" data-label="Operator">Anthropic</td>
+          <td class="label" data-label="Used for">search index</td>
+          <td class="label access allowed" data-label="Access">Allowed</td>
+          <td class="label" data-label="What to do">Nothing to do.</td>
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Crawler">Claude-User</td>
+          <td class="label" data-label="Operator">Anthropic</td>
+          <td class="label" data-label="Used for">user-triggered browsing</td>
+          <td class="label access allowed" data-label="Access">Allowed</td>
+          <td class="label" data-label="What to do">Nothing to do.</td>
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Crawler">ClaudeBot</td>
+          <td class="label" data-label="Operator">Anthropic</td>
+          <td class="label" data-label="Used for">model training</td>
+          <td class="label access allowed" data-label="Access">Allowed</td>
+          <td class="label" data-label="What to do">Nothing to do.</td>
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Crawler">Applebot</td>
+          <td class="label" data-label="Operator">Apple</td>
+          <td class="label" data-label="Used for">search index</td>
+          <td class="label access allowed" data-label="Access">Allowed</td>
+          <td class="label" data-label="What to do">Nothing to do.</td>
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Crawler">Applebot-Extended</td>
+          <td class="label" data-label="Operator">Apple</td>
+          <td class="label" data-label="Used for">model training</td>
+          <td class="label access allowed" data-label="Access">Allowed</td>
+          <td class="label" data-label="What to do">Nothing to do.</td>
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Crawler">CCBot</td>
+          <td class="label" data-label="Operator">Common Crawl</td>
+          <td class="label" data-label="Used for">open web corpus</td>
+          <td class="label access allowed" data-label="Access">Allowed</td>
+          <td class="label" data-label="What to do">Nothing to do.</td>
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Crawler">Google-Extended</td>
+          <td class="label" data-label="Operator">Google</td>
+          <td class="label" data-label="Used for">Gemini and Vertex grounding</td>
+          <td class="label access allowed" data-label="Access">Allowed</td>
+          <td class="label" data-label="What to do">Nothing to do.</td>
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Crawler">Googlebot</td>
+          <td class="label" data-label="Operator">Google</td>
+          <td class="label" data-label="Used for">search index</td>
+          <td class="label access allowed" data-label="Access">Allowed</td>
+          <td class="label" data-label="What to do">Nothing to do.</td>
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Crawler">meta-externalagent</td>
+          <td class="label" data-label="Operator">Meta</td>
+          <td class="label" data-label="Used for">model training and indexing</td>
+          <td class="label access allowed" data-label="Access">Allowed</td>
+          <td class="label" data-label="What to do">Nothing to do.</td>
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Crawler">Bingbot</td>
+          <td class="label" data-label="Operator">Microsoft</td>
+          <td class="label" data-label="Used for">search index</td>
+          <td class="label access allowed" data-label="Access">Allowed</td>
+          <td class="label" data-label="What to do">Nothing to do.</td>
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Crawler">ChatGPT-User</td>
+          <td class="label" data-label="Operator">OpenAI</td>
+          <td class="label" data-label="Used for">user-triggered browsing</td>
+          <td class="label access allowed" data-label="Access">Allowed</td>
+          <td class="label" data-label="What to do">Nothing to do.</td>
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Crawler">OAI-SearchBot</td>
+          <td class="label" data-label="Operator">OpenAI</td>
+          <td class="label" data-label="Used for">search index</td>
+          <td class="label access allowed" data-label="Access">Allowed</td>
+          <td class="label" data-label="What to do">Nothing to do.</td>
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Crawler">GPTBot</td>
+          <td class="label" data-label="Operator">OpenAI</td>
+          <td class="label" data-label="Used for">model training</td>
+          <td class="label access blocked" data-label="Access">Blocked</td>
+          <td class="label" data-label="What to do">Your call: blocking it only affects presence in future OpenAI model weights.</td>
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Crawler">Perplexity-User</td>
+          <td class="label" data-label="Operator">Perplexity</td>
+          <td class="label" data-label="Used for">user-triggered browsing</td>
+          <td class="label access allowed" data-label="Access">Allowed</td>
+          <td class="label" data-label="What to do">Nothing to do.</td>
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Crawler">PerplexityBot</td>
+          <td class="label" data-label="Operator">Perplexity</td>
+          <td class="label" data-label="Used for">search index</td>
+          <td class="label access allowed" data-label="Access">Allowed</td>
+          <td class="label" data-label="What to do">Nothing to do.</td>
+        </tr>
+      
+      </tbody>
+    </table>
+  </section>
+  
+
+  
+  
+  <section>
+    <h2>Category detail</h2>
+    
+    <h3>technical &mdash; 82/100</h3>
+    <table class="signals">
+      <tbody>
+      
+        <tr>
+          <td class="label" data-label="Measure">AI crawler access</td>
+          
+          <td class="num label" data-label="Score">25 of 25 <span class="bar" aria-hidden="true"><span style="width: 100%"></span></span></td>
+          
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Measure">Indexability</td>
+          
+          <td class="num label" data-label="Score">17.71 of 20 <span class="bar" aria-hidden="true"><span style="width: 89%"></span></span></td>
+          
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Measure">Titles and descriptions</td>
+          
+          <td class="num label" data-label="Score">15.86 of 20 <span class="bar" aria-hidden="true"><span style="width: 79%"></span></span></td>
+          
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Measure">Status codes</td>
+          
+          <td class="num label" data-label="Score">13.12 of 15 <span class="bar" aria-hidden="true"><span style="width: 87%"></span></span></td>
+          
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Measure">HTTPS</td>
+          
+          <td class="num label" data-label="Score">0 of 10 <span class="bar" aria-hidden="true"><span style="width: 0%"></span></span></td>
+          
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Measure">URL structure</td>
+          
+          <td class="num label" data-label="Score">10 of 10 <span class="bar" aria-hidden="true"><span style="width: 100%"></span></span></td>
+          
+        </tr>
+      
+      </tbody>
+    </table>
+    
+    <h3>citability &mdash; 61/100</h3>
+    <table class="signals">
+      <tbody>
+      
+        <tr>
+          <td class="label" data-label="Measure">Self-contained passages</td>
+          
+          <td class="num label" data-label="Score">19.26 of 25 <span class="bar" aria-hidden="true"><span style="width: 77%"></span></span></td>
+          
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Measure">Answer-first sections</td>
+          
+          <td class="num label" data-label="Score">17.14 of 20 <span class="bar" aria-hidden="true"><span style="width: 86%"></span></span></td>
+          
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Measure">Heading structure</td>
+          
+          <td class="num label" data-label="Score">12.67 of 15 <span class="bar" aria-hidden="true"><span style="width: 84%"></span></span></td>
+          
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Measure">Evidence in claims</td>
+          
+          <td class="num label" data-label="Score">6.25 of 15 <span class="bar" aria-hidden="true"><span style="width: 42%"></span></span></td>
+          
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Measure">Content in the HTML</td>
+          
+          <td class="num label" data-label="Score">3.93 of 15 <span class="bar" aria-hidden="true"><span style="width: 26%"></span></span></td>
+          
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Measure">Attribution</td>
+          
+          <td class="num label" data-label="Score">2.14 of 10 <span class="bar" aria-hidden="true"><span style="width: 21%"></span></span></td>
+          
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Measure">Content without JavaScript</td>
+          
+          <td class="label" data-label="Score">Not measured: browser extra not installed</td>
+          
+        </tr>
+      
+      </tbody>
+    </table>
+    
+    <h3>content &mdash; 36/100</h3>
+    <table class="signals">
+      <tbody>
+      
+        <tr>
+          <td class="label" data-label="Measure">Depth</td>
+          
+          <td class="num label" data-label="Score">7.86 of 25 <span class="bar" aria-hidden="true"><span style="width: 31%"></span></span></td>
+          
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Measure">Authorship</td>
+          
+          <td class="num label" data-label="Score">3.29 of 25 <span class="bar" aria-hidden="true"><span style="width: 13%"></span></span></td>
+          
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Measure">Freshness</td>
+          
+          <td class="num label" data-label="Score">3.57 of 25 <span class="bar" aria-hidden="true"><span style="width: 14%"></span></span></td>
+          
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Measure">Readability</td>
+          
+          <td class="num label" data-label="Score">21.43 of 25 <span class="bar" aria-hidden="true"><span style="width: 86%"></span></span></td>
+          
+        </tr>
+      
+      </tbody>
+    </table>
+    
+    <h3>schema &mdash; 24/100</h3>
+    <table class="signals">
+      <tbody>
+      
+        <tr>
+          <td class="label" data-label="Measure">Structured data present</td>
+          
+          <td class="num label" data-label="Score">8.57 of 30 <span class="bar" aria-hidden="true"><span style="width: 29%"></span></span></td>
+          
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Measure">Valid markup</td>
+          
+          <td class="num label" data-label="Score">12.5 of 25 <span class="bar" aria-hidden="true"><span style="width: 50%"></span></span></td>
+          
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Measure">Publisher markup</td>
+          
+          <td class="num label" data-label="Score">0.71 of 20 <span class="bar" aria-hidden="true"><span style="width: 4%"></span></span></td>
+          
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Measure">Article markup</td>
+          
+          <td class="num label" data-label="Score">1.86 of 15 <span class="bar" aria-hidden="true"><span style="width: 12%"></span></span></td>
+          
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Measure">Answer markup</td>
+          
+          <td class="num label" data-label="Score">0 of 10 <span class="bar" aria-hidden="true"><span style="width: 0%"></span></span></td>
+          
+        </tr>
+      
+      </tbody>
+    </table>
+    
+    <h3>platform &mdash; 16/100</h3>
+    <table class="signals">
+      <tbody>
+      
+        <tr>
+          <td class="label" data-label="Measure">llms.txt file</td>
+          
+          <td class="num label" data-label="Score">0 of 35 <span class="bar" aria-hidden="true"><span style="width: 0%"></span></span></td>
+          
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Measure">Preview cards</td>
+          
+          <td class="num label" data-label="Score">0 of 30 <span class="bar" aria-hidden="true"><span style="width: 0%"></span></span></td>
+          
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Measure">Feeds and sitemaps</td>
+          
+          <td class="num label" data-label="Score">14 of 20 <span class="bar" aria-hidden="true"><span style="width: 70%"></span></span></td>
+          
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Measure">Language versions</td>
+          
+          <td class="label" data-label="Score">Not measured: only one language was seen on this site, so hreflang does not apply</td>
+          
+        </tr>
+      
+      </tbody>
+    </table>
+    
+  </section>
+  
+
+  
+  
+  <section>
+    <h2>Everything found</h2>
+    
+    <h3>citability</h3>
+    
+    <div class="fix critical">
+      <h3>Little usable content is present in the HTML the crawler receives</h3>
+      <p class="tags"><span class="tag">critical</span> &middot; high effort &middot; 6 pages &middot; up to +2.77 on the overall score</p>
+      <p>Server-render the main content, or pre-render it for crawlers. Most AI crawlers do not execute JavaScript, so content that only appears after hydration does not exist to them.</p>
+      
+      <div class="evidence">
+        <p>Averages 3.93 of 15 over 7 pages; the lowest, 0.03, is http://fixture/csr-shell.html.</p>
+        
+      </div>
+      
+      <p class="pages">http://fixture/csr-shell.html · http://fixture/hub.html · http://fixture/injection.html · http://fixture/listing.html · http://fixture/schema-broken.html · http://fixture/schema-none.html</p>
+    </div>
+    
+    <div class="fix medium">
+      <h3>Claims arrive without numbers, dates or sources</h3>
+      <p class="tags"><span class="tag">medium</span> &middot; medium effort &middot; 6 pages &middot; up to +2.19 on the overall score</p>
+      <p>Add the specific figure, date, version or measurement to each claim, and link the primary source. Passages carrying a checkable fact are the ones engines quote.</p>
+      
+      <div class="evidence">
+        <p>Averages 6.25 of 15 over 7 pages; the lowest, 0, is http://fixture/csr-shell.html.</p>
+        
+      </div>
+      
+      <p class="pages">http://fixture/csr-shell.html · http://fixture/hub.html · http://fixture/injection.html · http://fixture/listing.html · http://fixture/schema-broken.html · http://fixture/schema-none.html</p>
+    </div>
+    
+    <div class="fix medium">
+      <h3>The page does not say who wrote it or when</h3>
+      <p class="tags"><span class="tag">medium</span> &middot; low effort &middot; 6 pages &middot; up to +1.96 on the overall score</p>
+      <p>Add a visible byline, a published date and a last-modified date, and mirror them in Article or Organization JSON-LD. Attribution is what lets an engine decide the page is safe to quote.</p>
+      
+      <div class="evidence">
+        <p>Averages 2.14 of 10 over 7 pages; the lowest, 0, is http://fixture/schema-broken.html.</p>
+        
+      </div>
+      
+      <p class="pages">http://fixture/csr-shell.html · http://fixture/hub.html · http://fixture/injection.html · http://fixture/listing.html · http://fixture/schema-broken.html · http://fixture/schema-none.html</p>
+    </div>
+    
+    <div class="fix medium">
+      <h3>Passages depend on the paragraph above them</h3>
+      <p class="tags"><span class="tag">medium</span> &middot; medium effort &middot; 1 page &middot; up to +1.43 on the overall score</p>
+      <p>Rewrite the opening sentence of each passage so it names its own subject. An engine lifts one paragraph, not the page: a paragraph that starts with &#34;This also means...&#34; arrives at the reader with nothing to point at.</p>
+      
+      <div class="evidence">
+        <p>Averages 19.26 of 25 over 7 pages; the lowest, 0, is http://fixture/csr-shell.html.</p>
+        
+      </div>
+      
+      <p class="pages">http://fixture/csr-shell.html</p>
+    </div>
+    
+    <div class="fix medium">
+      <h3>Sections build up to the answer instead of leading with it</h3>
+      <p class="tags"><span class="tag">medium</span> &middot; medium effort &middot; 1 page &middot; up to +0.71 on the overall score</p>
+      <p>Put the direct answer in the first sentence under each heading, then explain. Move throat-clearing openers below the answer or delete them.</p>
+      
+      <div class="evidence">
+        <p>Averages 17.14 of 20 over 7 pages; the lowest, 0, is http://fixture/csr-shell.html.</p>
+        
+      </div>
+      
+      <p class="pages">http://fixture/csr-shell.html</p>
+    </div>
+    
+    <div class="fix low">
+      <h3>Heading structure does not segment the page into answerable sections</h3>
+      <p class="tags"><span class="tag">low</span> &middot; low effort &middot; 1 page &middot; up to +0.58 on the overall score</p>
+      <p>Give the page one H1 and at least three H2s, each phrased as the question its section answers. Do not skip heading levels; split any section over 400 words.</p>
+      
+      <div class="evidence">
+        <p>Averages 12.67 of 15 over 7 pages; the lowest, 0, is http://fixture/csr-shell.html.</p>
+        
+      </div>
+      
+      <p class="pages">http://fixture/csr-shell.html</p>
+    </div>
+    
+    
+    <h3>content</h3>
+    
+    <div class="fix high">
+      <h3>Authorship is not machine-readable</h3>
+      <p class="tags"><span class="tag">high</span> &middot; medium effort &middot; 7 pages &middot; up to +4.34 on the overall score</p>
+      <p>A byline in prose is invisible to a parser. Give the author a named byline linked to a page that says what they have done, and mirror it in Person JSON-LD with jobTitle, description and sameAs. This finding fires even on pages that do name their author in the text, because that is not the form an engine reads.</p>
+      
+      <div class="evidence">
+        <p>Averages 3.29 of 25 over 7 pages; the lowest, 0, is http://fixture/hub.html.</p>
+        
+      </div>
+      
+      <p class="pages">http://fixture/csr-shell.html · http://fixture/hub.html · http://fixture/injection.html · http://fixture/listing.html · http://fixture/schema-broken.html · http://fixture/schema-none.html · http://fixture/ssr-rich.html</p>
+    </div>
+    
+    <div class="fix high">
+      <h3>Pages do not say when they were last checked</h3>
+      <p class="tags"><span class="tag">high</span> &middot; low effort &middot; 6 pages &middot; up to +4.29 on the overall score</p>
+      <p>Publish a dateModified and update it when the content actually changes, not on every deploy. A page with no date is undatable, and an engine asked for current information cannot choose it over one that is.</p>
+      
+      <div class="evidence">
+        <p>Averages 3.57 of 25 over 7 pages; the lowest, 0, is http://fixture/hub.html.</p>
+        
+      </div>
+      
+      <p class="pages">http://fixture/csr-shell.html · http://fixture/hub.html · http://fixture/injection.html · http://fixture/listing.html · http://fixture/schema-broken.html · http://fixture/schema-none.html</p>
+    </div>
+    
+    <div class="fix high">
+      <h3>Pages are too thin to answer anything on their own</h3>
+      <p class="tags"><span class="tag">high</span> &middot; high effort &middot; 6 pages &middot; up to +3.43 on the overall score</p>
+      <p>An engine quoting a page has to find the whole answer on it. Cover the question, the constraints and at least one worked case, and use lists or a table where the content is genuinely tabular. Length is not the goal; completeness is, and length is what it costs.</p>
+      
+      <div class="evidence">
+        <p>Averages 7.86 of 25 over 7 pages; the lowest, 0.06, is http://fixture/csr-shell.html.</p>
+        
+      </div>
+      
+      <p class="pages">http://fixture/csr-shell.html · http://fixture/hub.html · http://fixture/injection.html · http://fixture/listing.html · http://fixture/schema-broken.html · http://fixture/schema-none.html</p>
+    </div>
+    
+    <div class="fix low">
+      <h3>Sentences are long enough to be hard to quote</h3>
+      <p class="tags"><span class="tag">low</span> &middot; medium effort &middot; 1 page &middot; up to +0.71 on the overall score</p>
+      <p>Break sentences over about thirty-five words. A long sentence carries several claims at once, so an engine lifting it takes claims it did not want and a reader gets a paragraph where they asked for a fact.</p>
+      
+      <div class="evidence">
+        <p>Averages 21.43 of 25 over 7 pages; the lowest, 0, is http://fixture/csr-shell.html.</p>
+        
+      </div>
+      
+      <p class="pages">http://fixture/csr-shell.html</p>
+    </div>
+    
+    
+    <h3>schema</h3>
+    
+    <div class="fix high">
+      <h3>The page carries no structured data</h3>
+      <p class="tags"><span class="tag">high</span> &middot; medium effort &middot; 5 pages &middot; up to +2.14 on the overall score</p>
+      <p>Add JSON-LD describing what the page is. Structured data is the only part of a page an engine does not have to interpret, which makes it the cheapest way to be understood correctly.</p>
+      
+      <div class="evidence">
+        <p>Averages 8.57 of 30 over 7 pages; the lowest, 0, is http://fixture/hub.html.</p>
+        
+      </div>
+      
+      <p class="pages">http://fixture/csr-shell.html · http://fixture/hub.html · http://fixture/injection.html · http://fixture/listing.html · http://fixture/schema-none.html</p>
+    </div>
+    
+    <div class="fix high">
+      <h3>No machine-readable publisher identity</h3>
+      <p class="tags"><span class="tag">high</span> &middot; low effort &middot; 7 pages &middot; up to +1.93 on the overall score</p>
+      <p>Add an Organization or Person node with name, url, logo, description and sameAs links to the profiles that identify you. sameAs is what lets an engine connect this site to the entity it already knows about.</p>
+      
+      <div class="evidence">
+        <p>Averages 0.71 of 20 over 7 pages; the lowest, 0, is http://fixture/hub.html.</p>
+        
+      </div>
+      
+      <p class="pages">http://fixture/csr-shell.html · http://fixture/hub.html · http://fixture/injection.html · http://fixture/listing.html · http://fixture/schema-broken.html · http://fixture/schema-none.html · http://fixture/ssr-rich.html</p>
+    </div>
+    
+    <div class="fix medium">
+      <h3>Content pages are not described as articles</h3>
+      <p class="tags"><span class="tag">medium</span> &middot; low effort &middot; 6 pages &middot; up to +1.31 on the overall score</p>
+      <p>Add Article or BlogPosting with headline, author, datePublished, dateModified and image. This is how an engine decides a page is datable, attributable content rather than a landing page.</p>
+      
+      <div class="evidence">
+        <p>Averages 1.86 of 15 over 7 pages; the lowest, 0, is http://fixture/hub.html.</p>
+        
+      </div>
+      
+      <p class="pages">http://fixture/csr-shell.html · http://fixture/hub.html · http://fixture/injection.html · http://fixture/listing.html · http://fixture/schema-broken.html · http://fixture/schema-none.html</p>
+    </div>
+    
+    <div class="fix medium">
+      <h3>Structured data is malformed or missing required properties</h3>
+      <p class="tags"><span class="tag">medium</span> &middot; low effort &middot; 1 page &middot; up to +1.25 on the overall score</p>
+      <p>Fix the JSON syntax and add the required properties for each declared type. A block that does not parse is worth exactly as much as no block at all.</p>
+      
+      <div class="evidence">
+        <p>Averages 12.5 of 25 over 2 pages; the lowest, 0, is http://fixture/schema-broken.html.</p>
+        
+      </div>
+      
+      <p class="pages">http://fixture/schema-broken.html</p>
+    </div>
+    
+    <div class="fix low">
+      <h3>No structured data that answers a question directly</h3>
+      <p class="tags"><span class="tag">low</span> &middot; medium effort &middot; 7 pages &middot; up to +1 on the overall score</p>
+      <p>Where the content fits, add FAQPage, HowTo, Product, Event or BreadcrumbList. These types map onto the shape of an answer, so an engine can lift them with no interpretation at all.</p>
+      
+      <div class="evidence">
+        <p>0 of 10 on every page measured (7): one shared template decides it, so one change fixes it everywhere.</p>
+        
+      </div>
+      
+      <p class="pages">http://fixture/csr-shell.html · http://fixture/hub.html · http://fixture/injection.html · http://fixture/listing.html · http://fixture/schema-broken.html · http://fixture/schema-none.html · http://fixture/ssr-rich.html</p>
+    </div>
+    
+    
+    <h3>technical</h3>
+    
+    <div class="fix high">
+      <h3>The site is not served securely</h3>
+      <p class="tags"><span class="tag">high</span> &middot; low effort &middot; 8 pages &middot; up to +1.5 on the overall score</p>
+      <p>Serve everything over HTTPS and send a Strict-Transport-Security header. Engines discount, and some browsers block, content served over plain HTTP.</p>
+      
+      <div class="evidence">
+        <p>0 of 10 on every page measured (8): one shared template decides it, so one change fixes it everywhere.</p>
+        
+      </div>
+      
+      <p class="pages">http://fixture/csr-shell.html · http://fixture/gone · http://fixture/hub.html · http://fixture/injection.html · http://fixture/listing.html · http://fixture/schema-broken.html · http://fixture/schema-none.html · http://fixture/ssr-rich.html</p>
+    </div>
+    
+    <div class="fix medium">
+      <h3>Pages do not return 200 directly</h3>
+      <p class="tags"><span class="tag">medium</span> &middot; medium effort &middot; 1 page &middot; up to +0.28 on the overall score</p>
+      <p>Return 200 on the canonical URL instead of redirecting to it. Every hop costs crawl budget and some crawlers stop following after one.</p>
+      
+      <div class="evidence">
+        <p>Averages 13.12 of 15 over 8 pages; the lowest, 0, is http://fixture/gone.</p>
+        
+      </div>
+      
+      <p class="pages">http://fixture/gone</p>
+    </div>
+    
+    
+    <h3>fetch</h3>
+    
+    <div class="fix high">
+      <h3>A link points at a page that does not exist</h3>
+      <p class="tags"><span class="tag">high</span> &middot; low effort &middot; 1 page</p>
+      <p>Fix the link or remove it. A crawler that follows it spends part of its budget on a 404, and an engine that followed it from a citation sends the reader nowhere.</p>
+      
+      <div class="evidence">
+        
+        <blockquote>HTTP 404</blockquote>
+      </div>
+      
+      <p class="pages">http://fixture/gone</p>
+    </div>
+    
+    
+    <h3>platform</h3>
+    
+    <div class="fix medium">
+      <h3>The site publishes no llms.txt</h3>
+      <p class="tags"><span class="tag">medium</span> &middot; low effort &middot; 7 pages &middot; up to +4.12 on the overall score</p>
+      <p>Add /llms.txt: one H1, a blockquote summary, then sections of markdown links to the pages worth reading. It is a convention rather than a standard - but it is the only place you get to state your own priorities in your own words, and `geo llmstxt --generate` writes a first draft from your own pages.</p>
+      
+      <div class="evidence">
+        <p>0 of 35 on every page measured (8): one shared template decides it, so one change fixes it everywhere.</p>
+        
+      </div>
+      
+      <p class="pages">http://fixture/csr-shell.html · http://fixture/hub.html · http://fixture/injection.html · http://fixture/listing.html · http://fixture/schema-broken.html · http://fixture/schema-none.html · http://fixture/ssr-rich.html</p>
+    </div>
+    
+    <div class="fix medium">
+      <h3>Pages have no preview card</h3>
+      <p class="tags"><span class="tag">medium</span> &middot; low effort &middot; 7 pages &middot; up to +3.53 on the overall score</p>
+      <p>Add og:title, og:description and og:image to every page. Engines and the apps around them build the link preview from these; without them the preview falls back to whatever the page happens to start with, which is usually navigation.</p>
+      
+      <div class="evidence">
+        <p>0 of 30 on every page measured (7): one shared template decides it, so one change fixes it everywhere.</p>
+        
+      </div>
+      
+      <p class="pages">http://fixture/csr-shell.html · http://fixture/hub.html · http://fixture/injection.html · http://fixture/listing.html · http://fixture/schema-broken.html · http://fixture/schema-none.html · http://fixture/ssr-rich.html</p>
+    </div>
+    
+    <div class="fix low">
+      <h3>The site is hard to discover in bulk</h3>
+      <p class="tags"><span class="tag">low</span> &middot; low effort &middot; 7 pages &middot; up to +0.71 on the overall score</p>
+      <p>Advertise a sitemap in robots.txt and, if the site publishes regularly, link an RSS or Atom feed from the head. Both are how a crawler finds pages nothing links to yet.</p>
+      
+      <div class="evidence">
+        <p>14 of 20 on every page measured (8): one shared template decides it, so one change fixes it everywhere.</p>
+        
+      </div>
+      
+      <p class="pages">http://fixture/csr-shell.html · http://fixture/hub.html · http://fixture/injection.html · http://fixture/listing.html · http://fixture/schema-broken.html · http://fixture/schema-none.html · http://fixture/ssr-rich.html</p>
+    </div>
+    
+    
+  </section>
+  
+
+  
+  
+  <section class="advisory">
+    <span class="label">Advisory — model judgement, not scored</span>
+    <h2>Advisory analysis</h2>
+    <p>Nothing in this section contributes to any score above. It is included because
+       it is useful, and separated because it is judgement rather than measurement.</p>
+    
+    <h3>Does the page show first-hand experience of the thing it describes?</h3>
+    
+    <p>Not assessed. This question is answered by a person or a model reading the
+       page, and no answer was supplied for this report.</p>
+    
+    
+    <p class="pages">Judged against: Names specific situations, tools, versions or constraints the author met. Reports what happened, including what did not work. Could not have been written by summarising other pages on the topic.</p>
+    
+    
+    <h3>Would a reader with this question leave satisfied, or keep searching?</h3>
+    
+    <p>Not assessed. This question is answered by a person or a model reading the
+       page, and no answer was supplied for this report.</p>
+    
+    
+    <p class="pages">Judged against: Answers the question the title asks, rather than the adjacent easier one. States limits and cases where the advice does not apply. Does not require reading another page to be actionable.</p>
+    
+    
+  </section>
+  
+
+  
+  <section class="appendix">
+    <h2>How this was measured</h2>
+    <p>Every number above is computed by a program from a recorded snapshot of the
+       site, not judged by a model. The same snapshot scored again produces the same
+       number.</p>
+
+    <h3>Categories and their weights</h3>
+    <dl>
+      
+      <dt>citability — weight 25</dt>
+      <dd>Whether a passage can be lifted from the page and used as an answer.</dd>
+      
+      <dt>content — weight 20</dt>
+      <dd>Whether the writing says who stands behind it, when it was last checked, and enough to answer on its own.</dd>
+      
+      <dt>platform — weight 10</dt>
+      <dd>Whether the site publishes what engines read around its pages: llms.txt, feeds, social cards and language versions.</dd>
+      
+      <dt>schema — weight 10</dt>
+      <dd>Whether the page describes itself in a form nobody has to interpret.</dd>
+      
+      <dt>technical — weight 15</dt>
+      <dd>Whether a crawler can reach, read and index the page at all.</dd>
+      
+    </dl>
+
+    <h3>Signal classes</h3>
+    <dl>
+      
+      <dt>deterministic</dt><dd>A parsed fact about the page. Two runs over the same bytes agree.</dd>
+      
+      <dt>heuristic</dt><dd>Code with stated weights and thresholds. Arguable, but not arbitrary.</dd>
+      
+      <dt>live</dt><dd>Observed from a third-party service, carrying the time it was observed.</dd>
+      
+      <dt>advisory</dt><dd>Model judgement. Displayed separately and never summed into a score.</dd>
+      
+    </dl>
+
+    <h3>Comparability</h3>
+    <p>A score is comparable with another score from this tool at the same scoring and
+       data version. Numbers from other tools measure different things.</p>
+  </section>
+
+  
+  <section class="appendix">
+    <h2>Pages analysed</h2>
+    <table>
+      <thead><tr><th>Page</th><th>Status</th><th>Findings</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td class="label" data-label="Page">http://fixture/csr-shell.html</td>
+          <td class="num label" data-label="Status">200</td>
+          <td class="num label" data-label="Findings">18</td>
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Page">http://fixture/gone</td>
+          <td class="num label" data-label="Status">404 (not read)</td>
+          <td class="num label" data-label="Findings">3</td>
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Page">http://fixture/hub.html</td>
+          <td class="num label" data-label="Status">200</td>
+          <td class="num label" data-label="Findings">14</td>
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Page">http://fixture/injection.html</td>
+          <td class="num label" data-label="Status">200</td>
+          <td class="num label" data-label="Findings">14</td>
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Page">http://fixture/listing.html</td>
+          <td class="num label" data-label="Status">200</td>
+          <td class="num label" data-label="Findings">14</td>
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Page">http://fixture/schema-broken.html</td>
+          <td class="num label" data-label="Status">200</td>
+          <td class="num label" data-label="Findings">14</td>
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Page">http://fixture/schema-none.html</td>
+          <td class="num label" data-label="Status">200</td>
+          <td class="num label" data-label="Findings">14</td>
+        </tr>
+      
+        <tr>
+          <td class="label" data-label="Page">http://fixture/ssr-rich.html</td>
+          <td class="num label" data-label="Status">200</td>
+          <td class="num label" data-label="Findings">7</td>
+        </tr>
+      
+      </tbody>
+    </table>
+  </section>
+  
+
+  <section class="appendix">
+    <h2>Glossary</h2>
+    <dl>
+      <dt>GEO</dt><dd>Generative engine optimization: making pages easy for AI answer engines to find, read, quote and attribute.</dd><dt>AI Overviews</dt><dd>The AI-written answers Google shows above its search results.</dd><dt>Crawler</dt><dd>A program that fetches pages - for a search index, to train a model, or to answer one user&#39;s question.</dd><dt>robots.txt</dt><dd>The file at the root of a site that tells crawlers which parts they may fetch.</dd><dt>llms.txt</dt><dd>A markdown file at the root of a site telling AI systems what the site is and which pages matter.</dd><dt>Structured data</dt><dd>A machine-readable description embedded in a page, usually as JSON-LD, that engines read without interpreting the prose.</dd><dt>sameAs</dt><dd>A structured-data property linking an organization or person to their profiles elsewhere, so engines can tell which entity it is.</dd><dt>E-E-A-T</dt><dd>Experience, expertise, authoritativeness and trust: what search engines look for in who wrote a page and why to believe it.</dd><dt>Server-side rendering</dt><dd>Sending a page&#39;s content in the HTML itself, so a crawler that does not run JavaScript still sees it.</dd>
+    </dl>
+  </section>
+
+  
+<section class="provenance">
+  <h2>Provenance — operator copy only</h2>
+  <p>This section is not present in the client report.</p>
+
+  <table>
+    <tbody>
+      <tr><td class="label" data-label="Run">Run</td><td><code>01K5ZKX7E9A3M4N6P8Q0R2S4T6</code></td></tr>
+      <tr><td class="label" data-label="Observed">Observed</td><td>2026-01-01T09:00:00Z</td></tr>
+      <tr><td class="label" data-label="Evidence">Evidence hash</td><td><code>45191b9ec6312f355ad06aed39d9492c26d21eaded15cd8514bb082c973263fe</code></td></tr>
+      
+      <tr><td class="label" data-label="Record">Record</td><td><code>~/.geo/projects/fixture/audits.jsonl</code></td></tr>
+      
+      <tr><td class="label" data-label="Coverage">Signals computed</td>
+          <td>24 of 26
+          — not measured: citability.render_parity, platform.hreflang</td></tr>
+    </tbody>
+  </table>
+
+  
+  <h3>Crawl settings</h3>
+  <p>50.0 request/s across
+     5 workers, cap
+     8 pages, timeout
+     30.0s, robots
+     respected.</p>
+  
+
+  
+  <h3>Pages that could not be evaluated (2)</h3>
+  <table>
+    <thead><tr><th>Reason</th><th>Status</th><th>URL</th></tr></thead>
+    <tbody>
+      
+      <tr><td class="label" data-label="Reason">not_found</td>
+          <td class="num label" data-label="Status">404</td>
+          <td class="label" data-label="URL"><code>http://fixture/gone</code></td></tr>
+      
+      <tr><td class="label" data-label="Reason">not_html</td>
+          <td class="num label" data-label="Status">—</td>
+          <td class="label" data-label="URL"><code>http://fixture/not-html</code></td></tr>
+      
+    </tbody>
+  </table>
+  
+
+  
+  <h3>Out of reach by robots.txt (1)</h3>
+  <ul><li><code>http://fixture/private/secret.html</code></li></ul>
+  
+
+  <h3>Signals, with class and value</h3>
+  <table>
+    <thead><tr><th>Signal</th><th>Class</th><th>Value</th></tr></thead>
+    <tbody>
+      
+      <tr><td class="label" data-label="Signal"><code>citability.self_containment</code></td>
+          <td class="label" data-label="Class">heuristic</td>
+          <td class="num label" data-label="Value">19.26/25</td></tr>
+      
+      <tr><td class="label" data-label="Signal"><code>citability.answer_first</code></td>
+          <td class="label" data-label="Class">heuristic</td>
+          <td class="num label" data-label="Value">17.14/20</td></tr>
+      
+      <tr><td class="label" data-label="Signal"><code>citability.structure</code></td>
+          <td class="label" data-label="Class">deterministic</td>
+          <td class="num label" data-label="Value">12.67/15</td></tr>
+      
+      <tr><td class="label" data-label="Signal"><code>citability.evidence_density</code></td>
+          <td class="label" data-label="Class">heuristic</td>
+          <td class="num label" data-label="Value">6.25/15</td></tr>
+      
+      <tr><td class="label" data-label="Signal"><code>citability.extractability</code></td>
+          <td class="label" data-label="Class">deterministic</td>
+          <td class="num label" data-label="Value">3.93/15</td></tr>
+      
+      <tr><td class="label" data-label="Signal"><code>citability.attribution</code></td>
+          <td class="label" data-label="Class">deterministic</td>
+          <td class="num label" data-label="Value">2.14/10</td></tr>
+      
+      <tr><td class="label" data-label="Signal"><code>citability.render_parity</code></td>
+          <td class="label" data-label="Class">heuristic</td>
+          <td class="num label" data-label="Value">not measured</td></tr>
+      
+      <tr><td class="label" data-label="Signal"><code>technical.crawler_access</code></td>
+          <td class="label" data-label="Class">deterministic</td>
+          <td class="num label" data-label="Value">25.0/25</td></tr>
+      
+      <tr><td class="label" data-label="Signal"><code>technical.indexability</code></td>
+          <td class="label" data-label="Class">deterministic</td>
+          <td class="num label" data-label="Value">17.71/20</td></tr>
+      
+      <tr><td class="label" data-label="Signal"><code>technical.metadata</code></td>
+          <td class="label" data-label="Class">deterministic</td>
+          <td class="num label" data-label="Value">15.86/20</td></tr>
+      
+      <tr><td class="label" data-label="Signal"><code>technical.status_health</code></td>
+          <td class="label" data-label="Class">deterministic</td>
+          <td class="num label" data-label="Value">13.12/15</td></tr>
+      
+      <tr><td class="label" data-label="Signal"><code>technical.transport_security</code></td>
+          <td class="label" data-label="Class">deterministic</td>
+          <td class="num label" data-label="Value">0.0/10</td></tr>
+      
+      <tr><td class="label" data-label="Signal"><code>technical.url_structure</code></td>
+          <td class="label" data-label="Class">heuristic</td>
+          <td class="num label" data-label="Value">10.0/10</td></tr>
+      
+      <tr><td class="label" data-label="Signal"><code>schema.presence</code></td>
+          <td class="label" data-label="Class">deterministic</td>
+          <td class="num label" data-label="Value">8.57/30</td></tr>
+      
+      <tr><td class="label" data-label="Signal"><code>schema.validity</code></td>
+          <td class="label" data-label="Class">deterministic</td>
+          <td class="num label" data-label="Value">12.5/25</td></tr>
+      
+      <tr><td class="label" data-label="Signal"><code>schema.organization</code></td>
+          <td class="label" data-label="Class">deterministic</td>
+          <td class="num label" data-label="Value">0.71/20</td></tr>
+      
+      <tr><td class="label" data-label="Signal"><code>schema.article</code></td>
+          <td class="label" data-label="Class">deterministic</td>
+          <td class="num label" data-label="Value">1.86/15</td></tr>
+      
+      <tr><td class="label" data-label="Signal"><code>schema.breadth</code></td>
+          <td class="label" data-label="Class">heuristic</td>
+          <td class="num label" data-label="Value">0.0/10</td></tr>
+      
+      <tr><td class="label" data-label="Signal"><code>content.depth</code></td>
+          <td class="label" data-label="Class">heuristic</td>
+          <td class="num label" data-label="Value">7.86/25</td></tr>
+      
+      <tr><td class="label" data-label="Signal"><code>content.expertise</code></td>
+          <td class="label" data-label="Class">deterministic</td>
+          <td class="num label" data-label="Value">3.29/25</td></tr>
+      
+      <tr><td class="label" data-label="Signal"><code>content.freshness</code></td>
+          <td class="label" data-label="Class">deterministic</td>
+          <td class="num label" data-label="Value">3.57/25</td></tr>
+      
+      <tr><td class="label" data-label="Signal"><code>content.readability</code></td>
+          <td class="label" data-label="Class">heuristic</td>
+          <td class="num label" data-label="Value">21.43/25</td></tr>
+      
+      <tr><td class="label" data-label="Signal"><code>platform.llms_txt</code></td>
+          <td class="label" data-label="Class">deterministic</td>
+          <td class="num label" data-label="Value">0.0/35</td></tr>
+      
+      <tr><td class="label" data-label="Signal"><code>platform.social_cards</code></td>
+          <td class="label" data-label="Class">deterministic</td>
+          <td class="num label" data-label="Value">0.0/30</td></tr>
+      
+      <tr><td class="label" data-label="Signal"><code>platform.feeds</code></td>
+          <td class="label" data-label="Class">deterministic</td>
+          <td class="num label" data-label="Value">14.0/20</td></tr>
+      
+      <tr><td class="label" data-label="Signal"><code>platform.hreflang</code></td>
+          <td class="label" data-label="Class">deterministic</td>
+          <td class="num label" data-label="Value">not measured</td></tr>
+      
+      <tr><td class="label" data-label="Signal"><code>content.advisory.experience</code></td>
+          <td class="label" data-label="Class">advisory</td>
+          <td class="num label" data-label="Value">not measured</td></tr>
+      
+      <tr><td class="label" data-label="Signal"><code>content.advisory.helpfulness</code></td>
+          <td class="label" data-label="Class">advisory</td>
+          <td class="num label" data-label="Value">not measured</td></tr>
+      
+    </tbody>
+  </table>
+
+  <h3>Brand and contrast</h3>
+  
+  <p>Brand tokens applied without substitution.</p>
+  
+  <table>
+    <thead><tr><th>Pair</th><th>Ratio</th><th>AA</th></tr></thead>
+    <tbody>
+      
+      <tr><td class="label" data-label="Pair">body text on paper</td>
+          <td class="num label" data-label="Ratio">17.79:1</td>
+          <td class="label" data-label="AA">pass</td></tr>
+      
+      <tr><td class="label" data-label="Pair">muted text on paper</td>
+          <td class="num label" data-label="Ratio">6.0:1</td>
+          <td class="label" data-label="AA">pass</td></tr>
+      
+      <tr><td class="label" data-label="Pair">header text on primary</td>
+          <td class="num label" data-label="Ratio">11.48:1</td>
+          <td class="label" data-label="AA">pass</td></tr>
+      
+      <tr><td class="label" data-label="Pair">accent text on paper</td>
+          <td class="num label" data-label="Ratio">5.13:1</td>
+          <td class="label" data-label="AA">pass</td></tr>
+      
+    </tbody>
+  </table>
+</section>
+
+
+  <footer class="colophon">
+    <p>Evidence PARTIAL &middot; scoring 1.0 &middot;
+       data 2026.09 &middot; normalizer 2</p>
+    
+    <p>Generated with SEOmator GEO Audit Skill 0.4.0.</p>
+    
+  </footer>
+
+</div>
+</body>
+</html>

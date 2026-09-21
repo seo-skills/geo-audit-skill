@@ -126,6 +126,10 @@ before a practitioner spends time on them (`tests/evals/results/eval-2026-09-21-
 
 ### Added
 
+- **Sample reports**, [`examples/`](examples/), as PRD §3.13 asks: a client copy and an
+  operator copy regenerated from the synthetic fixture site, never from a real one. They
+  are built from the audit's golden envelope by `tools/gen_docs.py`, so CI fails when
+  they fall behind the code, and the client copy is tested to carry no operator data.
 - **Report detail on a par with the reference implementation**, from measurements
   only. Its deliverables were read as a behavioural spec and the gaps recorded in the
   PRD with a decision each. Adopted: a summary built from the numbers; each fix's gain

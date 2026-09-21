@@ -51,6 +51,9 @@ geo report https://example.com --site-kind docs   # ordered for a documentation 
 geo compare https://example.com                    # what changed since last time
 ```
 
+What a report looks like: [client copy](examples/client-report.html) and
+[operator copy](examples/operator-report.html), generated from the synthetic fixture site.
+
 Output is JSON whenever stdout is not a terminal, so the second command needs no
 flag in a pipeline. Progress goes to stderr, always.
 

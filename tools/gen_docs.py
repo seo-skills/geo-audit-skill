@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import io
+import json
 import sys
 from contextlib import redirect_stdout
 from pathlib import Path
@@ -262,7 +263,64 @@ REGIONS = {
     ROOT / "docs/concepts/scoring-methodology.md": {"constants": constants_region},
 }
 
-WHOLE_FILES = {ROOT / "docs/commands.md": commands_doc}
+# Sample reports. PRD §3.13: regenerated from the fixture site, never copied from a
+# real one - so no one's content or data is redistributed. Built from the audit's
+# golden envelope, which is synthetic, normalised, and regenerated whenever the
+# behaviour changes; the freshness check then catches an example left behind.
+EXAMPLE_DATE = "2026-01-01"
+EXAMPLE_RUN_ID = "01K5ZKX7E9A3M4N6P8Q0R2S4T6"  # the real format, so the operator copy reads like one
+EXAMPLE_KIND = "publisher"
+EXAMPLE_RECORD = "~/.geo/projects/fixture/audits.jsonl"
+
+
+def _example_envelope() -> dict:
+    raw = (ROOT / "tests/goldens/audit-hub.json").read_text(encoding="utf-8")
+    envelope = json.loads(raw.replace('"127.0.0.1"', '"fixture"'))
+    stand_ins = {
+        "run_id": EXAMPLE_RUN_ID,
+        "observed_at": f"{EXAMPLE_DATE}T09:00:00Z",
+        "elapsed_ms": 4200,
+        "record": EXAMPLE_RECORD,
+    }
+
+    def fill(node):
+        if isinstance(node, dict):
+            return {k: (stand_ins.get(k, "-") if v == "<volatile>" else fill(v)) for k, v in node.items()}
+        if isinstance(node, list):
+            return [fill(item) for item in node]
+        return node
+
+    return fill(envelope)
+
+
+def _example_contexts():
+    from geo_audit.report import brand as brand_lib, context as context_lib
+
+    return context_lib.build(
+        _example_envelope(), brand_lib.load(None), generated_on=EXAMPLE_DATE,
+        record_path=EXAMPLE_RECORD, site_kind=EXAMPLE_KIND,
+    )
+
+
+def example_client() -> str:
+    from geo_audit.report import render as render_lib
+
+    client, _ = _example_contexts()
+    return render_lib.render_client(client)
+
+
+def example_operator() -> str:
+    from geo_audit.report import render as render_lib
+
+    client, operator = _example_contexts()
+    return render_lib.render_operator(client, operator)
+
+
+WHOLE_FILES = {
+    ROOT / "docs/commands.md": commands_doc,
+    ROOT / "examples/client-report.html": example_client,
+    ROOT / "examples/operator-report.html": example_operator,
+}
 
 
 def replace_region(text: str, name: str, body: str) -> str:

@@ -206,3 +206,13 @@ def test_the_published_flag_agrees_with_the_readme_note():
     from geo_audit._version import PUBLISHED_ON_PYPI
 
     assert PUBLISHED_ON_PYPI == ("Not on PyPI yet" not in README)
+
+
+def test_the_sample_reports_keep_the_client_copy_clean():
+    """PRD §3.13 regenerates the examples from the fixture site. The client copy is
+    the one people forward, so it is held to the same isolation as a real one."""
+    client = (ROOT / "examples/client-report.html").read_text(encoding="utf-8")
+    operator = (ROOT / "examples/operator-report.html").read_text(encoding="utf-8")
+    for marker in ("Provenance", "operator copy only"):
+        assert marker not in client and marker in operator
+    assert "127.0.0.1" not in client + operator, "the fixture's address must not leak into an example"
