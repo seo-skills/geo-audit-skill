@@ -7,6 +7,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-09-21
+
 ### Changed
 
 - **Extractability scores evidence that content needs JavaScript, not length**
@@ -558,7 +560,8 @@ contract behind them, and one skill end to end.
   composite is taken over the signals that were computed; a signal that was not
   measured is never scored as a failure.
 
-[Unreleased]: https://github.com/seo-skills/geo-audit-skill/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/seo-skills/geo-audit-skill/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.7.0
 [0.6.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.6.0
 [0.5.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.5.0
 [0.4.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.4.0

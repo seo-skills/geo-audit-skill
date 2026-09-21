@@ -646,6 +646,15 @@ skill contract teaches the model the new state, so the skills now expect the 0.6
 The positioning in §1.2 is written, and the README and the PyPI page point to
 seomator.com. `plugin.yml` installs each tagged release on Ubuntu, macOS and Windows.
 
+### 0.7.0 - Extractability measures gating - released 2026-09-21
+
+Found by the round-four dry run, before a counted round spent anyone's time: a cap on
+pages under 1,200 characters made `citability.extractability` - a blocker - lead two
+reports with advice to server-render short pages that a browser showed were fully
+server-rendered. Extractability now scores evidence that content needs JavaScript and
+nothing else; length stays with `content.depth` (divergence 25, scoring 3.0). The
+counted round four runs on this release.
+
 ### Open before the next milestone
 
 1. ~~Publish to PyPI.~~ **Done 2026-09-21:** `seomator-geo-audit` 0.4.0 released through
