@@ -34,8 +34,19 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
 from geo_audit import data, envelope  # noqa: E402
-from geo_audit._version import DIST_NAME, PRODUCT_NAME  # noqa: E402
+from geo_audit._version import DIST_NAME, PRODUCT_NAME, REPO_URL  # noqa: E402
 from geo_audit.errors import ERRORS  # noqa: E402
+
+# Until the first release is on PyPI the published install command fails, so every
+# install instruction also offers the source install - and once the README's note
+# goes, the fallback must go with it. One switch, so publishing cannot leave a skill
+# pointing at a dead end, or at a workaround nobody needs any more.
+SOURCE_INSTALL = f"git+{REPO_URL}"
+
+
+def prepublication() -> bool:
+    return "Not on PyPI yet" in (ROOT / "README.md").read_text(encoding="utf-8")
+
 
 # The skill set, with the milestone each one arrives in. Adding a skill means
 # adding a line here; that is the point.
@@ -288,6 +299,16 @@ def lint_skill(report: Report, path: Path, version: str, contract: str, allowed:
             "geo --version" in preflight,
             where,
             "the preflight must tell the model how to check the CLI",
+        )
+        unpublished = prepublication()
+        report.check(
+            (SOURCE_INSTALL in preflight) == unpublished,
+            where,
+            f"the preflight must offer the source install, `uv tool install {SOURCE_INSTALL}`, "
+            "until the first release is on PyPI"
+            if unpublished
+            else "README no longer says the package is unpublished; drop the source-install "
+            "fallback from the preflight",
         )
     else:
         report.fail(where, "has no Preflight section")

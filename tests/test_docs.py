@@ -104,6 +104,30 @@ def test_the_prepublication_note_disappears_once_the_package_is_published():
         assert "git+https://github.com/seo-skills/geo-audit-skill" in README
 
 
+def _install_docs() -> list[Path]:
+    pages = [ROOT / "README.md", *sorted((ROOT / "docs").rglob("*.md"))]
+    return [p for p in pages if "tool install seomator-geo-audit" in p.read_text("utf-8")]
+
+
+@pytest.mark.parametrize("doc", _install_docs(), ids=lambda p: p.name)
+def test_every_install_instruction_follows_the_prepublication_note(doc):
+    """One switch, the README note, and every page that says how to install obeys it.
+
+    Found by installing the plugin from a clean config: the marketplace is public,
+    the skills told a new user to run an install that PyPI rejects, and only the
+    README knew. Discovered pages rather than a list, so a new one is covered.
+    """
+    from geo_audit._version import REPO_URL
+
+    unpublished = "Not on PyPI yet" in README
+    offers_source = f"git+{REPO_URL}" in doc.read_text(encoding="utf-8")
+    assert offers_source == unpublished, (
+        f"{doc.name} must offer the source install until the first release is on PyPI"
+        if unpublished
+        else f"{doc.name} still offers the source install after publication; remove it"
+    )
+
+
 def test_readme_names_the_current_version():
     assert CLI_VERSION in README
 

@@ -14,6 +14,9 @@ uv tool update-shell                 # if uv says PATH needs updating
 python -m geo_audit --version        # works without the console script
 ```
 
+If the install reports no matching package, the first release is not on PyPI yet.
+Install from source: `uv tool install git+https://github.com/seo-skills/geo-audit-skill`.
+
 ## Two executables named `geo`
 
 `geo doctor` reports this as a warning with both paths. PATH order decides which one

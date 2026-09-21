@@ -45,10 +45,14 @@ def make_skill(tmp_path: Path, *, body: str, version: str = VERSION, name: str =
     return path
 
 
-PREFLIGHT = (
+BARE_PREFLIGHT = (
     "## Preflight\n\nRun `geo --version`. Expected: "
     "`seomator-geo-audit " + VERSION.rsplit(".", 1)[0] + ".x` or newer.\n"
 )
+SOURCE_LINE = f"Not on PyPI yet? `uv tool install {lint_skills.SOURCE_INSTALL}`.\n"
+# A clean skill follows the same switch the real ones do, so this fixture does not
+# break on the day the package is published.
+PREFLIGHT = BARE_PREFLIGHT + (SOURCE_LINE if lint_skills.prepublication() else "")
 
 
 def contract_block(text: str = CONTRACT, preflight: str = PREFLIGHT) -> str:
@@ -269,3 +273,15 @@ def serve_stub(site):
         }
         for name in ("wikipedia", "wikidata", "reddit", "youtube")
     }
+
+
+@pytest.mark.parametrize("unpublished", [True, False], ids=["before-publish", "after-publish"])
+def test_the_source_install_follows_the_readme_note(tmp_path, monkeypatch, unpublished):
+    """Offered while unpublished, gone once published: one switch, both directions."""
+    monkeypatch.setattr(lint_skills, "prepublication", lambda: unpublished)
+    with_source = BARE_PREFLIGHT + SOURCE_LINE
+    right, wrong = (with_source, BARE_PREFLIGHT) if unpublished else (BARE_PREFLIGHT, with_source)
+
+    assert lint_one(make_skill(tmp_path / "right", body=contract_block(preflight=right))) == []
+    errors = lint_one(make_skill(tmp_path / "wrong", body=contract_block(preflight=wrong)))
+    assert len(errors) == 1 and "source install" in errors[0].replace("-", " ")

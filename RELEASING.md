@@ -1,7 +1,7 @@
 # Releasing
 
-Everything up to the tag is automated and already verified by CI. Two steps need a
-person with account access, and they are only needed once.
+Everything up to the tag is automated and already verified by CI. One step needs a
+person with account access, and only once.
 
 ## One-time: let GitHub publish to PyPI
 
@@ -20,12 +20,15 @@ The project has never been published, so use the *pending* publisher form at
 | Workflow name | `release.yml` |
 | Environment name | `pypi` |
 
-Then create the matching GitHub environment - Settings → Environments → **New
-environment** → `pypi`. The `publish` job declares `environment: pypi`, so the job
-waits for an environment that does not exist rather than failing loudly.
+The environment name must match the workflow's `environment: pypi` exactly. A
+mismatch surfaces at the end of the release run as a rejected OIDC token, after the
+build has already succeeded.
 
-Both names must match exactly. A mismatch surfaces at the end of the release run as a
-rejected OIDC token, after the build has already succeeded.
+There is no need to create the `pypi` environment on GitHub: the first run that
+references it creates it, with no protection rules. Create it yourself only to add
+one. A required reviewer on `pypi` lets a pushed tag verify, test and build on its
+own, then wait for a person before anything reaches PyPI - the last point at which a
+release can still be stopped, because PyPI never accepts the same version twice.
 
 ## Each release
 
@@ -56,6 +59,9 @@ that otherwise appears only after a tag is already pushed and public.
 
 ## After the first publish
 
-`README.md` carries a note saying the package is not on PyPI yet, and offers a
-`git+https://` install instead. Once the release lands, delete that note - a test in
-`tests/test_docs.py` exists to be deleted with it.
+`README.md` carries a note saying the package is not on PyPI yet. Delete it once the
+release lands. That note is the switch for every other install instruction: with it
+gone, the skill lint and the doc tests fail on each skill preflight and each doc page
+that still offers the source install, naming every one, so nothing is left pointing
+at a workaround. `test_the_prepublication_note_disappears_once_the_package_is_published`
+in `tests/test_docs.py` can go at the same time.

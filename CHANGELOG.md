@@ -16,6 +16,19 @@ something the build checks, and two rounds of practitioner eval are folded in.
 
 ### Fixed — hardening toward 1.0
 
+- **Installing the plugin today led a new user to a dead end.** The marketplace is
+  public and installs cleanly, but every skill told a user without the CLI to run
+  `uv tool install seomator-geo-audit`, which fails until the first release is on
+  PyPI. Only the README knew. The skills, the quickstart and the troubleshooting page
+  now offer the source install as well, and the README's *Not on PyPI yet* note is
+  the one switch for all of them: the skill lint and the doc tests require the
+  fallback while the note is there and reject it once the note is gone, naming every
+  page and skill still carrying it. Found by installing the plugin from a clean
+  config rather than from the working tree.
+- **`RELEASING.md` said the `pypi` GitHub environment had to be created first.** It
+  does not: GitHub creates a missing environment on the first run that references
+  it. Creating it by hand is only worth doing to add a required reviewer, which is
+  now what the guide says, and why.
 - **A page nothing could be measured on reported `0 of 0, nothing missing`**, which
   reads as a complete run and divides by zero for anyone who takes the fraction at
   face value. Seven citability signals were in scope and a 403 reached none of them,
