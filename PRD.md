@@ -47,7 +47,7 @@ Three alternatives were weighed: (A) full rewrite, (B) three incremental PRs (wi
 <!-- TODO(maintainer): 5–8 lines only you can write. See "Your turn" in the hand-off note.
      The provisional text below keeps the PRD usable until then. -->
 
-*Provisional:* geo-audit-skill is an independent, MIT-licensed project built on geo-seo-claude's structure and prompts, **with the agreement of its author**, who continues to maintain upstream (last upstream commit 2026-09-18). It is not a GitHub fork and does not track upstream. It differs in one claim: **every number in a report is reproducible from recorded evidence.** Upstream optimizes for breadth of advice; this project optimizes for audits you can defend to a client. Upstream is credited in README and LICENSE. We do not install over, migrate in place, or uninstall upstream; the two coexist on one machine (§3.1).
+*Provisional:* SEOmator GEO Audit Skill (`geo-audit-skill`) is an independent, MIT-licensed project built on geo-seo-claude's structure and prompts, **with the agreement of its author**, who continues to maintain upstream (last upstream commit 2026-09-18). It is not a GitHub fork and does not track upstream. It differs in one claim: **every number in a report is reproducible from recorded evidence.** Upstream optimizes for breadth of advice; this project optimizes for audits you can defend to a client. README and LICENSE carry no upstream credit: the agreement makes the upstream notice unnecessary, and the optional credit line was left out at the maintainer's instruction (D1, D4). We do not install over, migrate in place, or uninstall upstream; the two coexist on one machine (§3.1).
 
 ---
 
