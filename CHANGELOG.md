@@ -16,6 +16,17 @@ something the build checks, and two rounds of practitioner eval are folded in.
 
 ### Fixed — hardening toward 1.0
 
+- **The 1.0 gate was asking about the wrong document.** Question 2 of the practitioner
+  eval is "would you send this to a paying client unedited?", and the harness linked
+  only the operator copy - run ids, evidence hashes, the failed-page table, every
+  signal value. A careful practitioner answers `no` to that for reasons that say
+  nothing about the product. The harness now renders both copies and the form says
+  which one the question is about. Rounds one and two were affected but count for
+  nothing anyway, since both changed the tool.
+- **The report skill could hand over a report as if it were tailored to the site.**
+  The rendered report orders findings by the scorer's rules, which do not know what a
+  site is for; the skill now says what kind of site it read and names any finding
+  the ordering over-weights for it.
 - **Installing the plugin today led a new user to a dead end.** The marketplace is
   public and installs cleanly, but every skill told a user without the CLI to run
   `uv tool install seomator-geo-audit`, which fails until the first release is on

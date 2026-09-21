@@ -72,6 +72,11 @@ was applied, and finds out from a client that it was not, will not use the tool 
   should your message.
 - If the advisory section is unanswered, either answer it first with `--advisory` or
   tell the user it says "not assessed".
+- **Say what kind of site you read it as.** The report orders findings by the scorer's
+  rules, and those do not know what the site is for. If it leads with something that
+  matters little for this kind of site - machine-readable authorship on a syntax
+  reference, say - name that finding in your message so whoever forwards the file is
+  not misled. Never describe the report as tailored to the site; it is not.
 
 Layout, print behaviour and what is in each section are in `sections/anatomy.md`.
 

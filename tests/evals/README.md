@@ -9,8 +9,10 @@ check that can, and it is the gate on 1.0.
 Per minor release, on five real sites:
 
 1. Run `python tests/evals/run_eval.py --sites tests/evals/sites.json`. It audits each
-   site at the default polite crawl rate, writes an operator report for each, and
-   emits a blank scoring form under `tests/evals/results/`.
+   site at the default polite crawl rate, writes both report copies for each, and
+   emits a blank scoring form under `tests/evals/results/`. **Question 2 is about the
+   client copy** - the one a client would receive. Rounds one and two linked only the
+   operator copy, whose run ids and evidence hashes would never be sent to anyone.
 2. **The maintainer** and **one practitioner who does not work on this tool** each
    answer two questions per site, independently, without seeing the other's answers.
 3. Both sets of answers are committed as a single results file.

@@ -91,6 +91,38 @@ def test_the_harness_produces_a_blank_form(site, geo_home, tmp_path):
     assert "the 1.0 gate is 4 of 5, twice running" in form
 
 
+def test_question_two_is_asked_about_the_copy_a_client_receives(site, geo_home, tmp_path):
+    """"Would you send this unedited?" was being asked about the operator copy.
+
+    That copy carries run ids, evidence hashes, the failed-page table and every
+    signal value - none of which reach a client - so a careful practitioner
+    answers `no` for reasons that say nothing about the product, and the 1.0
+    gate measures the wrong document. The form links the client copy for the
+    question and keeps the operator copy for working out why.
+    """
+    import re
+
+    config = tmp_path / "sites.json"
+    config.write_text(
+        json.dumps({"sites": [{"url": f"{site.url}/hub.html", "max_pages": 4,
+                               "args": ["--allow-private", "--rate", "50"]}]})
+    )
+    target = tmp_path / "form.md"
+    subprocess.run(
+        [sys.executable, str(HARNESS), "--sites", str(config), "--out", str(target)],
+        capture_output=True, text=True, cwd=ROOT, check=True,
+    )
+    form = target.read_text(encoding="utf-8")
+    client = re.search(r"Client copy[^`\n]*`([^`]+)`", form)
+    operator = re.search(r"Operator copy[^`\n]*`([^`]+)`", form)
+    assert client and operator, "the form must link both copies, labelled"
+    assert client.group(1) != operator.group(1)
+
+    marker = "Provenance"
+    assert marker not in Path(client.group(1)).read_text(encoding="utf-8")
+    assert marker in Path(operator.group(1)).read_text(encoding="utf-8")
+
+
 def test_the_form_never_contains_an_answer(site, geo_home, tmp_path):
     """The harness scores nothing. Every answer cell must be empty."""
     config = tmp_path / "sites.json"

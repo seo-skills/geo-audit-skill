@@ -2,7 +2,7 @@
 """Run the practitioner eval and emit a blank scoring form.
 
 This script produces the inputs to a judgement, not the judgement. It audits
-each site, renders an operator report, and writes a form with the top three
+each site, renders both report copies, and writes a form with the top three
 fixes already filled in and the two questions left empty. Nothing here scores
 the answers, because the whole point is that the answers come from people.
 
@@ -47,11 +47,13 @@ def audit_site(entry: dict) -> dict:
         return {"url": url, "error": (envelope.get("error") or {}).get("message")}
 
     # `report` reads from disk and never crawls, so it takes none of the
-    # network flags an entry might carry.
-    report_args = ["report", url, "--mode", "operator"]
-    if entry.get("brand"):
-        report_args += ["--brand-config", entry["brand"]]
-    report = geo(*report_args)
+    # network flags an entry might carry. Both copies: question 2 asks whether
+    # the report could go to a client, and a client gets the client copy - the
+    # operator copy's provenance would earn a `no` that says nothing about the
+    # product. The operator copy is for working out why an answer went wrong.
+    brand = ["--brand-config", entry["brand"]] if entry.get("brand") else []
+    client = geo("report", url, *brand)
+    operator = geo("report", url, "--mode", "operator", *brand)
 
     scores = envelope.get("scores") or {}
     return {
@@ -72,7 +74,8 @@ def audit_site(entry: dict) -> dict:
             }
             for finding in (envelope.get("findings") or [])[:3]
         ],
-        "report": (report.get("report") or {}).get("path"),
+        "client_report": (client.get("report") or {}).get("path"),
+        "operator_report": (operator.get("report") or {}).get("path"),
     }
 
 
@@ -102,7 +105,10 @@ def form(results: list[dict], versions: dict) -> str:
             "",
             f"Categories: " + ", ".join(f"{k} {v}" for k, v in sorted((result["categories"] or {}).items())),
             "",
-            f"Report: `{result['report']}`  ·  run `{result['run_id']}`",
+            f"Client copy, the one question 2 is about: `{result['client_report']}`",
+            "",
+            f"Operator copy, for working out why: `{result['operator_report']}`  ·  "
+            f"run `{result['run_id']}`",
             "",
             "Top three fixes as ranked by the tool:",
             "",
