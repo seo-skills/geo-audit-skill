@@ -38,6 +38,10 @@
     <div class="note"><p>{{ client.evidence_note }}</p></div>
     {% endif %}
 
+    {% if client.ordered_for %}
+    <div class="note"><p>{{ client.ordered_for }}</p></div>
+    {% endif %}
+
     {% if client.headlines %}
     <h2>What stands out</h2>
     <ul>

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
@@ -304,3 +305,20 @@ def test_the_plugin_source_is_one_a_user_can_install(source, problem):
         assert report.errors == []
     else:
         assert len(report.errors) == 1 and problem in report.errors[0]
+
+
+def test_the_skills_offer_exactly_the_site_kinds_the_cli_accepts():
+    """The model picks the kind and the CLI applies it: one vocabulary, two readers.
+
+    A kind the guide names but the CLI rejects is a usage error mid-report; a kind
+    the CLI has but no skill mentions is one nobody will ever pass.
+    """
+    from geo_audit.scoring.model import site_kinds
+
+    kinds = set(site_kinds())
+    guide = (ROOT / "skills/audit/sections/site-kind.md").read_text(encoding="utf-8")
+    report = (ROOT / "skills/report/SKILL.md").read_text(encoding="utf-8")
+
+    assert set(re.findall(r"\*\* \(`([a-z]+)`\)", guide)) == kinds
+    for kind in kinds:
+        assert f"`{kind}`" in report, f"the report skill does not offer {kind}"

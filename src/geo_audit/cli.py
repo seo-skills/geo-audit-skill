@@ -17,6 +17,7 @@ from typing import TextIO
 
 from geo_audit import envelope as envelope_mod
 from geo_audit import render, state
+from geo_audit.scoring.model import site_kinds
 from geo_audit._version import (
     CLI_VERSION,
     DIST_NAME,
@@ -321,6 +322,13 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="PATH",
         help="a JSON file of answers to the advisory questions; they are shown in "
         "their own section and never enter a score",
+    )
+    report.add_argument(
+        "--site-kind",
+        metavar="KIND",
+        help=f"order the findings for what the site is for: {', '.join(site_kinds())}. "
+        "Moves what matters more for that kind of site up and what matters less down; "
+        "the scores are unchanged",
     )
     report.add_argument("--pdf", action="store_true", help="also write a PDF beside the HTML")
     # `--out` is inherited from the global flags and means the HTML path here,

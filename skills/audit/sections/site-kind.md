@@ -29,37 +29,45 @@ Two or three of those agreeing is enough. If they disagree, say so and ask.
 
 ## What changes
 
-**Documentation or reference.** Lead with `citability.answer_first` and
+**Documentation or reference** (`docs`). Lead with `citability.answer_first` and
 `citability.structure`: a reference page is read one section at a time and an engine
 lifts one section. Machine-readable authorship matters least here - nobody asks who
 wrote the syntax reference - so report `content.expertise` and do not lead with it.
 
-**Specification or standard.** As above, and more so. Authority comes from the
+**Specification or standard** (`spec`). As above, and more so. Authority comes from the
 document being the standard, not from a byline. Lead with
 `citability.evidence_density` and `schema.breadth`.
 
-**Publisher or blog.** `content.expertise` and `content.freshness` are the whole game:
+**Publisher or blog** (`publisher`). `content.expertise` and `content.freshness` are the whole game:
 an engine choosing between two accounts of the same event picks the one it can date
 and attribute. If the site has bylines in prose but nothing machine-readable, that is
 the single highest-value fix and it is usually one template.
 
-**SaaS marketing.** Lead with `citability.self_containment` and
+**SaaS marketing** (`saas`). Lead with `citability.self_containment` and
 `citability.evidence_density`: marketing prose is where unsupported claims and
 paragraphs that only make sense in sequence both concentrate. `schema.organization`
 with `sameAs` matters more than average, because the brand needs to resolve to an
 entity.
 
-**Ecommerce.** `schema.breadth` and `schema.validity` first: `Product` and `Offer`
+**Ecommerce** (`ecommerce`). `schema.breadth` and `schema.validity` first: `Product` and `Offer`
 markup is what gets a catalogue into an answer at all. Then
 `citability.extractability`, because product pages are the most likely to be rendered
 client-side.
 
-**Local business.** `schema.organization` first, and say explicitly that it should be
+**Local business** (`local`). `schema.organization` first, and say explicitly that it should be
 `LocalBusiness` with an address and opening hours. `brand.consistency` matters more
 here than anywhere else.
 
-**Agency or portfolio.** Treat as SaaS marketing, and expect `content.depth` to be the
+**Agency or portfolio** (`saas`). Treat as SaaS marketing, and expect `content.depth` to be the
 real problem: case studies that say what was achieved without saying what was done.
+
+## Carrying it into the report
+
+The same judgement is available to the report: `geo report <url> --site-kind <kind>`,
+with the kind named in brackets above. It moves the findings a kind leads with up one
+severity level and the ones it defers down one, never touches a blocker, and states
+in the report which kind it was ordered for. Pass it, so the document that gets sent
+agrees with what you said.
 
 ## What never changes
 

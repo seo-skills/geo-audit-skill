@@ -156,6 +156,37 @@ def test_an_unknown_mode_is_a_usage_error(audited, site):
     assert "client, operator" in envelope["error"]["message"]
 
 
+# --- site kind -------------------------------------------------------------
+
+
+def test_a_site_kind_reorders_the_fixes_without_changing_a_score(audited):
+    """Both eval rounds: authorship led the report on a reference site."""
+    brand = brand_lib.load(None)
+    plain, _ = context_lib.build(audited, brand, generated_on="2026-09-21")
+    docs, _ = context_lib.build(audited, brand, generated_on="2026-09-21", site_kind="docs")
+
+    assert [f.title for f in docs.top_fixes] != [f.title for f in plain.top_fixes]
+    assert docs.composite == plain.composite
+    assert [(c.name, c.score) for c in docs.categories] == [(c.name, c.score) for c in plain.categories]
+    assert plain.ordered_for is None and docs.ordered_for
+
+
+def test_the_rendered_report_says_what_it_was_ordered_for(audited, site):
+    assert "Ordered for a documentation or reference site" in html_of(site, "--site-kind", "docs")
+    assert "Ordered for" not in html_of(site)
+
+
+def test_the_report_records_the_kind_it_used(audited, site):
+    assert report(site, "--site-kind", "docs")["site_kind"] == "docs"
+    assert report(site)["site_kind"] is None
+
+
+def test_an_unknown_site_kind_is_a_usage_error(audited, site):
+    code, envelope = run(["report", f"{site.url}/hub.html", "--site-kind", "blog-ish"])
+    assert code == 2
+    assert "docs" in envelope["error"]["message"]
+
+
 # --- escaping --------------------------------------------------------------
 
 

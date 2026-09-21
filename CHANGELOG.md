@@ -57,6 +57,19 @@ something the build checks, and two rounds of practitioner eval are folded in.
 
 ### Added
 
+- **`geo report --site-kind`**, the one deliberate exception to "no new features" in
+  this release. Both practitioner rounds found a publisher's checklist leading the
+  report on a specification and then on a reference site, and the eval judges the
+  report itself - which skill guidance could not reach, because the rendered order
+  came from a scorer that cannot know what a site is for. A kind (`docs`, `spec`,
+  `publisher`, `saas`, `ecommerce`, `local`) moves the findings it leads with up one
+  severity level and the ones it defers down one, and the report says which kind it
+  was ordered for. Every number is identical across kinds; blockers never move; a
+  page-level finding keeps its ceiling; nothing is ever promoted to critical. It is a
+  report-time input because the skill reads the kind *from* the audit. On the fixture
+  site, *Authorship is not machine-readable* goes from second to out of the top five
+  for `docs`, and stays second for `publisher`. The eval harness orders each site for
+  its stated kind and shows the practitioner the same top three the report does.
 - **The plugin spike, run.** Installed from a clean config with the `claude plugin`
   CLI rather than left for a person: the marketplace clones over HTTPS, installs, and
   registers nine skills at about 659 always-on tokens a session. It also found that

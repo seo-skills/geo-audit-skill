@@ -47,6 +47,7 @@ whole crawl, and records the result so you can reproduce it later:
 ```bash
 geo audit https://example.com --rescore <run_id>   # recomputes, no network
 geo report https://example.com --pdf               # a document you can send
+geo report https://example.com --site-kind docs   # ordered for a documentation site
 geo compare https://example.com                    # what changed since last time
 ```
 

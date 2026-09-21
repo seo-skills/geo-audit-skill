@@ -48,6 +48,16 @@ def test_the_site_list_is_five_sites_of_stated_shapes():
     assert "Replace them" in config["comment"]
 
 
+def test_every_kind_in_the_site_list_is_one_the_cli_accepts():
+    """A typo here is a usage error on the fifth site, an hour into a polite crawl."""
+    from geo_audit.scoring.model import site_kinds
+
+    config = json.loads((ROOT / "tests" / "evals" / "sites.json").read_text(encoding="utf-8"))
+    for entry in config["sites"]:
+        if entry.get("kind") is not None:
+            assert entry["kind"] in site_kinds(), f"{entry['url']}: unknown kind {entry['kind']!r}"
+
+
 def test_dry_run_audits_nothing(tmp_path):
     config = tmp_path / "sites.json"
     config.write_text(json.dumps({"sites": [{"url": "https://example.com", "max_pages": 3}]}))
@@ -121,6 +131,34 @@ def test_question_two_is_asked_about_the_copy_a_client_receives(site, geo_home, 
     marker = "Provenance"
     assert marker not in Path(client.group(1)).read_text(encoding="utf-8")
     assert marker in Path(operator.group(1)).read_text(encoding="utf-8")
+
+
+def test_the_form_shows_the_order_the_report_shows(site, geo_home, tmp_path):
+    """Question 1 asks whether the top three are right - the top three of the
+    report being judged. With a kind, that is not the audit's own order, and a
+    form quoting the audit would put one list in front of the practitioner and
+    another in the file they open.
+    """
+    import html
+    import re
+
+    config = tmp_path / "sites.json"
+    config.write_text(
+        json.dumps({"sites": [{"url": f"{site.url}/hub.html", "max_pages": 4, "kind": "docs",
+                               "args": ["--allow-private", "--rate", "50"]}]})
+    )
+    target = tmp_path / "form.md"
+    subprocess.run(
+        [sys.executable, str(HARNESS), "--sites", str(config), "--out", str(target)],
+        capture_output=True, text=True, cwd=ROOT, check=True,
+    )
+    form = target.read_text(encoding="utf-8")
+    assert "Ordered for: docs" in form
+
+    in_form = re.findall(r"^\d\. \*\*(.+?)\*\*", form, re.MULTILINE)
+    client = Path(re.search(r"Client copy[^`\n]*`([^`]+)`", form).group(1))
+    in_report = [html.unescape(t) for t in re.findall(r"<h3>\d+\. (.+?)</h3>", client.read_text("utf-8"))]
+    assert in_form == in_report[:3]
 
 
 def test_the_form_never_contains_an_answer(site, geo_home, tmp_path):

@@ -1,10 +1,10 @@
 {
-  "comment": "Five real sites for the practitioner eval. Replace them with sites your practitioner knows well: the point is judgement from someone who can disagree with the tool about a site they understand. Shapes are stated because five sites of one kind produce five similar reports, which is what round one found. Keep max_pages modest and the rate at the default - the harness is a guest on someone else's server. Each entry may carry `args` for extra CLI flags and `brand` for a brand file.",
+  "comment": "Five real sites for the practitioner eval. Replace them with sites your practitioner knows well: the point is judgement from someone who can disagree with the tool about a site they understand. Shapes are stated because five sites of one kind produce five similar reports, which is what round one found. Keep max_pages modest and the rate at the default - the harness is a guest on someone else's server. Each entry may carry `args` for extra CLI flags, `brand` for a brand file, and `kind` - one of `geo report --site-kind`'s kinds - which orders its reports the way the skill would for that kind of site. Leave `kind` out where none fits.",
   "sites": [
-    { "url": "https://plausible.io",              "shape": "SaaS marketing + docs",        "max_pages": 8, "brand": null },
-    { "url": "https://www.smashingmagazine.com",  "shape": "publisher, bylines and dates", "max_pages": 8, "brand": null },
-    { "url": "https://www.adafruit.com",          "shape": "ecommerce",                    "max_pages": 8, "brand": null },
-    { "url": "https://www.eff.org",               "shape": "non-profit advocacy",          "max_pages": 8, "brand": null },
-    { "url": "https://developer.mozilla.org",     "shape": "reference documentation",      "max_pages": 8, "brand": null }
+    { "url": "https://plausible.io", "shape": "SaaS marketing + docs", "kind": "saas", "max_pages": 8, "brand": null },
+    { "url": "https://www.smashingmagazine.com", "shape": "publisher, bylines and dates", "kind": "publisher", "max_pages": 8, "brand": null },
+    { "url": "https://www.adafruit.com", "shape": "ecommerce", "kind": "ecommerce", "max_pages": 8, "brand": null },
+    { "url": "https://www.eff.org", "shape": "non-profit advocacy", "kind": "publisher", "max_pages": 8, "brand": null },
+    { "url": "https://developer.mozilla.org", "shape": "reference documentation", "kind": "docs", "max_pages": 8, "brand": null }
   ]
 }

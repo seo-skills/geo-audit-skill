@@ -13,12 +13,13 @@ someone added a field to a shared context and forgot which half it belonged to.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 
 from geo_audit import data
 from geo_audit._version import PRODUCT_NAME
 from geo_audit.report.advisory import merge as advisory_merge
 from geo_audit.report.brand import Brand
+from geo_audit.scoring.model import Finding, for_site_kind, site_kinds
 
 # On page one, under the number. Buried in an appendix it does not travel, and
 # the eval showed exactly what that costs: sqlite.org scores 44 with twenty of
@@ -88,6 +89,8 @@ class ClientContext:
     top_fixes: list[Fix] = field(default_factory=list)
     by_category: dict[str, list[Fix]] = field(default_factory=dict)
     advisory: list[dict] = field(default_factory=list)
+    # Set when the findings were ordered for a kind of site. The scores never are.
+    ordered_for: str | None = None
     methodology: list[dict] = field(default_factory=list)
     signal_classes: list[dict] = field(default_factory=list)
     versions: dict = field(default_factory=dict)
@@ -110,9 +113,34 @@ class OperatorContext:
     completeness: dict = field(default_factory=dict)
 
 
-def _fixes_from(envelope: dict) -> list[Fix]:
+def ordered_findings(findings: list[dict], site_kind: str | None) -> list[dict]:
+    """The recorded order, or that order re-weighted for a kind of site.
+
+    Rebuilt as `Finding`s so the one real `prioritize` does the ordering; a
+    second copy of its sort key here would drift from it. Unknown keys are
+    dropped because the history on disk spans versions. Public because the eval
+    harness must show the practitioner the order the report shows, not its own.
+    """
+    if site_kind is None:
+        return findings
+    known = {f.name for f in fields(Finding)}
+    rebuilt = [Finding(**{k: v for k, v in item.items() if k in known}) for item in findings]
+    return [f.to_dict() for f in for_site_kind(rebuilt, site_kind)]
+
+
+def _ordered_for(site_kind: str | None) -> str | None:
+    if site_kind is None:
+        return None
+    spec = site_kinds()[site_kind]
+    return (
+        f"Ordered for {spec['label']}. {spec['note']} "
+        "The scores are the same whatever the kind of site."
+    )
+
+
+def _fixes_from(findings: list[dict]) -> list[Fix]:
     out: list[Fix] = []
-    for finding in envelope.get("findings") or []:
+    for finding in findings:
         out.append(
             Fix(
                 priority=finding.get("priority", 0),
@@ -153,6 +181,7 @@ def build(
     generated_on: str,
     record_path: str | None = None,
     advisory_answers: dict[str, dict] | None = None,
+    site_kind: str | None = None,
 ) -> tuple[ClientContext, OperatorContext]:
     scores = envelope.get("scores") or {}
     evidence = envelope.get("evidence") or {}
@@ -160,7 +189,7 @@ def build(
     completeness = envelope.get("completeness") or {}
     weights = (completeness.get("categories") or {}).get("weights_used") or {}
 
-    fixes = _fixes_from(envelope)
+    fixes = _fixes_from(ordered_findings(envelope.get("findings") or [], site_kind))
     by_category: dict[str, list[Fix]] = {}
     for fix in fixes:
         by_category.setdefault(fix.category, []).append(fix)
@@ -190,6 +219,7 @@ def build(
         pages_scored=evidence.get("pages_ok", 0),
         evidence_stamp=evidence.get("stamp", "CURRENT"),
         evidence_note=_evidence_note(envelope),
+        ordered_for=_ordered_for(site_kind),
         categories=categories,
         headlines=fixes[:3],
         top_fixes=fixes[:8],

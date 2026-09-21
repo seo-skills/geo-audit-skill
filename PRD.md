@@ -567,6 +567,26 @@ All four candidate distribution names were unclaimed on PyPI and nothing had bee
 published, so the identifiers were free to change. After the first release this needs
 a deprecation instead.
 
+### 0.4.0 - Hardening toward 1.0
+
+At the M4 go/no-go the choice was **harden toward 1.0**: no new features, freeze the
+envelope, extend golden coverage, prepare the release. M4 stays deferred.
+
+**One exception, taken deliberately: `geo report --site-kind`.** Both practitioner
+rounds found the same defect - a publisher's checklist applied to a specification,
+then to a reference site - and the eval judges the report itself. Skill guidance
+could not reach it: the rendered order comes from the scorer, which cannot know what
+a site is for. Leaving it would have spent round three on a known defect, and a round
+that changes the tool does not count.
+
+The kind is a report-time input, not an audit-time one, because the skill infers it
+*from* the audit; the audit stays a kind-neutral measurement. A kind moves what it
+leads with up one severity level (never to critical) and what it defers down one;
+blockers never move; page-level findings keep their ceiling; points lost, impact and
+every score are identical across kinds. The table is `data/site_kinds.json`, it
+mirrors `skills/audit/sections/site-kind.md`, and a test holds the two vocabularies
+together.
+
 ### Open before the next milestone
 
 1. Configure the PyPI pending trusted publisher - `RELEASING.md` has the five fields -

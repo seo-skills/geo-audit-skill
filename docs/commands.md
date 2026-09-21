@@ -335,7 +335,7 @@ Render a recorded audit as a single self-contained HTML file, optionally as a PD
 usage: geo report [-h] [--json] [--out PATH] [--config PATH] [--no-input]
                   [--quiet] [--verbose] [--allow-private] [--fail-on-partial]
                   [--run RUN_ID] [--mode MODE] [--brand-config PATH]
-                  [--advisory PATH] [--pdf]
+                  [--advisory PATH] [--site-kind KIND] [--pdf]
                   url
 
 Render a recorded audit as a single self-contained HTML file, optionally as a
@@ -362,6 +362,10 @@ options:
   --brand-config PATH  a brand.json of colours, logo and name
   --advisory PATH      a JSON file of answers to the advisory questions; they
                        are shown in their own section and never enter a score
+  --site-kind KIND     order the findings for what the site is for: docs,
+                       spec, publisher, saas, ecommerce, local. Moves what
+                       matters more for that kind of site up and what matters
+                       less down; the scores are unchanged
   --pdf                also write a PDF beside the HTML
 ```
 

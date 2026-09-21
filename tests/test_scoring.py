@@ -415,3 +415,77 @@ def test_no_category_computed_is_not_a_score_of_zero_anybody_should_use():
     total, coverage = weighted_composite({"citability": 25}, {"citability": None})
     assert coverage["computed"] == [] and coverage["missing"] == ["citability"]
     assert total == 0, "the caller must read `computed`, not the number"
+
+
+# --- site kind ----------------------------------------------------------------
+
+
+def _kind_findings():
+    return [
+        Finding("content.expertise", "high", "medium", "t", "r", points_lost=12, impact=2.4),
+        Finding("citability.answer_first", "medium", "medium", "t", "r", points_lost=6, impact=1.5),
+        Finding("schema.validity", "medium", "low", "t", "r", points_lost=10, impact=1.0),
+    ]
+
+
+def test_a_site_kind_reorders_without_changing_a_number():
+    """Both eval rounds: a publisher's checklist led a reference site's report.
+
+    A kind moves what matters more for it up one severity level and what
+    matters less down one, then the ordinary order applies. The arithmetic -
+    points lost, impact - is the same for every kind of site.
+    """
+    from geo_audit.scoring.model import for_site_kind
+
+    before = {f.id: (f.points_lost, f.impact) for f in _kind_findings()}
+    ordered = for_site_kind(_kind_findings(), "docs")
+
+    assert ordered[0].id == "citability.answer_first" and ordered[0].severity == "high"
+    assert next(f for f in ordered if f.id == "content.expertise").severity == "medium"
+    assert {f.id: (f.points_lost, f.impact) for f in ordered} == before
+
+
+def test_no_kind_is_the_order_the_audit_already_produced():
+    from geo_audit.scoring.model import for_site_kind
+
+    plain = [f.id for f in prioritize(_kind_findings())]
+    assert [f.id for f in for_site_kind(_kind_findings(), None)] == plain
+
+
+def test_a_kind_never_moves_a_blocker():
+    from geo_audit.scoring.model import for_site_kind
+
+    blocker = Finding("citability.extractability", "critical", "high", "t", "r")
+    ordered = for_site_kind([*_kind_findings(), blocker], "docs")
+    assert ordered[0].id == "citability.extractability" and ordered[0].severity == "critical"
+
+
+def test_a_kind_never_makes_anything_critical():
+    """Mattering more for one kind of site is not an emergency."""
+    from geo_audit.scoring.model import for_site_kind
+
+    lead = Finding("citability.answer_first", "high", "medium", "t", "r")
+    assert for_site_kind([lead], "docs")[0].severity == "high"
+
+
+def test_a_page_level_finding_keeps_its_ceiling_under_a_kind():
+    """One page is still one page, whatever the site is for."""
+    from geo_audit.scoring.model import for_site_kind
+
+    outlier = Finding("citability.answer_first", "high", "medium", "t", "r").mark_page_level()
+    assert outlier.severity == "medium"
+    assert for_site_kind([outlier], "docs")[0].severity == "medium"
+
+
+def test_the_site_kind_table_only_names_real_non_blocking_signals():
+    from geo_audit import data
+
+    templates = data.load("findings")
+    blocking = set(templates["blocking"]["ids"])
+    for kind, spec in data.load("site_kinds")["kinds"].items():
+        assert spec["label"] and spec["note"], kind
+        lead, defer = set(spec["lead"]), set(spec["defer"])
+        assert not lead & defer, f"{kind} both leads and defers {sorted(lead & defer)}"
+        for signal_id in lead | defer:
+            assert signal_id in templates["signals"], f"{kind}: {signal_id} is not a signal"
+            assert signal_id not in blocking, f"{kind}: blockers never move, so {signal_id} cannot be listed"

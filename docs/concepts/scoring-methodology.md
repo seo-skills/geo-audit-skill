@@ -42,6 +42,20 @@ Three consequences worth stating plainly:
 3. **There is one pipeline.** A missing capability nulls specific signals. It never
    selects a different scorer.
 
+## What a kind of site changes
+
+`geo report --site-kind` orders a report for what the site is for - `docs`, `spec`,
+`publisher`, `saas`, `ecommerce` or `local`. It changes the **order and severity of
+findings, and nothing else**: points lost, impact, every category score and the
+composite are identical for every kind, so one site has one score however it is read.
+
+A kind moves the findings it leads with up one severity level, never as far as
+critical, and the ones it defers down one; the ordinary order then applies. Blocking
+findings never move, and a finding about a minority of pages keeps its ceiling. The
+table is `data/site_kinds.json`. It is applied when a report is rendered rather than
+when the audit runs, because the kind is read *from* the audit: the audit stays a
+measurement that knows nothing about intent.
+
 ## Version policy
 
 | Version | Bumps when | Effect |

@@ -28,6 +28,7 @@ Expected: `seomator-geo-audit 0.2.x` or newer.
 
 ```bash
 geo report <url> --json
+geo report <url> --site-kind docs --json
 geo report <url> --mode operator --json
 geo report <url> --brand-config brand.json --pdf --json
 geo report <url> --out ./audit.html --json
@@ -72,11 +73,13 @@ was applied, and finds out from a client that it was not, will not use the tool 
   should your message.
 - If the advisory section is unanswered, either answer it first with `--advisory` or
   tell the user it says "not assessed".
-- **Say what kind of site you read it as.** The report orders findings by the scorer's
-  rules, and those do not know what the site is for. If it leads with something that
-  matters little for this kind of site - machine-readable authorship on a syntax
-  reference, say - name that finding in your message so whoever forwards the file is
-  not misled. Never describe the report as tailored to the site; it is not.
+- **Order it for what the site is for.** Without `--site-kind` the findings follow the
+  scorer's rules, which do not know what a site is for, and a syntax reference gets a
+  publisher's checklist. Work out the kind from the audit - `jsonld_types`, the URL
+  shapes in `crawl.pages`, whether pages are dated - and pass one of `docs`, `spec`,
+  `publisher`, `saas`, `ecommerce` or `local`. The report then says which kind it was
+  ordered for, so a wrong guess is visible to whoever reads it. Nothing numeric moves.
+  If no kind fits, leave the flag off and say so; a forced guess is worse than none.
 
 Layout, print behaviour and what is in each section are in `sections/anatomy.md`.
 

@@ -23,6 +23,7 @@ from geo_audit.report import advisory as advisory_lib
 from geo_audit.report import brand as brand_lib
 from geo_audit.report import context as context_lib
 from geo_audit.report import pdf as pdf_lib
+from geo_audit.scoring.model import site_kinds
 from geo_audit.report import render as render_lib
 
 MODES = ("client", "operator")
@@ -76,6 +77,13 @@ def run(args, run_id: str) -> dict:
             f"--mode must be one of {', '.join(MODES)}, not {args.mode!r}.",
         )
 
+    kinds = site_kinds()
+    if args.site_kind is not None and args.site_kind not in kinds:
+        raise GeoError(
+            "GEO_E_BAD_ARGS",
+            f"--site-kind must be one of {', '.join(kinds)}, not {args.site_kind!r}.",
+        )
+
     state.init()
     slug = project_slug(args.url)
     record = _record_for(slug, args.run)
@@ -101,6 +109,7 @@ def run(args, run_id: str) -> dict:
         generated_on=datetime.now(timezone.utc).strftime("%Y-%m-%d"),
         record_path=record_path,
         advisory_answers=advisory_answers,
+        site_kind=args.site_kind,
     )
 
     html = (
@@ -137,6 +146,7 @@ def run(args, run_id: str) -> dict:
                 "pdf_path": str(pdf_path) if pdf_path else None,
                 "pdf_skipped": pdf_skipped,
                 "advisory_answered": sorted(advisory_answers),
+                "site_kind": args.site_kind,
                 "from_run": record.get("run_id"),
                 "observed_at": record.get("observed_at"),
                 "brand": {

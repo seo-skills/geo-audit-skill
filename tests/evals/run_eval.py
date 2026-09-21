@@ -19,6 +19,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+from geo_audit.report.context import ordered_findings
+
 ROOT = Path(__file__).resolve().parent.parent.parent
 RESULTS = Path(__file__).resolve().parent / "results"
 
@@ -52,13 +54,17 @@ def audit_site(entry: dict) -> dict:
     # operator copy's provenance would earn a `no` that says nothing about the
     # product. The operator copy is for working out why an answer went wrong.
     brand = ["--brand-config", entry["brand"]] if entry.get("brand") else []
-    client = geo("report", url, *brand)
-    operator = geo("report", url, "--mode", "operator", *brand)
+    # In real use the skill reads the kind off the audit and passes it; here the
+    # site list states it, and the form says which kind each report was ordered for.
+    kind = ["--site-kind", entry["kind"]] if entry.get("kind") else []
+    client = geo("report", url, *brand, *kind)
+    operator = geo("report", url, "--mode", "operator", *brand, *kind)
 
     scores = envelope.get("scores") or {}
     return {
         "url": url,
         "shape": entry.get("shape"),
+        "kind": entry.get("kind"),
         "run_id": envelope["run_id"],
         "composite": scores.get("composite"),
         "tier": scores.get("tier"),
@@ -72,7 +78,8 @@ def audit_site(entry: dict) -> dict:
                 "effort": finding["effort"],
                 "pages": len(finding.get("pages") or []),
             }
-            for finding in (envelope.get("findings") or [])[:3]
+            # The order the report shows, which is the order being judged.
+            for finding in ordered_findings(envelope.get("findings") or [], entry.get("kind"))[:3]
         ],
         "client_report": (client.get("report") or {}).get("path"),
         "operator_report": (operator.get("report") or {}).get("path"),
@@ -109,6 +116,8 @@ def form(results: list[dict], versions: dict) -> str:
             "",
             f"Operator copy, for working out why: `{result['operator_report']}`  ·  "
             f"run `{result['run_id']}`",
+            "",
+            f"Ordered for: {result['kind'] or 'no kind given - the scorer default'}",
             "",
             "Top three fixes as ranked by the tool:",
             "",

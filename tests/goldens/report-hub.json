@@ -66,14 +66,15 @@
       "source": null,
       "warnings": []
     },
-    "bytes": 30738,
+    "bytes": 30744,
     "from_run": "<volatile>",
     "mode": "client",
     "observed_at": "<volatile>",
     "path": "<volatile>",
     "pdf_path": null,
     "pdf_skipped": null,
-    "site": "127.0.0.1"
+    "site": "127.0.0.1",
+    "site_kind": null
   },
   "run_id": "<volatile>",
   "schema_version": 1,

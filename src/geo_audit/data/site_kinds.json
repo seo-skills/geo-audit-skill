@@ -1,0 +1,50 @@
+{
+  "comment": "What a kind of site changes about the ORDER of a report, never about a number. A kind moves the findings it leads with up one severity level (never to critical) and the ones it defers down one; the usual order then applies. Blocking findings are never listed and never moved. The same judgements are written out for the model in skills/audit/sections/site-kind.md - keep the two in step.",
+  "kinds": {
+    "docs": {
+      "label": "a documentation or reference site",
+      "note": "A reference page is read one section at a time and an engine lifts one section, so answer-first writing and structure count for more here, and machine-readable authorship for less.",
+      "lead": ["citability.answer_first", "citability.structure"],
+      "defer": ["content.expertise"]
+    },
+    "spec": {
+      "label": "a specification or standard",
+      "note": "Authority comes from the document being the standard rather than from a byline, so structure, stated evidence and schema coverage count for more here, and machine-readable authorship for less.",
+      "lead": [
+        "citability.answer_first",
+        "citability.structure",
+        "citability.evidence_density",
+        "schema.breadth"
+      ],
+      "defer": ["content.expertise"]
+    },
+    "publisher": {
+      "label": "a publisher or blog",
+      "note": "An engine choosing between two accounts of the same event picks the one it can date and attribute, so authorship and freshness count for more here.",
+      "lead": ["content.expertise", "content.freshness"],
+      "defer": []
+    },
+    "saas": {
+      "label": "a SaaS or marketing site",
+      "note": "Marketing prose is where unsupported claims and paragraphs that only make sense in sequence concentrate, and the brand has to resolve to an entity, so self-contained passages, stated evidence and organisation markup count for more here.",
+      "lead": [
+        "citability.self_containment",
+        "citability.evidence_density",
+        "schema.organization"
+      ],
+      "defer": []
+    },
+    "ecommerce": {
+      "label": "an ecommerce catalogue",
+      "note": "Product and offer markup is what gets a catalogue into an answer at all, so schema coverage and valid markup count for more here.",
+      "lead": ["schema.breadth", "schema.validity"],
+      "defer": []
+    },
+    "local": {
+      "label": "a local business",
+      "note": "A local business has to resolve to one place with one name and one address, so organisation markup and consistent brand details count for more here.",
+      "lead": ["schema.organization", "brand.consistency"],
+      "defer": []
+    }
+  }
+}
