@@ -119,6 +119,7 @@ your own staging host is legitimate, so it is one flag away.
   state.json                     state version
   logs/last-run.log              the last failure, in detail
   projects/<slug>/audits.jsonl   append-only history, one record per run
+  projects/<slug>/pages/         the pages each run read, gzipped, never printed
   projects/<slug>/reports/       rendered reports
 ```
 

@@ -1,7 +1,7 @@
 ---
 name: content
 description: Judge content quality for AI search: depth, author expertise, freshness and readability are measured by the CLI, and the experience and helpfulness questions are yours to answer against a fixed rubric. Use when asked about E-E-A-T, content quality, thin content, author authority or whether a page is worth citing.
-version: 0.4.0
+version: 0.5.0
 allowed-tools: Bash, Read
 ---
 
@@ -25,7 +25,7 @@ geo --version
 Expected: `seomator-geo-audit 0.2.x` or newer.
 
 - **Command not found** -> stop and say: "The geo CLI is not installed. Install it with `uv tool install seomator-geo-audit` (or `pipx install seomator-geo-audit`), then run this again."
-- **Older than 0.4.0** -> stop and say: "This skill needs seomator-geo-audit 0.4.0 or newer. Upgrade with `uv tool upgrade seomator-geo-audit`."
+- **Older than 0.5.0** -> stop and say: "This skill needs seomator-geo-audit 0.5.0 or newer. Upgrade with `uv tool upgrade seomator-geo-audit`."
 - **Anything else odd** -> run `geo doctor` and relay what it reports.
 
 ## Run

@@ -624,9 +624,19 @@ report cannot praise what it also faults. No score moves.
 implementation found G1 half-met: the record held site-level signals, not every scorer
 input, so `--rescore` rebuilt the number but lost page-level and check findings. Closed
 with a record-only snapshot (per-page ratios, fetch and robots observations) and one
-classification function shared by a live run and a rescore. The ETag
-revalidation shortcut from §3.5 was built once pages were kept on disk, then withdrawn - see
-the open list.
+classification function shared by a live run and a rescore.
+
+### 0.5.0 - Pages on disk - released 2026-09-21
+
+The maintainer lifted the no-pages-on-disk rule (§3.5 Retention), and what it protected
+is kept by how pages are stored. Audits keep every page they read, with robots.txt and
+llms.txt, in a content-addressed store beside `audits.jsonl`; `--rescore` recomputes
+from those pages with the current code, so G1 holds literally. The store has its own
+budget, measured at 62 KB a page, and the three storage rules of the §3.0 amendment. The
+ETag revalidation shortcut from §3.5 was built on the store and withdrawn the same day,
+because a 304 does not vouch for headers - see the open list. The envelope's frozen top
+level is unchanged: `rescore` gained `from`, `prune` gained the page fields and `skipped`.
+No score moves.
 
 ### Open before the next milestone
 

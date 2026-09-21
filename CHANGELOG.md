@@ -7,6 +7,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-09-21
+
 ### Added
 
 - **Audits keep the pages they read**, lifting the PRD's no-pages-on-disk rule at the
@@ -37,6 +39,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **The plugin marketplace serves the `v0.4.0` tag instead of `main`.** Every plugin
   install is now exactly a release, so skills can never run ahead of the CLI on PyPI.
   It is an HTTPS `url` source; the skill lint requires its `ref` to match `VERSION`.
+- **The skills expect the 0.5 CLI.** Skills and CLI release on one version line, so after
+  a plugin update the skills ask a 0.4 CLI to run `uv tool upgrade seomator-geo-audit`.
 
 ### Fixed
 
@@ -519,7 +523,8 @@ contract behind them, and one skill end to end.
   composite is taken over the signals that were computed; a signal that was not
   measured is never scored as a failure.
 
-[Unreleased]: https://github.com/seo-skills/geo-audit-skill/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/seo-skills/geo-audit-skill/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.5.0
 [0.4.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.4.0
 [0.3.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.3.0
 [0.2.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.2.0

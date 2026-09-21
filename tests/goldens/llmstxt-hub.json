@@ -1,5 +1,5 @@
 {
-  "cli_version": "0.4.0",
+  "cli_version": "0.5.0",
   "command": "llmstxt",
   "completeness": null,
   "data_version": "2026.09",
