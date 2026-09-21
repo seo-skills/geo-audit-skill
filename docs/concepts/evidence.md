@@ -93,11 +93,17 @@ is claimed for rescoring a recorded snapshot, not for re-crawling a live site, w
 can legitimately differ — the site changed. `geo audit --rescore` recomputes from the
 stored record with no network access.
 
-The record holds every scorer input, not only the envelope that was printed. Beside
-it, on disk only, is a snapshot: each page's ratio on each signal, and what fetching
-and robots.txt showed. That is what page-level findings and check findings - a broken
-link, a blocked crawler - are made from, so a rescore reproduces every finding, not
-only the number. Pages are reclassified with the *current* thresholds and checks are
-rebuilt from the *current* templates, which makes a rescore a recomputation rather
-than a replay. Records written before the snapshot existed rescore without those
-findings, and say so: `rescore.snapshot` is `false`.
+The record holds every scorer input, not only the envelope that was printed: the
+pages themselves. Each page an audit read is kept in `projects/<slug>/pages/`, stored
+once under the hash of its bytes, beside robots.txt and what llms.txt showed - never
+inside `audits.jsonl`, and never printed. A rescore reads those pages back and runs
+the whole pipeline again with today's code: extraction, every signal, every finding.
+A scoring rule that changed since the audit is re-applied to the exact bytes the audit
+read, which is what makes an old score defensible rather than merely repeatable.
+
+`rescore.from` says what a rescore recomputed from. `pages` is the full recomputation.
+`ratios` means a page is gone - `geo prune` removed it - so the rescore fell back to
+the per-page ratios recorded beside the envelope: every finding still rebuilds, but
+signal values are the recorded ones. `record` is a run older than both, which rebuilds
+the number from the recorded signals and can rebuild neither page-level nor check
+findings.

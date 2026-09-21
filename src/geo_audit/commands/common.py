@@ -62,6 +62,50 @@ def _check_finding(key: str, page_url: str, detail: str | None = None) -> Findin
     )
 
 
+def classify(page: Page, result: http.FetchResult) -> Page:
+    """What a response means: blocked, an error, missing, or a page to read.
+
+    Separate from fetching, so a response read back from the page store takes
+    exactly the path a live one does - which is what lets a rescore recompute
+    from the pages an audit read instead of replaying what it concluded.
+    """
+    page.result = result
+
+    if result.status in BLOCKED_STATUSES or _is_challenge(result):
+        page.failure = {"url": result.final_url, "reason": "bot_blocked", "status": result.status}
+        page.findings.append(
+            _check_finding("fetch.blocked", result.final_url, f"HTTP {result.status}")
+        )
+    elif result.status >= 500:
+        page.failure = {"url": result.final_url, "reason": "server_error", "status": result.status}
+        page.findings.append(
+            _check_finding("fetch.server_error", result.final_url, f"HTTP {result.status}")
+        )
+    elif result.status in (404, 410):
+        page.failure = {"url": result.final_url, "reason": "not_found", "status": result.status}
+        page.findings.append(
+            _check_finding("fetch.not_found", result.final_url, f"HTTP {result.status}")
+        )
+    elif not result.ok:
+        page.failure = {"url": result.final_url, "reason": "http_error", "status": result.status}
+        page.findings.append(
+            _check_finding("fetch.server_error", result.final_url, f"HTTP {result.status}")
+        )
+    else:
+        doc = extract(result.body, result.final_url)
+        if _says_it_is_missing(doc):
+            page.failure = {"url": result.final_url, "reason": "soft_404", "status": result.status}
+            page.findings.append(
+                _check_finding("fetch.soft_404", result.final_url, doc.title)
+            )
+        else:
+            page.doc = doc
+
+    if page.robots is not None and page.result is not None:
+        page.findings.extend(_crawler_findings(page))
+    return page
+
+
 def load_page(
     url: str,
     options: Options,
@@ -115,40 +159,7 @@ def load_page(
             max_redirects=options.max_redirects,
             session=session,
         )
-        page.result = result
-
-        if result.status in BLOCKED_STATUSES or _is_challenge(result):
-            page.failure = {"url": result.final_url, "reason": "bot_blocked", "status": result.status}
-            page.findings.append(
-                _check_finding("fetch.blocked", result.final_url, f"HTTP {result.status}")
-            )
-        elif result.status >= 500:
-            page.failure = {"url": result.final_url, "reason": "server_error", "status": result.status}
-            page.findings.append(
-                _check_finding("fetch.server_error", result.final_url, f"HTTP {result.status}")
-            )
-        elif result.status in (404, 410):
-            page.failure = {"url": result.final_url, "reason": "not_found", "status": result.status}
-            page.findings.append(
-                _check_finding("fetch.not_found", result.final_url, f"HTTP {result.status}")
-            )
-        elif not result.ok:
-            page.failure = {"url": result.final_url, "reason": "http_error", "status": result.status}
-            page.findings.append(
-                _check_finding("fetch.server_error", result.final_url, f"HTTP {result.status}")
-            )
-        else:
-            doc = extract(result.body, result.final_url)
-            if _says_it_is_missing(doc):
-                page.failure = {"url": result.final_url, "reason": "soft_404", "status": result.status}
-                page.findings.append(
-                    _check_finding("fetch.soft_404", result.final_url, doc.title)
-                )
-            else:
-                page.doc = doc
-
-        if page.robots is not None and page.result is not None:
-            page.findings.extend(_crawler_findings(page))
+        classify(page, result)
     finally:
         if owned:
             session.close()

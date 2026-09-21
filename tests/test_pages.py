@@ -80,3 +80,42 @@ def test_prune_collects_pages_no_kept_run_names(site, geo_home):
     assert orphan not in set(pages.stored(_slug(site)))
     assert set(pages.stored(_slug(site))) == referenced
     assert report["pages_deleted"] == 1
+
+
+# --- rescoring from the pages themselves -------------------------------------
+
+
+def _rescore(site, run_id) -> dict:
+    buffer = io.StringIO()
+    main(["audit", f"{site.url}/hub.html", "--rescore", run_id, "--json", "--quiet"], out=buffer)
+    return json.loads(buffer.getvalue())
+
+
+def test_a_rescore_reads_the_stored_pages(site, geo_home):
+    original = json.loads(_audit(site))
+    again = _rescore(site, original["run_id"])
+    assert again["rescore"]["from"] == "pages"
+    assert again["scores"] == original["scores"]
+    assert [s["value"] for s in again["signals"]] == [s["value"] for s in original["signals"]]
+
+
+def test_a_rescore_recomputes_rather_than_replays(site, geo_home, monkeypatch):
+    """The point of keeping pages: a changed scoring rule can be re-applied to the
+    exact bytes an old audit read. Stored values could never show a change."""
+    from geo_audit.scoring import citability
+
+    original = json.loads(_audit(site))
+    monkeypatch.setattr(citability, "answer_first", lambda doc: (0.0, {"reason": "a changed rule"}))
+    again = _rescore(site, original["run_id"])
+    before = next(s for s in original["signals"] if s["id"] == "citability.answer_first")
+    after = next(s for s in again["signals"] if s["id"] == "citability.answer_first")
+    assert before["value"] > 0 and after["value"] == 0
+
+
+def test_a_pruned_page_falls_back_to_the_recorded_ratios_and_says_so(site, geo_home):
+    original = json.loads(_audit(site))
+    victim = next(f["body"] for f in _snapshot(site)["fetches"] if f["body"])
+    (pages.store_dir(_slug(site)) / f"{victim}{pages.SUFFIX}").unlink()
+    again = _rescore(site, original["run_id"])
+    assert again["rescore"]["from"] == "ratios"
+    assert again["scores"] == original["scores"]

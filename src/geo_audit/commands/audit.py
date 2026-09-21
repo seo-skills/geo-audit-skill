@@ -15,7 +15,7 @@ from __future__ import annotations
 from geo_audit import copy as copytext
 from geo_audit import data, envelope, state
 from geo_audit.commands import crawl as crawl_cmd
-from geo_audit.commands.common import Options, _check_finding
+from geo_audit.commands.common import Options, Page, _check_finding, classify
 from geo_audit.errors import GeoError
 from geo_audit.lib import crawl as crawl_lib
 from geo_audit.lib import pages as pages_lib
@@ -83,12 +83,6 @@ def _site_facts(result, args) -> dict:
     from geo_audit.commands import llmstxt as llmstxt_cmd
     from geo_audit.commands.common import Options
 
-    facts: dict = {
-        "sitemaps": list(result.robots.sitemaps) if result.robots else [],
-        "languages": {page.doc.lang for page in result.ok_pages if page.doc and page.doc.lang},
-        "llms_present": None,
-        "llms_valid": None,
-    }
     options = Options(allow_private=args.allow_private, timeout=args.timeout)
     from urllib.parse import urlsplit
 
@@ -96,9 +90,53 @@ def _site_facts(result, args) -> dict:
     found = llmstxt_cmd._fetch_optional(
         f"{parts.scheme}://{parts.netloc}{llmstxt_cmd.CANONICAL_PATH}", options
     )
-    facts["llms_present"] = bool(found.get("present"))
-    facts["llms_valid"] = bool(found.get("valid")) if found.get("present") else None
-    return facts
+    observed = {
+        "llms_present": bool(found.get("present")),
+        "llms_valid": bool(found.get("valid")) if found.get("present") else None,
+    }
+    return _site_facts_from(result.robots, result.ok_pages, observed)
+
+
+def _site_facts_from(robots, pages, observed: dict) -> dict:
+    """Site facts from robots.txt and the pages, plus what was observed live.
+
+    Sitemaps and languages are recomputed from what was read; llms.txt was
+    fetched on its own and is taken as observed, like any live signal.
+    """
+    return {
+        "sitemaps": list(robots.sitemaps) if robots else [],
+        "languages": {page.doc.lang for page in pages if page.doc and page.doc.lang},
+        "llms_present": observed.get("llms_present"),
+        "llms_valid": observed.get("llms_valid"),
+    }
+
+
+def _replay(record: dict):
+    """The pages an audit read, read back from the page store.
+
+    None when any of them is gone - pruned, or never stored - because a partial
+    replay would score a different site from the one that was audited.
+    """
+    snapshot = record.get("snapshot") or {}
+    fetches = snapshot.get("fetches")
+    if not fetches:
+        return None
+    slug = project_slug(record.get("crawl", {}).get("start_url", ""))
+    robots = None
+    entry = snapshot.get("robots")
+    if entry:
+        text = pages_lib.get(slug, entry["body"]) if entry.get("body") else None
+        if entry.get("body") and text is None:
+            return None
+        robots = pages_lib.robots_from(entry, text)
+    replayed = []
+    for fetch in fetches:
+        body = pages_lib.get(slug, fetch["body"]) if fetch.get("body") else ""
+        if body is None:
+            return None
+        replayed.append(classify(Page(url=fetch["requested_url"], robots=robots), pages_lib.fetch_result(fetch, body)))
+    facts = _site_facts_from(robots, [page for page in replayed if page.doc], snapshot.get("observed") or {})
+    return replayed, robots, facts
 
 
 def _forced(signal: Signal) -> Signal:
@@ -152,40 +190,8 @@ def run(args, run_id: str) -> dict:
     result = crawl_lib.crawl(args.url, options, progress=progress)
     site_facts = _site_facts(result, args) if "platform" in categories else {}
 
-    per_category: dict[str, list[list[Signal]]] = {name: [] for name in categories}
-    findings = []
     rules = data.thresholds("findings")
-
-    # G1: the record holds every scorer input. Per-page ratios and the fetch and
-    # robots observations are what page-level and check findings are made from;
-    # without them a rescore returned four of seomator.com's six findings.
-    snapshot: dict = {"pages": [], "ratios": {}, "checks": []}
-    for page in result.pages:
-        scored = _score_page(page, result.robots, categories, site_facts)
-        url = page.result.final_url if page.result else page.url
-        index = len(snapshot["pages"])
-        snapshot["pages"].append(url)
-        for name, signals in scored.items():
-            # A page with nothing to read is an example of what went wrong with
-            # its response and of nothing site-wide: MDN's soft-404 page turned
-            # up on the llms.txt finding. Scores are untouched - llms.txt has one
-            # value on every page - only the list of pages to go and look at.
-            if page.doc is None and name != "technical":
-                continue
-            for signal in signals:
-                if signal.ratio is not None:
-                    snapshot["ratios"].setdefault(signal.id, {})[index] = signal.ratio
-        for name, signals in scored.items():
-            per_category[name].append(signals)
-        findings.extend(page.findings)
-        snapshot["checks"].extend(
-            {"id": check.id, "page": check.pages[0] if check.pages else url, "excerpt": check.excerpt}
-            for check in page.findings
-        )
-    snapshot["ratios"] = {
-        signal_id: [by_page.get(i) for i in range(len(snapshot["pages"]))]
-        for signal_id, by_page in sorted(snapshot["ratios"].items())
-    }
+    per_category, findings, snapshot = _score_pages(result.pages, result.robots, categories, site_facts)
     offenders, severe = _classify(snapshot, rules)
     # What the scorer read, not only what it computed: each page's response with
     # its body in the page store, robots.txt beside it, and what llms.txt showed.
@@ -244,6 +250,47 @@ def run(args, run_id: str) -> dict:
         extra=extra,
         snapshot=snapshot,
     )
+
+
+def _score_pages(pages, robots, categories: tuple[str, ...], site_facts: dict) -> tuple[dict, list, dict]:
+    """Score every page, keeping the per-page ratios and checks findings are made from.
+
+    One function for a live audit and for a rescore that reads the stored pages
+    back, so the two cannot score the same page differently.
+    """
+    per_category: dict[str, list[list[Signal]]] = {name: [] for name in categories}
+    findings: list = []
+    # G1: the record holds every scorer input. Per-page ratios and the fetch and
+    # robots observations are what page-level and check findings are made from;
+    # without them a rescore returned four of seomator.com's six findings.
+    snapshot: dict = {"pages": [], "ratios": {}, "checks": []}
+    for page in pages:
+        scored = _score_page(page, robots, categories, site_facts)
+        url = page.result.final_url if page.result else page.url
+        index = len(snapshot["pages"])
+        snapshot["pages"].append(url)
+        for name, signals in scored.items():
+            # A page with nothing to read is an example of what went wrong with
+            # its response and of nothing site-wide: MDN's soft-404 page turned
+            # up on the llms.txt finding. Scores are untouched - llms.txt has one
+            # value on every page - only the list of pages to go and look at.
+            if page.doc is None and name != "technical":
+                continue
+            for signal in signals:
+                if signal.ratio is not None:
+                    snapshot["ratios"].setdefault(signal.id, {})[index] = signal.ratio
+        for name, signals in scored.items():
+            per_category[name].append(signals)
+        findings.extend(page.findings)
+        snapshot["checks"].extend(
+            {"id": check.id, "page": check.pages[0] if check.pages else url, "excerpt": check.excerpt}
+            for check in page.findings
+        )
+    snapshot["ratios"] = {
+        signal_id: [by_page.get(i) for i in range(len(snapshot["pages"]))]
+        for signal_id, by_page in sorted(snapshot["ratios"].items())
+    }
+    return per_category, findings, snapshot
 
 
 def _classify(snapshot: dict, rules: dict) -> tuple[dict[str, list[str]], dict[str, list[str]]]:
@@ -461,27 +508,44 @@ def rescore(args, run_id: str) -> dict:
     }
 
     snapshot = record.get("snapshot")
-    if snapshot:
+    per_category = {name: by_category[name] for name in categories}
+    replayed = _replay(record) if snapshot else None
+    if replayed:
+        # The whole scoring pipeline again, on the exact pages the audit read,
+        # with today's code: a changed rule is re-applied, not replayed.
+        pages, robots, facts = replayed
+        page_categories = tuple(name for name in categories if name != "brand")
+        per_category, findings, fresh = _score_pages(pages, robots, page_categories, facts)
+        offenders, severe = _classify(fresh, data.thresholds("findings"))
+        if "brand" in by_category:
+            per_category["brand"] = by_category["brand"]
+        source = "pages"
+    elif snapshot:
         offenders, severe = _classify(snapshot, data.thresholds("findings"))
         findings = [
             _check_finding(check["id"], check["page"], check.get("excerpt"))
             for check in snapshot.get("checks") or []
         ]
+        source = "ratios"
     else:
         # Recorded before snapshots existed: page lists can only come from the
         # recorded findings, and page-level and check findings cannot be rebuilt.
         offenders = {f["id"]: f.get("pages") or [] for f in record.get("findings") or []}
         severe = {}
+        source = "record"
     brand = (record.get("scan") or {}).get("brand")
     if brand and "brand" in by_category:
         findings.extend(findings_for(by_category["brand"][0], brand))
     rescore_block["snapshot"] = bool(snapshot)
+    # What this rescore recomputed from: the stored pages, the stored per-page
+    # ratios, or - for a record older than both - the recorded findings.
+    rescore_block["from"] = source
 
     return _assemble(
         run_id=run_id,
         start_url=record.get("crawl", {}).get("start_url", ""),
         categories=categories,
-        per_category={name: by_category[name] for name in categories},
+        per_category=per_category,
         findings=findings,
         offenders=offenders,
         severe=severe,

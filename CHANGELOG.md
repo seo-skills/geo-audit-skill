@@ -15,6 +15,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   with robots.txt beside it. The record names them by hash; it never contains them, so
   sharing `audits.jsonl` shares no one's pages, and nothing is ever printed. `geo prune`
   deletes a page once no kept run names it and reports how many.
+- **`--rescore` recomputes from the stored pages.** It reads back the pages an audit
+  read and runs extraction, every signal and every finding again with today's code, so
+  a rule changed since the audit is re-applied to the exact bytes rather than replaying
+  what the audit concluded. `rescore.from` says what it used: `pages`, or `ratios` when
+  a page was pruned, or `record` for runs older than both.
 
 ### Changed
 
