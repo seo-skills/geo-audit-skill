@@ -27,9 +27,9 @@
       ],
       "points_lost": 15.0,
       "priority": 1,
-      "remediation": "Add an Organization or Person node with name, url, logo, description and sameAs links to the profiles that identify you. sameAs is what lets an engine connect this site to the entity it already knows about.",
+      "remediation": "Complete the Organization node: name, url, logo, description, and sameAs links to the profiles that identify you. sameAs is what lets an engine connect this site to the entity it already knows about.",
       "severity": "high",
-      "title": "No machine-readable publisher identity"
+      "title": "The publisher's markup is missing properties that identify it"
     },
     {
       "effort": "medium",

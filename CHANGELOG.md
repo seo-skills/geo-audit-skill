@@ -16,6 +16,14 @@ something the build checks, and two rounds of practitioner eval are folded in.
 
 ### Fixed — hardening toward 1.0
 
+- **A finding scored from several parts claimed all of them were missing.** Titles were
+  written for the zero case, but a finding fires at up to 70% of its maximum. The first
+  real run of the installed skill, on seomator.com, had a byline and Person markup on all
+  fifty pages and was told *Authorship is not machine-readable*; the skill corrected it
+  in chat, but the client report would have carried it. The fixture's own publisher node
+  had been called *No machine-readable publisher identity* in a golden all along.
+  Authorship, attribution, publisher and article findings now use a second wording
+  whenever the scorer reports that some of their parts are present. Scores do not move.
 Four from a dry run of round three against the five eval sites, run to find defects
 before a practitioner spends time on them (`tests/evals/results/eval-2026-09-21-round3-dry-run.md`):
 

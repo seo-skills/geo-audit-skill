@@ -190,13 +190,21 @@ def findings_for(signals: list[Signal], page: str) -> list[Finding]:
         if template is None:
             continue
         severity = template["severity"] if ratio < full_below else demote(template["severity"])
+        # A title written for the zero case, on a finding that fires at up to 70%,
+        # claims total absence. seomator.com had Person markup on every page and
+        # was told "Authorship is not machine-readable". Where the scorer reports
+        # which parts are there, a variant says what is missing instead.
+        wording = template
+        partial, present = template.get("partial"), signal.detail.get("present")
+        if partial and isinstance(present, list) and set(partial["when_present"]) & set(present):
+            wording = partial
         out.append(
             Finding(
                 id=signal.id,
                 severity=severity,
                 effort=template["effort"],
-                title=template["title"],
-                remediation=template["remediation"],
+                title=wording["title"],
+                remediation=wording["remediation"],
                 pages=[page],
                 excerpt=signal.detail.get("worst_example"),
                 points_lost=signal.max - (signal.value or 0.0),

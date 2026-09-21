@@ -12,6 +12,7 @@ from geo_audit.scoring import citability
 from geo_audit.scoring.model import (
     SCORED_CLASSES,
     Finding,
+    Signal,
     composite,
     findings_for,
     prioritize,
@@ -541,9 +542,10 @@ def test_no_finding_text_names_its_own_severity():
     templates = data.load("findings")
     for section in ("signals", "checks"):
         for finding_id, template in templates[section].items():
-            for field_name in ("title", "remediation"):
-                text = template.get(field_name) or ""
-                assert not self_rating.search(text), f"{finding_id}.{field_name} names its severity"
+            for wording in (template, template.get("partial") or {}):
+                for field_name in ("title", "remediation"):
+                    text = wording.get(field_name) or ""
+                    assert not self_rating.search(text), f"{finding_id}.{field_name} names its severity"
 
 
 def test_every_signal_can_say_what_is_working():
@@ -566,3 +568,61 @@ def test_no_strength_claims_more_than_an_average_can_show():
     for signal_id, template in data.load("findings")["signals"].items():
         text = template.get("strength") or ""
         assert not absolute.search(text), f"{signal_id}: {text!r}"
+
+
+# --- partial presence ----------------------------------------------------------
+
+
+def _expertise(present, value=16.0):
+    missing = sorted({"byline", "person_schema", "credentials", "author_profile", "organization"} - set(present))
+    return Signal(id="content.expertise", cls="deterministic", max=25, value=value,
+                  detail={"present": sorted(present), "missing": missing})
+
+
+def test_a_named_author_is_not_called_unreadable():
+    """The first real run of the skill, on seomator.com: Person markup and a byline
+    on all fifty pages, and the finding still said "Authorship is not
+    machine-readable". The skill corrected it in chat; the report would not have."""
+    finding = findings_for([_expertise(["byline", "organization", "person_schema"])], "https://x")[0]
+    assert "not machine-readable" not in finding.title
+    assert finding.title == data.load("findings")["signals"]["content.expertise"]["partial"]["title"]
+
+
+def test_nothing_about_the_author_keeps_the_absent_wording():
+    """An Organization alone names no author, so it is not a partial author."""
+    finding = findings_for([_expertise(["organization"], value=3.0)], "https://x")[0]
+    assert finding.title == "Authorship is not machine-readable"
+
+
+def test_an_aggregate_without_a_shared_present_list_keeps_the_default():
+    """Pages that disagree leave no `present` in the rolled-up detail."""
+    signal = Signal(id="content.expertise", cls="deterministic", max=25, value=8.0, detail={"mean": 8.0})
+    assert findings_for([signal], "https://x")[0].title == "Authorship is not machine-readable"
+
+
+def test_every_partial_variant_triggers_on_parts_the_scorer_reports():
+    """A misspelt part name would make a variant silently unreachable."""
+    from geo_audit.scoring import citability as citability_scorer, content as content_scorer
+    from geo_audit.scoring import schema_org
+
+    markup = (
+        '<script type="application/ld+json">{"@context": "https://schema.org", "@graph": ['
+        '{"@type": "Organization", "name": "Acme"},'
+        '{"@type": "Person", "name": "Ada"},'
+        '{"@type": "Article", "headline": "A", "author": {"@type": "Person", "name": "Ada"}}]}</script>'
+    )
+    page = extract(f"<html><head>{markup}</head><body><main><p>Text.</p></main></body></html>",
+                   "https://example.com/a")
+    parts = {
+        "content.expertise": content_scorer.expertise(page)[1],
+        "citability.attribution": citability_scorer.attribution(page)[1],
+        "schema.organization": schema_org.organization(page)[1],
+        "schema.article": schema_org.article(page)[1],
+    }
+    templates = data.load("findings")["signals"]
+    with_partial = {k for k, t in templates.items() if t.get("partial")}
+    assert with_partial == set(parts), "a partial variant was added without a check here"
+    for signal_id, detail in parts.items():
+        known = set(detail.get("present") or []) | set(detail.get("missing") or [])
+        unknown = set(templates[signal_id]["partial"]["when_present"]) - known
+        assert not unknown, f"{signal_id}: {sorted(unknown)} is not a part the scorer reports"

@@ -41,7 +41,16 @@
       "effort": "low",
       "title": "The page does not say who wrote it or when",
       "remediation": "Add a visible byline, a published date and a last-modified date, and mirror them in Article or Organization JSON-LD. Attribution is what lets an engine decide the page is safe to quote.",
-      "strength": "Pages say who wrote them and when, which is what lets an engine quote them with confidence."
+      "strength": "Pages say who wrote them and when, which is what lets an engine quote them with confidence.",
+      "partial": {
+        "when_present": [
+          "byline",
+          "published_date",
+          "modified_date"
+        ],
+        "title": "Pages say only part of who wrote them and when",
+        "remediation": "Add whichever is missing of a visible byline, a published date and a last-modified date, and mirror them in Article or Organization JSON-LD. Attribution is what lets an engine decide the page is safe to quote."
+      }
     },
     "citability.render_parity": {
       "severity": "critical",
@@ -111,14 +120,36 @@
       "effort": "low",
       "title": "No machine-readable publisher identity",
       "remediation": "Add an Organization or Person node with name, url, logo, description and sameAs links to the profiles that identify you. sameAs is what lets an engine connect this site to the entity it already knows about.",
-      "strength": "The publisher is identified in structured data, so engines can connect the site to its entity."
+      "strength": "The publisher is identified in structured data, so engines can connect the site to its entity.",
+      "partial": {
+        "when_present": [
+          "name",
+          "url",
+          "logo",
+          "sameAs",
+          "description"
+        ],
+        "title": "The publisher's markup is missing properties that identify it",
+        "remediation": "Complete the Organization node: name, url, logo, description, and sameAs links to the profiles that identify you. sameAs is what lets an engine connect this site to the entity it already knows about."
+      }
     },
     "schema.article": {
       "severity": "medium",
       "effort": "low",
       "title": "Content pages are not described as articles",
       "remediation": "Add Article or BlogPosting with headline, author, datePublished, dateModified and image. This is how an engine decides a page is datable, attributable content rather than a landing page.",
-      "strength": "Content pages are described as articles, with the fields engines read for attribution."
+      "strength": "Content pages are described as articles, with the fields engines read for attribution.",
+      "partial": {
+        "when_present": [
+          "headline",
+          "author",
+          "datePublished",
+          "dateModified",
+          "image"
+        ],
+        "title": "Article markup is missing fields engines read",
+        "remediation": "Complete the Article markup with headline, author, datePublished, dateModified and image - the fields an engine reads to date and attribute a page. Only on pages that are articles; a hub or tool page described as one is mislabelled."
+      }
     },
     "schema.breadth": {
       "severity": "low",
@@ -167,7 +198,15 @@
       "effort": "medium",
       "title": "Authorship is not machine-readable",
       "remediation": "A byline in prose is invisible to a parser. Give the author a named byline linked to a page that says what they have done, and mirror it in Person JSON-LD with jobTitle, description and sameAs. This finding fires even on pages that do name their author in the text, because that is not the form an engine reads.",
-      "strength": "Authorship is machine-readable, so an engine can tell who stands behind the writing."
+      "strength": "Authorship is machine-readable, so an engine can tell who stands behind the writing.",
+      "partial": {
+        "when_present": [
+          "byline",
+          "person_schema"
+        ],
+        "title": "Authors are named but not described",
+        "remediation": "The author is named, but nothing machine-readable says who they are. In the Person markup add jobTitle and a description of what qualifies them, and link a profile page with sameAs to the author's other profiles - that is what lets an engine judge who stands behind the writing. Put it in the article template, not on hub or tool pages."
+      }
     },
     "content.freshness": {
       "severity": "medium",
