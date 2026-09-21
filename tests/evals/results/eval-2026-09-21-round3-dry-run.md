@@ -163,3 +163,7 @@ of why reads as grudging - applies to every report here. Nothing in the document
 what a site already does well, which is the first thing a practitioner adds by hand. It
 is a new report section, not a fix, so it is listed rather than built: it is the next
 thing to ask the practitioner about.
+
+*Resolved since:* built the same day as the second deliberate exception to the 0.4.0
+feature freeze - *What is already working*, in every report (`eefcd64`, and the PRD's
+0.4.0 section).
