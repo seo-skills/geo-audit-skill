@@ -233,6 +233,35 @@ def lint_versions(report: Report, version: str) -> None:
             ".claude-plugin/marketplace.json",
             f"plugins[{entry.get('name')}].version must be {version}",
         )
+        check_plugin_source(report, entry, version)
+
+
+def check_plugin_source(report: Report, entry: dict, version: str) -> None:
+    """The source decides what an installed user actually runs.
+
+    Both rules come from installing the plugin from a clean config. A `github`
+    source clones over SSH with no HTTPS fallback, so it fails for anyone without
+    GitHub keys - an easy regression, because it looks tidier than a URL. And a
+    source pinned to a tag must name this version's tag, or users install the
+    previous release under this version number, which `/plugin update` then
+    treats as current because it compares `version` and nothing else.
+    """
+    source = entry.get("source")
+    if not isinstance(source, dict):
+        return
+    where = ".claude-plugin/marketplace.json"
+    name = entry.get("name")
+    report.check(
+        source.get("source") != "github",
+        where,
+        f"plugins[{name}].source: type 'github' clones over SSH only; use 'url' with an https URL",
+    )
+    if "ref" in source:
+        report.check(
+            source["ref"] == f"v{version}",
+            where,
+            f"plugins[{name}].source.ref must be v{version}, the tag for this version",
+        )
 
 
 def lint_skill_set(report: Report) -> list[Path]:

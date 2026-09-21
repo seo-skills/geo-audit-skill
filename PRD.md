@@ -110,7 +110,7 @@ tests/  docs/  VERSION  CHANGELOG.md  LICENSE  README.md  CONTRIBUTING.md  SECUR
 - **CLI** installs with `uv tool install seomator-geo-audit` (or `pipx install seomator-geo-audit`). Python ≥ 3.11. PyPI check on 2026-09-20: `seomator-geo-audit` free, `geo-cli` free, `geo-audit` **taken**. Console script is `geo`; `geo doctor` warns if `geo` resolves to more than one binary on PATH.
 - **Playwright is an optional extra** (`seomator-geo-audit[browser]`), used for JS-render diffing and PDF. Without it the affected signals are null (§3.4), never silently different.
 - Skills reference no file paths. Templates and schemas are package data reached through CLI commands — this is what makes G3 hold by construction.
-- **Updates:** `/plugin update` and `uv tool upgrade seomator-geo-audit`. There is no `self-update` command and no `geo-update` skill.
+- **Updates:** `/plugin update` and `uv tool upgrade seomator-geo-audit`. There is no `self-update` command and no `geo-update` skill. `/plugin update` compares `version` only (M0 spike), so a skill change reaches installed users when `VERSION` moves, which is at release.
 - **M0 spike (gate for D2):** publish a one-skill plugin that runs `geo --version`; confirm install from a GitHub marketplace, namespace, update behavior, and Windows. If the spike fails, fall back per D2.
 
 ### 3.2 CLI contract
@@ -458,7 +458,7 @@ Appended as milestones close. Each entry records the gate evidence, not the inte
 | **D3** — agency kit | **Deferred to M4 behind the go/no-go gate**, as drafted. No Flask, `rich` or `portalocker` dependency in 0.1.0. |
 | **D4** — license and copyright | **MIT, © 2026 seo-skills.** No upstream copyright line is carried, which the D1 agreement permits. *Open:* confirm the holder should be the GitHub org rather than a legal entity, and re-read the written agreement before choosing any licence other than MIT — a notice waiver and a relicensing grant are different rights. |
 | §1.2 positioning | **Still `TODO(maintainer)`.** The provisional text stands. The README ships a positioning section written around it that names no other project. |
-| Plugin spike | **Partly done.** The repo is public and both manifests resolve over `raw.githubusercontent.com` with the skill path they declare returning 200, so the marketplace has something valid to read. The remaining half - `/plugin marketplace add` then `/plugin install geo`, and confirming the namespace and update behaviour - has to be run by a human inside Claude Code. |
+| Plugin spike | **Done except Windows and a live `/geo:` check** (2026-09-21, `claude plugin` CLI against a throwaway config dir; the real install was hash-checked untouched). `marketplace add seo-skills/geo-audit-skill` clones over HTTPS when SSH is not configured; `install geo@seomator` succeeds; `plugin details` reports nine skills at ~659 always-on tokens a session. **Update is keyed on `version`:** after a skill change pushed without a bump, `plugin update` reported "already at the latest version (0.4.0)" and left the installed copy stale while the marketplace clone had the change. A `github` plugin source clones over SSH with no HTTPS fallback; a `url` source over HTTPS honours both `ref` and `sha`. Consequences are in `RELEASING.md`: pin the marketplace to the release tag after the first publish. |
 
 ### M1 — Walking skeleton → 0.1.0 · closed 2026-09-20
 
@@ -569,11 +569,12 @@ a deprecation instead.
 
 ### Open before the next milestone
 
-1. Configure the PyPI trusted publisher, then tag `v0.2.0`. The release workflow's
-   tag/VERSION and changelog gates pass locally.
-2. Run the plugin spike inside Claude Code: `/plugin marketplace add
-   seo-skills/geo-audit-skill` then `/plugin install geo`. Both manifests resolve
-   publicly and declare six skills.
+1. Configure the PyPI pending trusted publisher - `RELEASING.md` has the five fields -
+   then tag `v0.4.0`. The tag/VERSION and changelog gates pass, and `uv build` plus
+   `twine check` pass on both artifacts. Then pin the marketplace to the tag.
+2. Finish the plugin spike in a logged-in Claude Code: `/plugin marketplace add
+   seo-skills/geo-audit-skill`, `/plugin install geo@seomator`, and check that `/geo:`
+   completes to nine skills. Install and update behaviour are verified; Windows is not.
 3. Write §1.2.
 4. Confirm the D4 copyright holder.
 5. **Run the practitioner eval.** It is the only gate left before 1.0 and the only

@@ -46,6 +46,15 @@ something the build checks, and two rounds of practitioner eval are folded in.
 
 ### Added
 
+- **The plugin spike, run.** Installed from a clean config with the `claude plugin`
+  CLI rather than left for a person: the marketplace clones over HTTPS, installs, and
+  registers nine skills at about 659 always-on tokens a session. It also found that
+  `/plugin update` compares `version` and nothing else, so a skill fix reaches
+  installed users only at a release; that a `github` plugin source clones over SSH
+  with no HTTPS fallback; and that a `url` source can pin an exact tag or commit. The
+  skill lint now rejects a `github` source and requires a pinned `ref` to be this
+  version's tag, and `RELEASING.md` says to pin the marketplace after the first
+  publish. Recorded in the PRD's M0 table.
 - **Site-kind guidance for the audit skill** (`skills/audit/sections/site-kind.md`).
   Both eval rounds said the same thing: the tool has no notion of what a site is
   *for*, and applied a publisher's checklist to a specification and then to a

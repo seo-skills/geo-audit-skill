@@ -48,6 +48,11 @@ The tag starts `release.yml`, which verifies the tag against `VERSION` and the
 changelog, runs the suite plus the skill lint on three operating systems, builds the
 wheel and the sdist, and publishes. No step needs a person once the publisher exists.
 
+A release is also the only way a skill change reaches someone who already installed
+the plugin. `/plugin update` compares `version` and nothing else: pushing a skill fix
+to `main` without a bump leaves every installed copy as it was, and reports it as
+current.
+
 ## Checking a build without releasing
 
 ```bash
@@ -58,6 +63,24 @@ uv build && uvx twine check dist/*
 that otherwise appears only after a tag is already pushed and public.
 
 ## After the first publish
+
+**Pin the marketplace to the release.** Until now the plugin's `source` is `./`, so
+the marketplace serves whatever is on `main`: two users can both be on 0.4.0 with
+different skills, and a skill on `main` can depend on a CLI change PyPI does not have
+yet. Once the tag exists, point the entry in `.claude-plugin/marketplace.json` at it:
+
+```json
+"source": {
+  "source": "url",
+  "url": "https://github.com/seo-skills/geo-audit-skill.git",
+  "ref": "v0.4.0"
+}
+```
+
+From then on every release bumps `ref` alongside `VERSION`, and the skill lint fails
+if they disagree. Use `url`, not `github`: a `github` source clones over SSH with no
+HTTPS fallback, so it fails for anyone without GitHub keys - the lint rejects it.
+Both were verified by installing from a clean config, not assumed.
 
 `README.md` carries a note saying the package is not on PyPI yet. Delete it once the
 release lands. That note is the switch for every other install instruction: with it

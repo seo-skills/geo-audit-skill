@@ -285,3 +285,22 @@ def test_the_source_install_follows_the_readme_note(tmp_path, monkeypatch, unpub
     assert lint_one(make_skill(tmp_path / "right", body=contract_block(preflight=right))) == []
     errors = lint_one(make_skill(tmp_path / "wrong", body=contract_block(preflight=wrong)))
     assert len(errors) == 1 and "source install" in errors[0].replace("-", " ")
+
+
+@pytest.mark.parametrize(
+    "source, problem",
+    [
+        ("./", None),
+        ({"source": "url", "url": "https://github.com/o/r.git", "ref": f"v{VERSION}"}, None),
+        ({"source": "url", "url": "https://github.com/o/r.git", "ref": "v0.0.1"}, "the tag for this version"),
+        ({"source": "github", "repo": "o/r"}, "SSH only"),
+    ],
+    ids=["relative", "pinned-to-this-release", "pinned-to-an-old-release", "github-ssh"],
+)
+def test_the_plugin_source_is_one_a_user_can_install(source, problem):
+    report = lint_skills.Report()
+    lint_skills.check_plugin_source(report, {"name": "geo", "source": source}, VERSION)
+    if problem is None:
+        assert report.errors == []
+    else:
+        assert len(report.errors) == 1 and problem in report.errors[0]
