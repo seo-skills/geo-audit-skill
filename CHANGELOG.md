@@ -7,6 +7,15 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Audits keep the pages they read**, lifting the PRD's no-pages-on-disk rule at the
+  maintainer's decision. Each page body is gzipped into `projects/<slug>/pages/`, stored
+  once under the SHA-256 of its bytes - an unchanged page costs nothing on a re-audit -
+  with robots.txt beside it. The record names them by hash; it never contains them, so
+  sharing `audits.jsonl` shares no one's pages, and nothing is ever printed. `geo prune`
+  deletes a page once no kept run names it and reports how many.
+
 ### Changed
 
 - **The plugin marketplace serves the `v0.4.0` tag instead of `main`.** Every plugin

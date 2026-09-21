@@ -77,6 +77,9 @@ class RobotsFile:
     unreachable: bool = False
     unavailable: bool = False
     error: str | None = None
+    # The file as served, kept so an audit can store it beside the pages it
+    # governed and a rescore can parse the same bytes again.
+    text: str | None = None
 
     def group_for(self, agent: str) -> Group | None:
         token = agent.split("/")[0].strip().lower()
@@ -122,7 +125,7 @@ class RobotsFile:
 
 
 def parse(text: str, source_url: str = "", status: int | None = 200) -> RobotsFile:
-    robots = RobotsFile(source_url=source_url, status=status)
+    robots = RobotsFile(source_url=source_url, status=status, text=text)
     group: Group | None = None
     accepting_agents = False
 

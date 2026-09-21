@@ -16,6 +16,7 @@ import json
 from datetime import datetime, timedelta, timezone
 
 from geo_audit import data, envelope, state
+from geo_audit.lib import pages as pages_lib
 from geo_audit.errors import GeoError
 
 
@@ -74,6 +75,8 @@ def _project_report(slug: str, limits: dict, now: datetime, apply: bool) -> dict
     for entry in dropped:
         reasons[entry["reason"]] = reasons.get(entry["reason"], 0) + 1
 
+    pages_deleted, page_bytes = pages_lib.collect(slug, pages_lib.referenced(kept), apply)
+
     after_bytes = before_bytes
     if apply and (dropped or damaged):
         payload = "".join(
@@ -93,6 +96,9 @@ def _project_report(slug: str, limits: dict, now: datetime, apply: bool) -> dict
         "bytes_before": before_bytes,
         "bytes_after": after_bytes,
         "oldest_kept": min((r.get("observed_at") or "" for r in kept), default=None) or None,
+        # Stored pages go with the runs that named them.
+        "pages_deleted": pages_deleted,
+        "page_bytes_reclaimed": page_bytes,
     }
 
 

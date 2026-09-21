@@ -25,6 +25,8 @@
         "damaged_lines_discarded": 0,
         "dropped_by": {},
         "oldest_kept": "<volatile>",
+        "page_bytes_reclaimed": 0,
+        "pages_deleted": 0,
         "project": "127-0-0-1",
         "runs_before": 1,
         "runs_dropped": 0,

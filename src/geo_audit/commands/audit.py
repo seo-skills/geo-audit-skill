@@ -18,6 +18,7 @@ from geo_audit.commands import crawl as crawl_cmd
 from geo_audit.commands.common import Options, _check_finding
 from geo_audit.errors import GeoError
 from geo_audit.lib import crawl as crawl_lib
+from geo_audit.lib import pages as pages_lib
 from geo_audit.lib.ids import is_run_id
 from geo_audit.lib.slug import host_of, project_slug
 from geo_audit.scoring import (
@@ -186,6 +187,19 @@ def run(args, run_id: str) -> dict:
         for signal_id, by_page in sorted(snapshot["ratios"].items())
     }
     offenders, severe = _classify(snapshot, rules)
+    # What the scorer read, not only what it computed: each page's response with
+    # its body in the page store, robots.txt beside it, and what llms.txt showed.
+    slug = project_slug(args.url)
+    snapshot["fetches"] = [
+        pages_lib.fetch_record(page.result, pages_lib.put(slug, page.result.body) if page.result.body else None)
+        for page in result.pages
+        if page.result is not None
+    ]
+    snapshot["robots"] = pages_lib.robots_record(result.robots, slug)
+    snapshot["observed"] = {
+        "llms_present": site_facts.get("llms_present"),
+        "llms_valid": site_facts.get("llms_valid"),
+    }
 
     advisory = content_scorer.advisory_signals() if "content" in categories else []
 

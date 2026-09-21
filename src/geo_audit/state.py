@@ -149,6 +149,20 @@ def init() -> Path:
     return home
 
 
+def write_atomic_bytes(path: Path, payload: bytes) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    handle = tempfile.NamedTemporaryFile(dir=path.parent, prefix=f".{path.name}.", delete=False)
+    try:
+        with handle:
+            handle.write(payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(handle.name, path)
+    except OSError as exc:
+        Path(handle.name).unlink(missing_ok=True)
+        raise GeoError("GEO_E_STATE_WRITE", f"Couldn't write {path.name}: {exc.strerror}.") from exc
+
+
 def project_dir(slug: str) -> Path:
     return geo_home() / "projects" / slug
 

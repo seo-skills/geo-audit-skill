@@ -184,7 +184,7 @@ The core loop feeds up to 50 pages of untrusted web content toward an agent that
 - **Hash = SHA-256 over the extracted content-block sequence** (the scorer's real inputs) **+ `normalizer_version`.** Golden test: the same fixture with a changed nonce, timestamp and ad slot still hashes identically.
 - **ETag / Last-Modified are *not* part of hash identity.** They change on every redeploy even when content is identical, which would flip reports to STALE for nothing — the exact noise block-hashing exists to avoid. They are stored as metadata and used only as a revalidation shortcut (`If-None-Match` → 304 ⇒ unchanged, skip the download).
 - **Stamps:** `CURRENT` · `PARTIAL` (failed or changed pages enumerated) · `STALE`.
-- **Retention:** derived signals and capped excerpts only. No raw HTML on disk.
+- **Retention:** the record holds derived signals and capped excerpts. Page bodies are kept too - *the maintainer lifted "no raw HTML on disk" on 2026-09-21* - in a content-addressed store beside the record (`projects/<slug>/pages/<sha256>.html.gz`): never inside `audits.jsonl`, so sharing an audit shares no client's pages; never printed, so the §3.3 output boundary is unchanged; stored once per content, and deleted by `geo prune` when no kept run names them. The rule had no stated reason; its three likely ones - injection, client data, disk growth - are each met by that design rather than by a ban.
 
 ### 3.6 State
 
@@ -478,7 +478,7 @@ Appended as milestones close. Each entry records the gate evidence, not the inte
 | §3.13 M0 files | Done: `LICENSE`, `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CHANGELOG.md`, `.gitattributes`, `CLAUDE.md`, and this document as `PRD.md`. |
 | **D2** — distribution | **Plugin.** `.claude-plugin/plugin.json` (name `geo`) and `marketplace.json` written against the observed manifest format. Shell installers cut, per §7. |
 | **D3** — agency kit | **Deferred to M4 behind the go/no-go gate**, as drafted. No Flask, `rich` or `portalocker` dependency in 0.1.0. |
-| **D4** — license and copyright | **MIT, © 2026 SEOmator** - renamed with the product (see *Product naming*). No upstream copyright line is carried, which the D1 agreement permits. *Open:* confirm SEOmator is the legal entity that should hold it, and re-read the written agreement before choosing any licence other than MIT — a notice waiver and a relicensing grant are different rights. |
+| **D4** — license and copyright | **MIT, © 2026 SEOmator** - renamed with the product (see *Product naming*). No upstream copyright line is carried, which the D1 agreement permits. **Confirmed by the maintainer, 2026-09-21: SEOmator holds the copyright.** Re-read the written agreement before choosing any licence other than MIT — a notice waiver and a relicensing grant are different rights. |
 | §1.2 positioning | **Still `TODO(maintainer)`.** The provisional text stands. The README ships a positioning section written around it that names no other project. |
 | Plugin spike | **Done except Windows and a live `/geo:` check** (2026-09-21, `claude plugin` CLI against a throwaway config dir; the real install was hash-checked untouched). `marketplace add seo-skills/geo-audit-skill` clones over HTTPS when SSH is not configured; `install geo@seomator` succeeds; `plugin details` reports nine skills at ~659 always-on tokens a session. **Update is keyed on `version`:** after a skill change pushed without a bump, `plugin update` reported "already at the latest version (0.4.0)" and left the installed copy stale while the marketplace clone had the change. A `github` plugin source clones over SSH with no HTTPS fallback; a `url` source over HTTPS honours both `ref` and `sha`. Consequences are in `RELEASING.md`: pin the marketplace to the release tag after the first publish. |
 
@@ -636,7 +636,7 @@ the open list.
    from a clean config, and the nine `geo:` skills registered in a live session - the
    first real `/geo:audit`, on seomator.com, 2026-09-21.
 3. Write §1.2.
-4. Confirm SEOmator is the legal entity that should hold the D4 copyright.
+4. ~~Confirm the D4 copyright holder.~~ **Confirmed 2026-09-21: SEOmator.**
 5. **Run the practitioner eval.** It is the only gate left before 1.0 and the only
    check in the project that needs a person: `python tests/evals/run_eval.py`, five
    sites the practitioner knows, two questions each.
