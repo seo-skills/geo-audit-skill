@@ -119,3 +119,68 @@ def test_a_pruned_page_falls_back_to_the_recorded_ratios_and_says_so(site, geo_h
     again = _rescore(site, original["run_id"])
     assert again["rescore"]["from"] == "ratios"
     assert again["scores"] == original["scores"]
+
+
+# --- asking the server whether a page changed ----------------------------------
+
+
+def _etag_site(serve, state):
+    from tests.fixture_server import Reply
+
+    def guide(path, headers):
+        if headers.get("If-None-Match") == state["etag"]:
+            state["conditional_hits"] += 1
+            return Reply(status=304, body="", headers={"ETag": state["etag"]})
+        return Reply(body=state["body"], headers={"ETag": state["etag"]})
+
+    return serve({
+        "/guide.html": guide,
+        "/robots.txt": Reply(body="User-agent: *\nAllow: /\n", content_type="text/plain; charset=utf-8"),
+    })
+
+
+GUIDE = ("<html><head><title>Guide</title></head><body><main><h1>Guide</h1><p>"
+         + "Steady content that does not change between audits. " * 40 + "</p></main></body></html>")
+
+
+def _audit_guide(site) -> dict:
+    buffer = io.StringIO()
+    main(["audit", f"{site.url}/guide.html", "--allow-private", "--rate", "50", "--max-pages", "3",
+          "--json", "--quiet"], out=buffer)
+    return json.loads(buffer.getvalue())
+
+
+def test_a_reaudit_asks_whether_a_page_changed_and_reads_it_from_the_store(serve, geo_home):
+    """PRD §3.5: ETag and Last-Modified are a revalidation shortcut - If-None-Match,
+    304, skip the download. It needed the page on disk to mean anything."""
+    state = {"etag": '"v1"', "body": GUIDE, "conditional_hits": 0}
+    site = _etag_site(serve, state)
+    first = _audit_guide(site)
+    second = _audit_guide(site)
+    assert state["conditional_hits"] == 1, "the re-audit must send If-None-Match"
+    assert second["crawl"]["revalidated"] == 1
+    assert second["scores"] == first["scores"]
+    assert [s["value"] for s in second["signals"]] == [s["value"] for s in first["signals"]]
+
+
+def test_a_page_that_changed_is_downloaded_again(serve, geo_home):
+    state = {"etag": '"v1"', "body": GUIDE, "conditional_hits": 0}
+    site = _etag_site(serve, state)
+    _audit_guide(site)
+    state["etag"], state["body"] = '"v2"', GUIDE.replace("Steady", "Revised")
+    second = _audit_guide(site)
+    assert state["conditional_hits"] == 0 and second["crawl"]["revalidated"] == 0
+
+
+def test_a_304_for_a_page_the_store_no_longer_has_is_asked_again_plainly(serve, geo_home):
+    """The server says unchanged, but prune took our copy: a 304 with nothing to
+    read must not become an empty page."""
+    state = {"etag": '"v1"', "body": GUIDE, "conditional_hits": 0}
+    site = _etag_site(serve, state)
+    first = _audit_guide(site)
+    slug = project_slug(f"{site.url}/guide.html")
+    for digest in pages.stored(slug):
+        (pages.store_dir(slug) / f"{digest}{pages.SUFFIX}").unlink()
+    second = _audit_guide(site)
+    assert second["crawl"]["revalidated"] == 0
+    assert second["scores"] == first["scores"]

@@ -182,7 +182,7 @@ The core loop feeds up to 50 pages of untrusted web content toward an agent that
 ### 3.5 Evidence model
 
 - **Hash = SHA-256 over the extracted content-block sequence** (the scorer's real inputs) **+ `normalizer_version`.** Golden test: the same fixture with a changed nonce, timestamp and ad slot still hashes identically.
-- **ETag / Last-Modified are *not* part of hash identity.** They change on every redeploy even when content is identical, which would flip reports to STALE for nothing — the exact noise block-hashing exists to avoid. They are stored as metadata and used only as a revalidation shortcut (`If-None-Match` → 304 ⇒ unchanged, skip the download).
+- **ETag / Last-Modified are *not* part of hash identity.** They change on every redeploy even when content is identical, which would flip reports to STALE for nothing — the exact noise block-hashing exists to avoid. They are stored as metadata and used only as a revalidation shortcut (`If-None-Match` → 304 ⇒ unchanged, skip the download). *Built 2026-09-21: a 304 reads the page from the page store (§3.5 Retention), and a 304 for a copy prune removed is asked again without the condition.*
 - **Stamps:** `CURRENT` · `PARTIAL` (failed or changed pages enumerated) · `STALE`.
 - **Retention:** the record holds derived signals and capped excerpts. Page bodies are kept too - *the maintainer lifted "no raw HTML on disk" on 2026-09-21* - in a content-addressed store beside the record (`projects/<slug>/pages/<sha256>.html.gz`): never inside `audits.jsonl`, so sharing an audit shares no client's pages; never printed, so the §3.3 output boundary is unchanged; stored once per content, and deleted by `geo prune` when no kept run names them. The rule had no stated reason; its three likely ones - injection, client data, disk growth - are each met by that design rather than by a ban.
 
@@ -622,9 +622,8 @@ report cannot praise what it also faults. No score moves.
 implementation found G1 half-met: the record held site-level signals, not every scorer
 input, so `--rescore` rebuilt the number but lost page-level and check findings. Closed
 with a record-only snapshot (per-page ratios, fetch and robots observations) and one
-classification function shared by a live run and a rescore. Still not built from §3.5:
-the ETag revalidation shortcut, which would need per-page signal detail on disk - see
-the open list.
+classification function shared by a live run and a rescore. The ETag
+revalidation shortcut from §3.5 followed once pages were kept on disk - see the open list.
 
 ### Open before the next milestone
 
@@ -641,11 +640,10 @@ the open list.
    check in the project that needs a person: `python tests/evals/run_eval.py`, five
    sites the practitioner knows, two questions each.
 6. M4, if the go/no-go in D3 says yes: `crm`, `serve`, `import`, locking.
-7. Not built from §3.5, and in tension with §3.5 itself: the ETag revalidation shortcut.
-   A page answered 304 would have to be re-aggregated from its stored signal detail -
-   parts found, excerpts, spread - and the snapshot keeps only per-page ratios, because
-   the retention rule allows derived signals and capped excerpts. Building it means
-   storing per-page detail, which is a retention decision before it is a feature.
+7. ~~The ETag revalidation shortcut.~~ **Built 2026-09-21**, once the maintainer lifted the
+   no-pages-on-disk rule: a re-audit sends `If-None-Match` / `If-Modified-Since` for every
+   page the last run stored, and a 304 reads the stored copy through the same
+   classification as a download. `crawl.revalidated` counts them.
 8. A design question, not a defect: authorship, attribution and article-markup
    findings apply to every page, so hub and tool pages are listed beside articles.
    Scoping them to articles needs a reliable article test and a `scoring_version` bump.

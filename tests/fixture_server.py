@@ -154,7 +154,15 @@ class _Handler(BaseHTTPRequestHandler):
         if route is None:
             reply = Reply(status=404, body="<html><body>no fixture route</body></html>")
         else:
-            reply = route(path) if callable(route) else route
+            # A route that takes two arguments is also handed the request headers,
+            # so a fixture can answer a conditional request with 304.
+            if callable(route):
+                import inspect
+
+                wants_headers = len(inspect.signature(route).parameters) > 1
+                reply = route(path, self.headers) if wants_headers else route(path)
+            else:
+                reply = route
 
         if reply.delay:
             time.sleep(reply.delay)

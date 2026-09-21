@@ -142,6 +142,7 @@
     "pages_crawled": 8,
     "pages_ok": 7,
     "record": "<volatile>",
+    "revalidated": 0,
     "robots": {
       "access": [
         {

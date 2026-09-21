@@ -97,6 +97,18 @@ def _site_facts(result, args) -> dict:
     return _site_facts_from(result.robots, result.ok_pages, observed)
 
 
+def _previous_fetches(slug: str) -> dict:
+    """The last audit's responses by URL, for asking each page whether it changed."""
+    from geo_audit.lib.crawl import normalize_url
+
+    records, _ = state.read_audits(slug)
+    for record in reversed(records):
+        fetches = (record.get("snapshot") or {}).get("fetches")
+        if record.get("command") == "audit" and fetches:
+            return {normalize_url(fetch["requested_url"]): fetch for fetch in fetches}
+    return {}
+
+
 def _site_facts_from(robots, pages, observed: dict) -> dict:
     """Site facts from robots.txt and the pages, plus what was observed live.
 
@@ -187,6 +199,8 @@ def run(args, run_id: str) -> dict:
                 file=sys.stderr,
             )
 
+    options.store = project_slug(args.url)
+    options.previous = _previous_fetches(options.store)
     result = crawl_lib.crawl(args.url, options, progress=progress)
     site_facts = _site_facts(result, args) if "platform" in categories else {}
 
@@ -197,7 +211,8 @@ def run(args, run_id: str) -> dict:
     # its body in the page store, robots.txt beside it, and what llms.txt showed.
     slug = project_slug(args.url)
     snapshot["fetches"] = [
-        pages_lib.fetch_record(page.result, pages_lib.put(slug, page.result.body) if page.result.body else None)
+        {**pages_lib.fetch_record(page.result, pages_lib.put(slug, page.result.body) if page.result.body else None),
+         "revalidated": page.revalidated}
         for page in result.pages
         if page.result is not None
     ]
@@ -240,7 +255,9 @@ def run(args, run_id: str) -> dict:
         categories=categories,
         per_category=per_category,
         findings=findings,
-        crawl_block=crawl_cmd.crawl_block(result, options),
+        # How many pages answered 304 and were read from the page store.
+        crawl_block={**crawl_cmd.crawl_block(result, options),
+                     "revalidated": sum(1 for page in result.pages if page.revalidated)},
         evidence=crawl_cmd.evidence_block(result),
         record=True,
         available=available,

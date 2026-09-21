@@ -101,6 +101,13 @@ the whole pipeline again with today's code: extraction, every signal, every find
 A scoring rule that changed since the audit is re-applied to the exact bytes the audit
 read, which is what makes an old score defensible rather than merely repeatable.
 
+The same store makes a re-audit cheaper on the server. Every page the last run kept is
+fetched with `If-None-Match` and `If-Modified-Since`; a server that answers `304 Not
+Modified` has confirmed the page is unchanged, and the stored copy is read through
+exactly the classification a download would go through. `crawl.revalidated` counts
+those pages. Each is still one request, so the crawl is no faster at one request per
+second - what it saves is the site's bandwidth, not your time.
+
 `rescore.from` says what a rescore recomputed from. `pages` is the full recomputation.
 `ratios` means a page is gone - `geo prune` removed it - so the rescore fell back to
 the per-page ratios recorded beside the envelope: every finding still rebuilds, but

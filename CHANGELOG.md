@@ -20,6 +20,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   a rule changed since the audit is re-applied to the exact bytes rather than replaying
   what the audit concluded. `rescore.from` says what it used: `pages`, or `ratios` when
   a page was pruned, or `record` for runs older than both.
+- **A re-audit asks each page whether it changed** - the revalidation shortcut PRD §3.5
+  always described and nothing sent. Pages the last run kept are fetched with
+  `If-None-Match` / `If-Modified-Since`; a `304` reads the stored copy through the same
+  classification as a download, and a 304 for a copy that was pruned is asked again
+  without the condition. `crawl.revalidated` counts them. It spares the site's
+  bandwidth; at one request per second it does not make the crawl faster.
 
 ### Changed
 
