@@ -623,8 +623,8 @@ implementation found G1 half-met: the record held site-level signals, not every 
 input, so `--rescore` rebuilt the number but lost page-level and check findings. Closed
 with a record-only snapshot (per-page ratios, fetch and robots observations) and one
 classification function shared by a live run and a rescore. Still not built from §3.5:
-the ETag revalidation shortcut - a 304 could now reuse a page's snapshot, but nothing
-sends `If-None-Match` yet.
+the ETag revalidation shortcut, which would need per-page signal detail on disk - see
+the open list.
 
 ### Open before the next milestone
 
@@ -640,8 +640,11 @@ sends `If-None-Match` yet.
    check in the project that needs a person: `python tests/evals/run_eval.py`, five
    sites the practitioner knows, two questions each.
 6. M4, if the go/no-go in D3 says yes: `crm`, `serve`, `import`, locking.
-7. Not built from §3.5: the ETag revalidation shortcut. Nothing sends `If-None-Match`;
-   the record's snapshot now holds what a 304 would need.
+7. Not built from §3.5, and in tension with §3.5 itself: the ETag revalidation shortcut.
+   A page answered 304 would have to be re-aggregated from its stored signal detail -
+   parts found, excerpts, spread - and the snapshot keeps only per-page ratios, because
+   the retention rule allows derived signals and capped excerpts. Building it means
+   storing per-page detail, which is a retention decision before it is a feature.
 8. A design question, not a defect: authorship, attribution and article-markup
    findings apply to every page, so hub and tool pages are listed beside articles.
    Scoping them to articles needs a reliable article test and a `scoring_version` bump.
