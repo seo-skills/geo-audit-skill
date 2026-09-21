@@ -177,6 +177,61 @@ def test_an_error_without_a_hint_is_rejected(validator, geo_home):
     assert list(validator.iter_errors(envelope)), "every error must carry a hint"
 
 
+# The goldens blank out whatever differs per run. The schema still has an
+# opinion about those fields - `run_id` is a ULID, `observed_at` is an instant -
+# so put a representative value back rather than loosening the schema.
+ULID = "01M315PVWZGG3V6XH5E9YJMBW5"
+INSTANT = "2026-09-21T00:00:00Z"
+REHYDRATE = {
+    "run_id": ULID,
+    "from_run": ULID,
+    "observed_at": INSTANT,
+    "oldest_kept": INSTANT,
+}
+
+
+def _stand_in(key: str):
+    """A value of the same *type* the field really carries.
+
+    Substituting a string everywhere would pass today only because the schema
+    does not yet reach into these blocks, and would quietly go on passing when
+    it does.
+    """
+    if key in REHYDRATE:
+        return REHYDRATE[key]
+    if key.startswith("bytes_") or key.endswith("_ms"):
+        return 1234
+    return "/tmp/scrubbed"
+
+
+def rehydrate(node):
+    if isinstance(node, dict):
+        return {
+            key: _stand_in(key) if value == "<volatile>" else rehydrate(value)
+            for key, value in node.items()
+        }
+    if isinstance(node, list):
+        return [rehydrate(item) for item in node]
+    return node
+
+
+@pytest.mark.parametrize(
+    "golden", sorted((ROOT / "tests" / "goldens").glob("*.json")), ids=lambda p: p.stem
+)
+def test_every_golden_validates_against_the_schema(validator, golden):
+    """The freeze above only sees runs that went well.
+
+    The goldens are where the awkward states live - a refused start URL, a
+    PARTIAL crawl, an envelope with `ok: false` - and those are exactly the
+    states a caller hits when something is wrong. A schema that holds for the
+    happy path and not for the rest is worse than no schema, because the
+    caller only finds out on the day it matters.
+    """
+    envelope = rehydrate(json.loads(golden.read_text(encoding="utf-8")))
+    errors = sorted(validator.iter_errors(envelope), key=lambda e: e.json_path)
+    assert not errors, "\n".join(f"{e.json_path}: {e.message}" for e in errors[:5])
+
+
 def test_the_schema_is_shipped_in_the_wheel():
     """Consumers validate against the version they installed, not against main."""
     assert resources.files("geo_audit.assets").joinpath("envelope.schema.json").is_file()

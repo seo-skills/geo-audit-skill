@@ -28,6 +28,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   shapes, whether pages are dated — states what it concluded so the reader can
   disagree, and reorders the advice. It never changes a number, and never re-ranks
   around a blocker.
+- **The frozen schema is now checked against every golden**, not only against runs
+  that went well. The goldens are where the awkward states live - a refused start
+  URL, a PARTIAL crawl, an `ok: false` envelope - and those are what a caller hits
+  on the day something is wrong.
 - **Two goldens covering states nothing was watching**: a PARTIAL run (`audit-bot-block`
   — refused start URL, sitemap still yields pages, two blockers competing for the
   lead) and the `ok: false` error envelope (`error-bad-scheme`). Twelve goldens
