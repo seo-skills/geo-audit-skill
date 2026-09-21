@@ -32,7 +32,7 @@
       ],
       "points_lost": 0.0,
       "priority": 2,
-      "remediation": "Add /llms.txt: one H1 title, a blockquote summary, then H2 sections of markdown links to the pages worth reading. It is a convention rather than a standard, and no engine is known to require it, which is why this is medium rather than high - but it costs an afternoon and it states your own priorities in your own words.",
+      "remediation": "Add /llms.txt: one H1 title, a blockquote summary, then H2 sections of markdown links to the pages worth reading. It is a convention rather than a standard, and no engine is known to require it - but it costs an afternoon and it states your own priorities in your own words.",
       "severity": "medium",
       "title": "The site publishes no llms.txt"
     }

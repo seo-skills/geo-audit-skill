@@ -16,6 +16,27 @@ something the build checks, and two rounds of practitioner eval are folded in.
 
 ### Fixed — hardening toward 1.0
 
+Four from a dry run of round three against the five eval sites, run to find defects
+before a practitioner spends time on them (`tests/evals/results/eval-2026-09-21-round3-dry-run.md`):
+
+- **A start URL that redirects into the sitemap was crawled and scored twice.** MDN's
+  root redirects to `/en-US/`, which its sitemap also lists: one page, two requests, so
+  the homepage carried double weight in every average and the report said "8 pages
+  scored" over seven distinct ones. Pages are now deduplicated on where they landed,
+  keeping the first in frontier order. Any apex, `www` or locale redirect has this
+  shape. MDN re-crawled scores 60 rather than 57.
+- **A soft 404 was scored as content.** MDN serves `/en-US/404` with 200, *Page not
+  found* and 58 characters; the report listed it on every finding. A short page whose
+  title or first heading says it is missing is now a failed page (`soft_404`) with its
+  own finding - both conditions, because an article about 404s has one in its title and
+  plenty of real pages are short. The length limit is in `thresholds.json`.
+- **A page with nothing to read was listed on site-wide findings.** The fixture's own 404
+  had been on the llms.txt and feeds findings all along, and a bot-blocked page too. Such
+  a page is now named only on findings about its response. No score moved: llms.txt has
+  one value on every page, so only the list of pages to look at changed.
+- **Two findings named their own severity** - MDN's report put *high* beside "which is
+  why this is medium". Severity moves with a site kind and the page-level cap, so a test
+  now rejects finding text that says which level it sits at.
 - **The 1.0 gate was asking about the wrong document.** Question 2 of the practitioner
   eval is "would you send this to a paying client unedited?", and the harness linked
   only the operator copy - run ids, evidence hashes, the failed-page table, every
@@ -63,12 +84,17 @@ something the build checks, and two rounds of practitioner eval are folded in.
   report itself - which skill guidance could not reach, because the rendered order
   came from a scorer that cannot know what a site is for. A kind (`docs`, `spec`,
   `publisher`, `saas`, `ecommerce`, `local`) moves the findings it leads with up one
-  severity level and the ones it defers down one, and the report says which kind it
+  severity level and the ones it defers down two, and the report says which kind it
   was ordered for. Every number is identical across kinds; blockers never move; a
   page-level finding keeps its ceiling; nothing is ever promoted to critical. It is a
   report-time input because the skill reads the kind *from* the audit. On the fixture
   site, *Authorship is not machine-readable* goes from second to out of the top five
-  for `docs`, and stays second for `publisher`. The eval harness orders each site for
+  for `docs`, and stays second for `publisher`. Tuned on the round-three dry run: every
+  kind but publisher defers authorship, which scores per-page bylines only a publisher is
+  expected to carry; `docs` and `spec` lead with llms.txt; and a deferred finding falls
+  two levels, because at one it kept winning its band on an impact the kind mismatch
+  inflates. On the real sites, authorship now ranks fifth on plausible, twelfth on
+  adafruit and thirteenth on MDN, and stays on top for the two publishers. The eval harness orders each site for
   its stated kind and shows the practitioner the same top three the report does.
 - **The plugin spike, run.** Installed from a clean config with the `claude plugin`
   CLI rather than left for a person: the marketplace clones over HTTPS, installs, and

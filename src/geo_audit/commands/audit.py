@@ -165,7 +165,13 @@ def run(args, run_id: str) -> dict:
     for page in result.pages:
         scored = _score_page(page, result.robots, categories, site_facts)
         url = page.result.final_url if page.result else page.url
-        for signals in scored.values():
+        for name, signals in scored.items():
+            # A page with nothing to read is an example of what went wrong with
+            # its response and of nothing site-wide: MDN's soft-404 page turned
+            # up on the llms.txt finding. Scores are untouched - llms.txt has one
+            # value on every page - only the list of pages to go and look at.
+            if page.doc is None and name != "technical":
+                continue
             for signal in signals:
                 ratio = signal.ratio
                 if ratio is None:

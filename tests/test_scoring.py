@@ -432,7 +432,7 @@ def test_a_site_kind_reorders_without_changing_a_number():
     """Both eval rounds: a publisher's checklist led a reference site's report.
 
     A kind moves what matters more for it up one severity level and what
-    matters less down one, then the ordinary order applies. The arithmetic -
+    matters less down two, then the ordinary order applies. The arithmetic -
     points lost, impact - is the same for every kind of site.
     """
     from geo_audit.scoring.model import for_site_kind
@@ -441,8 +441,44 @@ def test_a_site_kind_reorders_without_changing_a_number():
     ordered = for_site_kind(_kind_findings(), "docs")
 
     assert ordered[0].id == "citability.answer_first" and ordered[0].severity == "high"
-    assert next(f for f in ordered if f.id == "content.expertise").severity == "medium"
+    assert next(f for f in ordered if f.id == "content.expertise").severity == "low"
     assert {f.id: (f.points_lost, f.impact) for f in ordered} == before
+
+
+def test_a_deferred_finding_falls_below_the_ordinary_ones():
+    """Round three's dry run, MDN as `docs`: moved down one level, authorship was
+    still third, because nearly everything else on the site was already medium and
+    it won that band on impact. Its impact is large *because* the kind does not
+    fit - the site was never going to carry per-page bylines - so a deferred
+    finding goes down two levels, below the site's ordinary problems.
+    """
+    from geo_audit.scoring.model import for_site_kind
+
+    deferred = Finding("content.expertise", "high", "medium", "t", "r", impact=4.0)
+    ordinary = Finding("platform.feeds", "medium", "low", "t", "r", impact=0.5)
+    ordered = for_site_kind([deferred, ordinary], "docs")
+    assert [f.id for f in ordered] == ["platform.feeds", "content.expertise"]
+
+
+@pytest.mark.parametrize("kind", ["saas", "ecommerce", "local", "docs", "spec"])
+def test_authorship_only_leads_where_pages_have_authors(kind):
+    """Round two: authorship was in the top three on all five sites and first on
+    three - a SaaS site, a shop and a reference site among them. The signal
+    scores per-page bylines and Person markup, which only a publisher is
+    expected to carry, so every other kind defers it.
+    """
+    from geo_audit.scoring.model import site_kinds
+
+    assert "content.expertise" in site_kinds()[kind]["defer"]
+    assert "content.expertise" in site_kinds()["publisher"]["lead"]
+
+
+@pytest.mark.parametrize("kind", ["docs", "spec"])
+def test_llms_txt_leads_for_documentation(kind):
+    """The proposal was written for documentation sites; MDN had it fourth."""
+    from geo_audit.scoring.model import site_kinds
+
+    assert "platform.llms_txt" in site_kinds()[kind]["lead"]
 
 
 def test_no_kind_is_the_order_the_audit_already_produced():
@@ -489,3 +525,22 @@ def test_the_site_kind_table_only_names_real_non_blocking_signals():
         for signal_id in lead | defer:
             assert signal_id in templates["signals"], f"{kind}: {signal_id} is not a signal"
             assert signal_id not in blocking, f"{kind}: blockers never move, so {signal_id} cannot be listed"
+
+
+def test_no_finding_text_names_its_own_severity():
+    """Round three's dry run: MDN's report put "high" beside "which is why this
+    is medium". Severity moves - a site kind promotes or defers, a page-level
+    finding is capped - so a sentence that names it will contradict its label.
+    Say why the fix is worth doing, not which level it sits at.
+    """
+    import re
+
+    from geo_audit import data
+
+    self_rating = re.compile(r"\b(?:this is|rather than)\s+(?:critical|high|medium|low)\b", re.I)
+    templates = data.load("findings")
+    for section in ("signals", "checks"):
+        for finding_id, template in templates[section].items():
+            for field_name in ("title", "remediation"):
+                text = template.get(field_name) or ""
+                assert not self_rating.search(text), f"{finding_id}.{field_name} names its severity"

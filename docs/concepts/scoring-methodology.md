@@ -50,7 +50,10 @@ findings, and nothing else**: points lost, impact, every category score and the
 composite are identical for every kind, so one site has one score however it is read.
 
 A kind moves the findings it leads with up one severity level, never as far as
-critical, and the ones it defers down one; the ordinary order then applies. Blocking
+critical, and the ones it defers down two; the ordinary order then applies. A deferred
+signal falls further than a led one rises because its points lost are inflated by the
+kind not fitting - a reference site scores near zero on bylines it was never going to
+carry - and one level left it winning its new band on that number. Blocking
 findings never move, and a finding about a minority of pages keeps its ceiling. The
 table is `data/site_kinds.json`. It is applied when a report is rendered rather than
 when the audit runs, because the kind is read *from* the audit: the audit stays a
@@ -101,6 +104,7 @@ measurement that knows nothing about intent.
 | extractability | `min_content_chars` | 1200 |
 | extractability | `structured_bonus_lists` | 1 |
 | extractability | `structured_bonus_tables` | 1 |
+| fetch | `soft_404` | 1 entries |
 | findings | `full_severity_below` | 0.4 |
 | findings | `no_finding_above` | 0.7 |
 | findings | `severity_ladder` | 4 entries |

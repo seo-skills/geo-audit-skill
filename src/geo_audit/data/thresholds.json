@@ -124,5 +124,10 @@
       "long_sentence_words": 35,
       "good_long_share": 0.1
     }
+  },
+  "fetch": {
+    "soft_404": {
+      "max_content_chars": 500
+    }
   }
 }

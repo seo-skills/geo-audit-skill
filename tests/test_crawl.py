@@ -279,6 +279,45 @@ def test_a_broken_link_is_not_called_a_server_error(site, geo_home):
     assert "fetch.server_error" not in ids
 
 
+def _soft_404_site(serve):
+    from tests.fixture_server import Reply
+
+    article = "<p>" + "A static host answers 404 for a path it has no file for. " * 40 + "</p>"
+    return serve({
+        "/missing": Reply(body="<html><head><title>Page not found | Example</title></head><body>"
+                               "<main><h1>Page not found</h1><p>Sorry, that page is gone.</p></main></body></html>"),
+        "/about-404s": Reply(body="<html><head><title>Fixing 404 errors on a static site</title></head>"
+                                  f"<body><main><h1>Fixing 404 errors</h1>{article}</main></body></html>"),
+        "/contact": Reply(body="<html><head><title>Contact us</title></head><body><main>"
+                               "<h1>Contact us</h1><p>Write to hello@example.com.</p></main></body></html>"),
+    })
+
+
+def test_a_missing_page_served_with_200_is_not_scored_as_content(serve):
+    """Round three's dry run, MDN: /en-US/404 answers 200 with "Page not found"
+    and 58 characters. It was scored like any page and turned up as an example
+    on every finding - the report asked for llms.txt and schema on a 404 page.
+    """
+    from geo_audit.commands.common import Options, load_page
+
+    site = _soft_404_site(serve)
+    page = load_page(f"{site.url}/missing", Options(allow_private=True, check_robots=False))
+    assert not page.scorable
+    assert page.failure["reason"] == "soft_404" and page.failure["status"] == 200
+    assert [f.id for f in page.findings] == ["fetch.soft_404"]
+
+
+@pytest.mark.parametrize("path", ["/about-404s", "/contact"])
+def test_only_a_short_page_that_says_it_is_missing_is_a_soft_404(serve, path):
+    """Each condition alone is ordinary: an article about 404s has one in its
+    title, and plenty of real pages are short."""
+    from geo_audit.commands.common import Options, load_page
+
+    site = _soft_404_site(serve)
+    page = load_page(f"{site.url}{path}", Options(allow_private=True, check_robots=False))
+    assert page.scorable and page.failure is None
+
+
 def test_a_finding_seen_on_several_pages_is_one_finding_with_a_page_list(site, geo_home):
     """Twelve copies of one problem is one problem affecting twelve pages."""
     _, envelope = run_cli(
@@ -374,3 +413,22 @@ def test_crawl_output_carries_no_page_text(site, geo_home):
             "url", "status", "blocks", "content_chars", "content_root",
             "content_hash", "headings", "jsonld_types", "scorable",
         }
+
+
+def test_a_start_url_that_redirects_into_the_sitemap_is_scored_once(serve):
+    """Round three's dry run, MDN: the start URL redirects to /en-US/ and the
+    sitemap lists /en-US/ too. Two requests, one page - fetched twice, scored
+    twice, so the homepage carried double weight in every average and the
+    report said "8 pages scored" over seven. The same shape as any apex-to-www
+    or locale redirect, which is most sites.
+    """
+    from tests.fixture_server import Reply, site_routes
+
+    routes = site_routes()
+    routes["/start"] = Reply(status=302, body="moved", headers={"Location": "/schema-broken.html"})
+    site = serve(routes)
+
+    result = crawl(f"{site.url}/start", CrawlOptions(**{**FAST, "use_sitemap": True, "max_pages": 10}))
+    landed = [normalize_url(p.result.final_url if p.result else p.url) for p in result.pages]
+    assert len(landed) == len(set(landed)), f"scored twice: {sorted(landed)}"
+    assert normalize_url(f"{site.url}/schema-broken.html") in landed

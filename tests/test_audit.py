@@ -223,3 +223,18 @@ def test_audit_output_carries_no_page_text(site, geo_home):
     raw = buffer.getvalue()
     assert "Server-side rendering puts the full text" not in raw
     assert "Fixture Press publishes four articles" not in raw
+
+
+def test_a_page_with_nothing_to_read_is_named_only_for_its_response(site, geo_home):
+    """Round three's dry run: MDN's soft-404 page was listed on the llms.txt
+    finding, and the fixture's own 404 had been listed on llms.txt and feeds
+    all along. A page that could not be read is an example of what went wrong
+    with its response - status, transport - and of nothing site-wide.
+    """
+    _, envelope = audit(site)
+    failed = {entry["url"] for entry in envelope["evidence"]["pages_failed"]}
+    assert failed, "the fixture must include a page that fails"
+    for finding in envelope["findings"]:
+        if finding["id"].startswith(("technical.", "fetch.")):
+            continue
+        assert not failed & set(finding["pages"]), f"{finding['id']} lists {sorted(failed & set(finding['pages']))}"

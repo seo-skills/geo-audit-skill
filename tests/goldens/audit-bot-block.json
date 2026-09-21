@@ -330,13 +330,12 @@
       "impact": 4.12,
       "page_level": false,
       "pages": [
-        "http://fixture/bot-block",
         "http://fixture/injection.html",
         "http://fixture/schema-broken.html"
       ],
       "points_lost": 35.0,
       "priority": 9,
-      "remediation": "Add /llms.txt: one H1, a blockquote summary, then sections of markdown links to the pages worth reading. It is a convention rather than a standard, which is why this is medium - but it is the only place you get to state your own priorities in your own words, and `geo llmstxt --generate` writes a first draft from your own pages.",
+      "remediation": "Add /llms.txt: one H1, a blockquote summary, then sections of markdown links to the pages worth reading. It is a convention rather than a standard - but it is the only place you get to state your own priorities in your own words, and `geo llmstxt --generate` writes a first draft from your own pages.",
       "severity": "medium",
       "title": "The site publishes no llms.txt"
     },
@@ -457,7 +456,6 @@
       "impact": 0.71,
       "page_level": false,
       "pages": [
-        "http://fixture/bot-block",
         "http://fixture/injection.html",
         "http://fixture/schema-broken.html"
       ],

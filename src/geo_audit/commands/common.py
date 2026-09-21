@@ -7,6 +7,7 @@ and the evidence hash stops meaning anything.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 
 import requests
@@ -137,7 +138,14 @@ def load_page(
                 _check_finding("fetch.server_error", result.final_url, f"HTTP {result.status}")
             )
         else:
-            page.doc = extract(result.body, result.final_url)
+            doc = extract(result.body, result.final_url)
+            if _says_it_is_missing(doc):
+                page.failure = {"url": result.final_url, "reason": "soft_404", "status": result.status}
+                page.findings.append(
+                    _check_finding("fetch.soft_404", result.final_url, doc.title)
+                )
+            else:
+                page.doc = doc
 
         if page.robots is not None and page.result is not None:
             page.findings.extend(_crawler_findings(page))
@@ -146,6 +154,23 @@ def load_page(
             session.close()
 
     return page
+
+
+_MISSING = re.compile(r"\b(?:404|not found)\b", re.IGNORECASE)
+
+
+def _says_it_is_missing(doc: Document) -> bool:
+    """A page that says it does not exist, answered with 200 - a soft 404.
+
+    MDN serves /en-US/404 that way, and the audit scored it like any page and
+    listed it on every finding. Both conditions are required because each is
+    ordinary alone: an article about 404 errors has one in its title, and plenty
+    of real pages are short.
+    """
+    first_heading = doc.headings[0][1] if doc.headings else ""
+    says_missing = bool(_MISSING.search(f"{doc.title or ''} {first_heading}"))
+    limit = data.thresholds("fetch")["soft_404"]["max_content_chars"]
+    return says_missing and doc.content_chars < limit
 
 
 def _crawler_findings(page: Page) -> list[Finding]:

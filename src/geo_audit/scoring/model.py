@@ -380,6 +380,14 @@ def apply_impact(
     return findings
 
 
+# How far a deferred finding falls. Further than a led one rises, on purpose: a
+# deferred signal is exactly one whose points lost are inflated by the kind not
+# fitting - a reference site scores near zero on bylines it was never going to
+# carry - so one level left it winning its new band on that inflated number.
+# Nothing is hidden by it; the finding is still in the report, lower down.
+DEFER_LEVELS = 2
+
+
 def site_kinds() -> dict[str, dict]:
     return data.load("site_kinds")["kinds"]
 
@@ -389,9 +397,10 @@ def for_site_kind(findings: list[Finding], kind: str | None) -> list[Finding]:
 
     Both practitioner evals said it: a publisher's checklist led a reference
     site's report. A kind names what matters more for it and what matters less
-    (`data/site_kinds.json`); those move one severity level, and the usual order
-    applies to the result. Points lost and impact are untouched, so every kind
-    of site shares one set of scores.
+    (`data/site_kinds.json`). What it leads with rises one severity level, what
+    it defers falls `DEFER_LEVELS`, and the usual order applies to the result.
+    Points lost and impact are untouched, so every kind of site shares one set
+    of scores.
 
     Two things never move. A blocker, because nothing matters more than being
     fetchable, whatever the site is for. And a page-level finding keeps its
@@ -409,7 +418,8 @@ def for_site_kind(findings: list[Finding], kind: str | None) -> list[Finding]:
         if finding.id in lead:
             finding.severity = promote(finding.severity)
         elif finding.id in defer:
-            finding.severity = demote(finding.severity)
+            for _ in range(DEFER_LEVELS):
+                finding.severity = demote(finding.severity)
         if finding.page_level and _SEVERITY_ORDER.index(finding.severity) < ceiling:
             finding.severity = PAGE_LEVEL_CEILING
     return prioritize(findings)

@@ -322,3 +322,22 @@ def test_the_skills_offer_exactly_the_site_kinds_the_cli_accepts():
     assert set(re.findall(r"\*\* \(`([a-z]+)`\)", guide)) == kinds
     for kind in kinds:
         assert f"`{kind}`" in report, f"the report skill does not offer {kind}"
+
+
+def test_the_guide_names_every_signal_a_kind_moves():
+    """The table says what the CLI does; the guide says why, to the model.
+
+    If a kind moves a signal its paragraph never mentions, the model narrates one
+    order and the report prints another.
+    """
+    from geo_audit.scoring.model import site_kinds
+
+    guide = (ROOT / "skills/audit/sections/site-kind.md").read_text(encoding="utf-8")
+    paragraphs: dict[str, str] = {}
+    for match in re.finditer(r"\*\*[^*]+\*\* \(`([a-z]+)`\)\.[^\n]*(?:\n(?!\n)[^\n]*)*", guide):
+        # Agency is read as saas, so both paragraphs speak for that kind.
+        paragraphs[match.group(1)] = paragraphs.get(match.group(1), "") + match.group(0)
+    for kind, spec in site_kinds().items():
+        text = paragraphs.get(kind, "")
+        for signal_id in spec["lead"] + spec["defer"]:
+            assert f"`{signal_id}`" in text, f"the {kind} paragraph never mentions {signal_id}"

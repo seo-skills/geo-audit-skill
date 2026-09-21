@@ -581,7 +581,7 @@ that changes the tool does not count.
 
 The kind is a report-time input, not an audit-time one, because the skill infers it
 *from* the audit; the audit stays a kind-neutral measurement. A kind moves what it
-leads with up one severity level (never to critical) and what it defers down one;
+leads with up one severity level (never to critical) and what it defers down two;
 blockers never move; page-level findings keep their ceiling; points lost, impact and
 every score are identical across kinds. The table is `data/site_kinds.json`, it
 mirrors `skills/audit/sections/site-kind.md`, and a test holds the two vocabularies

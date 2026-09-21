@@ -264,6 +264,10 @@ def crawl(
         # latency-limited, so waiting out a level costs almost nothing.
         with ThreadPoolExecutor(max_workers=max(1, options.concurrency)) as pool:
             frontier = [start_url] + sorted(seeds, key=normalize_url)
+            # `seen` is keyed on what was requested, and two requests can land on
+            # one page: a start URL that redirects to a page the sitemap also
+            # lists. MDN did exactly that and had its homepage scored twice.
+            landed: set[str] = set()
             while frontier and len(result.pages) < options.max_pages:
                 budget = options.max_pages - len(result.pages)
                 level, frontier = frontier[:budget], frontier[budget:]
@@ -280,6 +284,12 @@ def crawl(
                         )
                         continue
 
+                    final = normalize_url(page.result.final_url if page.result else page.url)
+                    if final in landed:
+                        # The first in frontier order is kept, so the choice is stable.
+                        continue
+                    landed.add(final)
+                    seen.add(final)
                     result.pages.append(page)
                     if page.failure:
                         result.failures.append(page.failure)
