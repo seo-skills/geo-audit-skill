@@ -384,6 +384,13 @@ def prioritize(findings: list[Finding]) -> list[Finding]:
     prose on a page no crawler can fetch recovers nothing. Which findings block
     is declared in `data/findings.json` rather than inferred from severity.
 
+    Fixed: arithmetic still decided the order *inside* that tier, which was the
+    one place it was supposed not to. A page the server refused is never
+    scored, so its finding carries no impact and no points_lost, and it lost
+    every tiebreak to a blocker that had been measured - a 403 on the start URL
+    ranked below "your content needs JavaScript". Blockers now sort by their
+    declared position, which follows the chain: respond, allow, index, parse.
+
     Left alone: whether a cheap medium-severity win should outrank an expensive
     high-severity one. Ordering by value-per-effort was tried and put "add a
     modified date" first on five sites out of five - defensible arithmetic,
@@ -393,20 +400,19 @@ def prioritize(findings: list[Finding]) -> list[Finding]:
 
     Sorting by id last keeps two runs over one snapshot byte-identical.
     """
-    blocking = set((data.load("findings").get("blocking") or {}).get("ids") or [])
+    declared = (data.load("findings").get("blocking") or {}).get("ids") or []
+    blocking = {finding_id: rank for rank, finding_id in enumerate(declared)}
 
     def value(finding: Finding) -> float:
         return finding.impact if finding.impact is not None else finding.points_lost
 
-    ordered = sorted(
-        findings,
-        key=lambda f: (
-            0 if (f.id in blocking and not f.page_level) else 1,
-            _SEVERITY_ORDER.index(f.severity),
-            -value(f),
-            f.id,
-        ),
-    )
+    def rank(finding: Finding) -> tuple:
+        """Blockers sort by the gate they close; everything else by what it recovers."""
+        if finding.id in blocking and not finding.page_level:
+            return (0, blocking[finding.id], 0.0, finding.id)
+        return (1, _SEVERITY_ORDER.index(finding.severity), -value(finding), finding.id)
+
+    ordered = sorted(findings, key=rank)
     for position, finding in enumerate(ordered, start=1):
         finding.priority = position
     return ordered

@@ -116,6 +116,31 @@ def test_golden_audit(site, geo_home):
     assert_matches("audit-hub", envelope, site.url)
 
 
+def test_golden_audit_partial(site, geo_home):
+    """The start URL is refused, the sitemap still yields pages, so the run is PARTIAL.
+
+    No other golden covers a PARTIAL stamp, a populated `pages_failed`, or two
+    blocking findings competing for the lead - which is where the ordering bug
+    lived: the refused page is never scored, so it carries no impact, and it
+    lost the tiebreak to a blocker that had been measured.
+    """
+    _, envelope = run(["audit", f"{site.url}/bot-block", "--allow-private", "--rate", "50",
+                       "--max-pages", "8"])
+    assert envelope["evidence"]["stamp"] == "PARTIAL"
+    assert [f["id"] for f in envelope["findings"][:2]] == [
+        "fetch.blocked",
+        "citability.extractability",
+    ]
+    assert_matches("audit-bot-block", envelope, site.url)
+
+
+def test_golden_error_envelope(geo_home):
+    """What a caller gets when the request was never valid. Nothing else golds ok=false."""
+    code, envelope = run(["score", "ftp://example.com/x"])
+    assert code == 2 and envelope["ok"] is False
+    assert_matches("error-bad-scheme", envelope, "http://unused.invalid")
+
+
 def test_golden_validate(site, geo_home):
     _, envelope = run(["validate", f"{site.url}/ssr-rich.html", "--allow-private", "--suggest"])
     assert_matches("validate-ssr-rich", envelope, site.url)

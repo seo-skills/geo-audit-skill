@@ -358,3 +358,32 @@ def test_tier_boundaries_are_contiguous_and_descending():
     assert data.tier_for(62)["label"] == "fair"
     assert data.tier_for(100)["label"] == "excellent"
     assert data.tier_for(0)["label"] == "poor"
+
+
+def test_blockers_are_ordered_by_the_gate_they_close_not_by_arithmetic():
+    """A 403 on the start URL ranked below "your content needs JS".
+
+    The blocking tier exists so arithmetic does not decide the lead, but the
+    tiebreak inside it was still `impact`, and a page the server refused is
+    never scored - so it carries no impact and no points_lost, and lost every
+    tiebreak to a blocker that had been measured. Order is now the declared
+    one, which follows the chain: respond, allow, index, parse.
+    """
+    refused = Finding("fetch.blocked", "critical", "medium", "t", "r")
+    needs_js = Finding("citability.extractability", "critical", "high", "t", "r", impact=3.0)
+    assert refused.impact is None and refused.points_lost == 0
+    assert [f.id for f in prioritize([needs_js, refused])] == [
+        "fetch.blocked",
+        "citability.extractability",
+    ]
+
+
+def test_the_declared_blocking_order_is_the_dependency_chain():
+    """Each gate is a precondition for the next, so the list is not arbitrary."""
+    from geo_audit import data
+
+    ids = data.load("findings")["blocking"]["ids"]
+    assert ids.index("fetch.server_error") < ids.index("technical.crawler_access")
+    assert ids.index("fetch.blocked") < ids.index("technical.crawler_access")
+    assert ids.index("technical.crawler_access") < ids.index("technical.indexability")
+    assert ids.index("technical.indexability") < ids.index("citability.extractability")

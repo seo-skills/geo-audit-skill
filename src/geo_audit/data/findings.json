@@ -246,14 +246,15 @@
   },
   "blocking": {
     "comment": "Findings that gate everything downstream. Prose on a page no crawler can fetch recovers nothing, so these are ordered before the rest whatever the arithmetic says. Everything else is ordered by what it recovers per unit of effort.",
+    "order_comment": "This list IS the order they are reported in, and it follows the chain a crawler walks: get a response, be allowed, be indexable, be readable. Each gate is a precondition for the next, so a 403 outranks a rendering problem - you cannot have a rendering problem on a page you were never served. Reordering blockers is an edit here, not in prioritize().",
     "ids": [
-      "technical.crawler_access",
-      "technical.indexability",
-      "citability.extractability",
-      "robots.ai_crawler_blocked",
-      "robots.unreachable",
+      "fetch.server_error",
       "fetch.blocked",
-      "fetch.server_error"
+      "robots.unreachable",
+      "technical.crawler_access",
+      "robots.ai_crawler_blocked",
+      "technical.indexability",
+      "citability.extractability"
     ]
   }
 }

@@ -76,6 +76,13 @@ re-rank them by instinct. What you add is judgement the scorer cannot have:
   category scale, before weighting.
 - **Sequence it.** A content rewrite on pages a crawler cannot read recovers nothing.
   Extractability and crawler access come first, always.
+- **Say what kind of site it is.** Every site is measured the same way because the
+  signals are the same; what a recommendation is *worth* is not, and nothing in the
+  envelope knows that. Machine-readable authorship is the first job on a publisher and
+  close to the last on a syntax reference. Work out the kind from `jsonld_types`, the
+  URL shapes in `crawl.pages`, and whether pages are dated, say what you concluded so
+  the reader can correct you, and let it order the advice - never the numbers, and
+  never around a blocker. `sections/site-kind.md` has what changes for each kind.
 
 Category methodology is in `sections/categories.md`. Read it when asked why a category
 scored what it did.

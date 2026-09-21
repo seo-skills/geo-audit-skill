@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.4.0",
+  "command": "score",
+  "completeness": null,
+  "data_version": "2026.09",
+  "error": {
+    "code": "GEO_E_BLOCKED_SCHEME",
+    "docs": "https://github.com/seo-skills/geo-audit-skill/blob/main/docs/troubleshooting.md#geo-e-blocked-scheme",
+    "hint": "Only http:// and https:// are fetched. file://, data://, ftp:// and the rest are refused by design.",
+    "log": "<volatile>",
+    "message": "Refused to fetch 'ftp://example.com/x': only http and https are supported."
+  },
+  "evidence": null,
+  "findings": [],
+  "normalizer_version": 2,
+  "observed_at": "<volatile>",
+  "ok": false,
+  "run_id": "<volatile>",
+  "schema_version": 1,
+  "scores": null,
+  "scoring_version": "1.0",
+  "signals": []
+}

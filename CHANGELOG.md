@@ -7,6 +7,32 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed — hardening toward 1.0
+
+- **Arithmetic still decided the order inside the blocking tier**, which is the one
+  place it was meant not to. A page the server refused is never scored, so its
+  finding carries no `impact` and no `points_lost`, and it lost every tiebreak to a
+  blocker that *had* been measured. On a site whose start URL returns 403, the audit
+  led with "your content needs JavaScript" and reported the refusal second. Blockers
+  now sort by their declared position in `data/findings.json`, and that list is
+  ordered by the chain a crawler walks: respond, allow, index, parse. Reordering
+  blockers is a data edit now, not a code edit.
+
+### Added
+
+- **Site-kind guidance for the audit skill** (`skills/audit/sections/site-kind.md`).
+  Both eval rounds said the same thing: the tool has no notion of what a site is
+  *for*, and applied a publisher's checklist to a specification and then to a
+  reference site. The numbers were right; the ordering of the advice was not. The
+  skill now infers the kind from evidence it already receives — declared types, URL
+  shapes, whether pages are dated — states what it concluded so the reader can
+  disagree, and reorders the advice. It never changes a number, and never re-ranks
+  around a blocker.
+- **Two goldens covering states nothing was watching**: a PARTIAL run (`audit-bot-block`
+  — refused start URL, sitemap still yields pages, two blockers competing for the
+  lead) and the `ok: false` error envelope (`error-bad-scheme`). Twelve goldens
+  existed and every one of them was a successful run.
+
 ### Fixed — from the second practitioner eval
 
 Round two ran five sites of *different shapes* — SaaS, publisher, ecommerce,
