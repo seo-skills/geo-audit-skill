@@ -1,7 +1,9 @@
 # The advisory rubrics, and how to apply them
 
 Two questions, each with three tests. Apply the tests to what is on the page, not to
-how the page feels. The difference shows in what you can quote back.
+how the page feels. The difference shows in what you can quote back. Both follow
+Google's own framing in
+[Creating helpful, reliable, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content).
 
 <!-- generated:rubrics:begin -->
 ## `content.advisory.experience`
@@ -14,8 +16,7 @@ how the page feels. The difference shows in what you can quote back.
 
 ## `content.advisory.helpfulness`
 
-**Would a reader with this question leave satisfied, or keep searching?** Google frames
-the same question in [Creating helpful, reliable, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content).
+**Would a reader with this question leave satisfied, or keep searching?**
 
 1. Answers the question the title asks, rather than the adjacent easier one.
 2. States limits and cases where the advice does not apply.
