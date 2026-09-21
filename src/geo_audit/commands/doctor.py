@@ -15,9 +15,22 @@ import sys
 from pathlib import Path
 
 from geo_audit import data, envelope, state
-from geo_audit._version import CLI_VERSION, DIST_NAME, STATE_VERSION
+from geo_audit._version import CLI_VERSION, DIST_NAME, PUBLISHED_ON_PYPI, REPO_URL, STATE_VERSION
 from geo_audit.errors import GeoError
 from geo_audit.lib import browser
+
+
+def install_target(extra: str | None = None) -> str:
+    """What `uv tool install` should be given today.
+
+    Before the first release the package name resolves to nothing, so every hint
+    that named it was a dead end - the browser-extra one surfaced on the first
+    real install. The source install works now and keeps working after.
+    """
+    if PUBLISHED_ON_PYPI:
+        return f"'{DIST_NAME}[{extra}]'" if extra else DIST_NAME
+    source = f"git+{REPO_URL}"
+    return f"'{DIST_NAME}[{extra}] @ {source}'" if extra else source
 
 
 def _check(id_: str, status: str, detail: str, hint: str | None = None) -> dict:
@@ -32,7 +45,7 @@ def _python_check() -> dict:
         "python",
         "fail",
         f"{version} is below the 3.11 minimum",
-        "Install seomator-geo-audit with a 3.11+ interpreter: `uv tool install --python 3.12 seomator-geo-audit`.",
+        f"Install {DIST_NAME} with a 3.11+ interpreter: `uv tool install --python 3.12 {install_target()}`.",
     )
 
 
@@ -52,7 +65,7 @@ def _path_check() -> dict:
             "warn",
             "no `geo` executable found on PATH",
             "This usually means the CLI was run as `python -m geo_audit`. "
-            "Install it with `uv tool install seomator-geo-audit` to get the `geo` command.",
+            f"Install it with `uv tool install {install_target()}` to get the `geo` command.",
         )
     if len(found) > 1:
         return _check(
@@ -110,7 +123,7 @@ def _browser_check() -> dict:
         "browser_extra",
         "warn",
         "Playwright is not installed; render and PDF signals will be null",
-        "Optional. To enable: `uv tool install 'seomator-geo-audit[browser]' && playwright install chromium`",
+        f"Optional. To enable: `uv tool install {install_target('browser')} && playwright install chromium`",
     )
 
 
@@ -121,7 +134,7 @@ def _data_check() -> dict:
         crawlers = len(data.crawlers())
     except Exception as exc:  # pragma: no cover - packaging failure
         return _check("data_files", "fail", f"package data could not be read: {exc}",
-                      "Reinstall with `uv tool install --force seomator-geo-audit`.")
+                      f"Reinstall with `uv tool install --force {install_target()}`.")
     return _check(
         "data_files", "ok", f"data {version}: {signals} citability signals, {crawlers} crawler tokens"
     )

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 import io
 import json
 
@@ -66,3 +68,18 @@ def test_doctor_reports_the_missing_browser_extra_as_a_warning(geo_home, monkeyp
     check = next(c for c in envelope["checks"] if c["id"] == "browser_extra")
     assert check["status"] == "warn"
     assert "playwright install chromium" in check["hint"]
+
+
+@pytest.mark.parametrize("published", [False, True], ids=["before-publish", "after-publish"])
+def test_every_install_hint_names_something_that_installs(monkeypatch, published):
+    """The first real install: doctor's browser-extra hint named a PyPI package
+    that did not exist yet, the dead end the skills and docs had already lost."""
+    from geo_audit.commands import doctor
+
+    monkeypatch.setattr(doctor, "PUBLISHED_ON_PYPI", published)
+    plain, extra = doctor.install_target(), doctor.install_target("browser")
+    if published:
+        assert plain == "seomator-geo-audit" and extra == "'seomator-geo-audit[browser]'"
+    else:
+        assert plain == "git+https://github.com/seo-skills/geo-audit-skill"
+        assert extra == "'seomator-geo-audit[browser] @ git+https://github.com/seo-skills/geo-audit-skill'"

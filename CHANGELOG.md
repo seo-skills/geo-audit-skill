@@ -16,6 +16,11 @@ something the build checks, and two rounds of practitioner eval are folded in.
 
 ### Fixed — hardening toward 1.0
 
+- **`geo doctor`'s install hints named a package PyPI does not have yet** - the browser
+  extra's hint was the first thing a real install showed. Every hint now goes through
+  one helper that gives the source install until `PUBLISHED_ON_PYPI` flips, and a test
+  holds that flag to the README's *Not on PyPI yet* note, so one switch still rules
+  every install instruction in the project.
 - **A finding scored from several parts claimed all of them were missing.** Titles were
   written for the zero case, but a finding fires at up to 70% of its maximum. The first
   real run of the installed skill, on seomator.com, had a byline and Person markup on all

@@ -87,4 +87,6 @@ release lands. That note is the switch for every other install instruction: with
 gone, the skill lint and the doc tests fail on each skill preflight and each doc page
 that still offers the source install, naming every one, so nothing is left pointing
 at a workaround. `test_the_prepublication_note_disappears_once_the_package_is_published`
-in `tests/test_docs.py` can go at the same time.
+in `tests/test_docs.py` can go at the same time. Flip `PUBLISHED_ON_PYPI` in
+`src/geo_audit/_version.py` in the same commit - `geo doctor` carries its own copy of
+the switch because it runs from the wheel, and a test fails until the two agree.

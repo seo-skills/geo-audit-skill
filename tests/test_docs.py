@@ -198,3 +198,11 @@ def test_concept_docs_carry_their_generated_regions():
                 f"<!-- generated:{name}:end", 1
             )[0]
             assert body.strip(), f"{path.name} region {name} is empty"
+
+
+def test_the_published_flag_agrees_with_the_readme_note():
+    """`geo doctor` runs from the installed wheel and cannot read the README, so
+    it carries its own copy of the switch - held to the README's here."""
+    from geo_audit._version import PUBLISHED_ON_PYPI
+
+    assert PUBLISHED_ON_PYPI == ("Not on PyPI yet" not in README)

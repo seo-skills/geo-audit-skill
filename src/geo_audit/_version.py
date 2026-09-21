@@ -24,6 +24,10 @@ CLI_VERSION = "0.4.0"
 PRODUCT_NAME = "SEOmator GEO Audit Skill"
 DIST_NAME = "seomator-geo-audit"
 REPO_URL = "https://github.com/seo-skills/geo-audit-skill"
+# Flip when the first release is on PyPI. `geo doctor` runs from the wheel and
+# cannot read the README, so it keeps this copy of the switch; a test holds it
+# to the README's "Not on PyPI yet" note, which rules every other install line.
+PUBLISHED_ON_PYPI = False
 
 SCHEMA_VERSION = 1
 SCORING_VERSION = "1.0"
