@@ -238,3 +238,52 @@ def test_a_page_with_nothing_to_read_is_named_only_for_its_response(site, geo_ho
         if finding["id"].startswith(("technical.", "fetch.")):
             continue
         assert not failed & set(finding["pages"]), f"{finding['id']} lists {sorted(failed & set(finding['pages']))}"
+
+
+def _shape(envelope):
+    return sorted(
+        (f["id"], f["severity"], f["title"], tuple(sorted(f["pages"])), bool(f.get("page_level")))
+        for f in envelope["findings"]
+    )
+
+
+def test_a_rescore_reproduces_every_finding_of_the_run(site, geo_home):
+    """G1: the snapshot holds every scorer input. On seomator.com a rescore
+    returned four of the original six findings - page-level findings need the
+    per-page values, and check findings (a 404 link, a blocked crawler) were
+    not passed at all, so a critical "AI crawler blocked" could vanish."""
+    _, original = audit(site)
+    _, again = run(["audit", f"{site.url}/hub.html", "--rescore", original["run_id"]])
+    assert _shape(again) == _shape(original)
+    assert again["scores"] == original["scores"]
+    assert again["rescore"]["snapshot"] is True
+
+
+def test_the_printed_envelope_carries_no_snapshot(site, geo_home):
+    """The per-page inputs live in the record on disk; the skill never reads them."""
+    from geo_audit import state
+    from geo_audit.lib.slug import project_slug
+
+    _, envelope = audit(site)
+    assert "snapshot" not in envelope
+    records, _ = state.read_audits(project_slug(f"{site.url}/hub.html"))
+    assert "snapshot" in records[-1]
+
+
+def test_a_rescore_reproduces_a_brand_audit(site, geo_home, monkeypatch):
+    """Brand findings take their own path - built from the brand signals with the
+    brand name as their page - so they need their own proof. Platforms are stubbed:
+    every one answers, and none has heard of the brand."""
+    from geo_audit.commands import scan as scan_cmd
+
+    def unheard_of(name, brand, spec, allow_private=False):
+        return {"platform": name, "label": spec["label"], "checked": True, "status": 200,
+                "results": 0, "examples": [], "docs": spec["docs"], "observed_at": "2026-09-21T00:00:00Z"}
+
+    monkeypatch.setattr(scan_cmd, "check", unheard_of)
+    monkeypatch.setattr(scan_cmd, "_same_as_for", lambda *args, **kwargs: None)
+    _, original = audit(site, "--brand", "Acme")
+    assert any(f["id"].startswith("brand.") for f in original["findings"]), "the stub must produce brand findings"
+    _, again = run(["audit", f"{site.url}/hub.html", "--rescore", original["run_id"]])
+    assert _shape(again) == _shape(original)
+    assert again["scores"] == original["scores"]

@@ -16,6 +16,14 @@ something the build checks, and two rounds of practitioner eval are folded in.
 
 ### Fixed — hardening toward 1.0
 
+- **`--rescore` did not reproduce a run, only its number.** G1 says the record holds
+  every scorer input; it held the site-level signals, so page-level findings could not
+  be rebuilt, and check findings - a broken link, a blocked AI crawler - were not passed
+  at all. On seomator.com a rescore returned four of six findings. The record now keeps
+  a snapshot beside the envelope, on disk only: each page's ratio on each signal and the
+  fetch and robots observations, about 13 KB for fifty pages. A live run and a rescore
+  classify pages through one function, with the current thresholds, and a rescore of the
+  fixture site - brand audit included - now matches the run finding for finding.
 - **`geo doctor`'s install hints named a package PyPI does not have yet** - the browser
   extra's hint was the first thing a real install showed. Every hint now goes through
   one helper that gives the source install until `PUBLISHED_ON_PYPI` flips, and a test

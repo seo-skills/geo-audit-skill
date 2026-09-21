@@ -618,6 +618,14 @@ category before a second from any, each with a fixed sentence beside its finding
 template. A signal with any finding, page-level included, is never a strength, so the
 report cannot praise what it also faults. No score moves.
 
+**G1 audited against the code, 2026-09-21.** Checking every PRD claim against the
+implementation found G1 half-met: the record held site-level signals, not every scorer
+input, so `--rescore` rebuilt the number but lost page-level and check findings. Closed
+with a record-only snapshot (per-page ratios, fetch and robots observations) and one
+classification function shared by a live run and a rescore. Still not built from §3.5:
+the ETag revalidation shortcut - a 304 could now reuse a page's snapshot, but nothing
+sends `If-None-Match` yet.
+
 ### Open before the next milestone
 
 1. Configure the PyPI pending trusted publisher - `RELEASING.md` has the five fields -

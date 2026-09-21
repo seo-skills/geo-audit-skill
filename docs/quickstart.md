@@ -50,8 +50,8 @@ The result is recorded. That matters more than it sounds:
 geo audit https://example.com --rescore <run_id>
 ```
 
-recomputes the same number from the record with no network at all. Two rescores are
-byte-identical. This is what makes a score you sent three months ago defensible today.
+recomputes the same number and the same findings from the record with no network at
+all. Two rescores are byte-identical. This is what makes a score you sent three months ago defensible today.
 
 ## Send someone a report
 

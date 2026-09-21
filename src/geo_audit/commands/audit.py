@@ -15,7 +15,7 @@ from __future__ import annotations
 from geo_audit import copy as copytext
 from geo_audit import data, envelope, state
 from geo_audit.commands import crawl as crawl_cmd
-from geo_audit.commands.common import Options
+from geo_audit.commands.common import Options, _check_finding
 from geo_audit.errors import GeoError
 from geo_audit.lib import crawl as crawl_lib
 from geo_audit.lib.ids import is_run_id
@@ -153,18 +153,17 @@ def run(args, run_id: str) -> dict:
 
     per_category: dict[str, list[list[Signal]]] = {name: [] for name in categories}
     findings = []
-    # Which pages are actually below the line for each signal. The finding's
-    # severity and value come from the site, but the page list has to come from
-    # the pages, or "8 pages" and "the one bad page" look identical.
-    offenders: dict[str, list[str]] = {}
-    severe: dict[str, list[str]] = {}
     rules = data.thresholds("findings")
-    ceiling = rules["no_finding_above"]
-    floor = rules["full_severity_below"]
 
+    # G1: the record holds every scorer input. Per-page ratios and the fetch and
+    # robots observations are what page-level and check findings are made from;
+    # without them a rescore returned four of seomator.com's six findings.
+    snapshot: dict = {"pages": [], "ratios": {}, "checks": []}
     for page in result.pages:
         scored = _score_page(page, result.robots, categories, site_facts)
         url = page.result.final_url if page.result else page.url
+        index = len(snapshot["pages"])
+        snapshot["pages"].append(url)
         for name, signals in scored.items():
             # A page with nothing to read is an example of what went wrong with
             # its response and of nothing site-wide: MDN's soft-404 page turned
@@ -173,16 +172,20 @@ def run(args, run_id: str) -> dict:
             if page.doc is None and name != "technical":
                 continue
             for signal in signals:
-                ratio = signal.ratio
-                if ratio is None:
-                    continue
-                if ratio <= ceiling:
-                    offenders.setdefault(signal.id, []).append(url)
-                if ratio < floor:
-                    severe.setdefault(signal.id, []).append(url)
+                if signal.ratio is not None:
+                    snapshot["ratios"].setdefault(signal.id, {})[index] = signal.ratio
         for name, signals in scored.items():
             per_category[name].append(signals)
         findings.extend(page.findings)
+        snapshot["checks"].extend(
+            {"id": check.id, "page": check.pages[0] if check.pages else url, "excerpt": check.excerpt}
+            for check in page.findings
+        )
+    snapshot["ratios"] = {
+        signal_id: [by_page.get(i) for i in range(len(snapshot["pages"]))]
+        for signal_id, by_page in sorted(snapshot["ratios"].items())
+    }
+    offenders, severe = _classify(snapshot, rules)
 
     advisory = content_scorer.advisory_signals() if "content" in categories else []
 
@@ -225,7 +228,32 @@ def run(args, run_id: str) -> dict:
         offenders=offenders,
         severe=severe,
         extra=extra,
+        snapshot=snapshot,
     )
+
+
+def _classify(snapshot: dict, rules: dict) -> tuple[dict[str, list[str]], dict[str, list[str]]]:
+    """Which pages sit below the line for each signal, from the per-page ratios.
+
+    A finding's severity and value come from the site, but its page list has to
+    come from the pages, or "8 pages" and "the one bad page" look identical.
+
+    One function for a live run and for a rescore of its snapshot, so the two
+    cannot classify a page differently; the thresholds are the current ones,
+    which is what makes a rescore a recomputation rather than a replay.
+    """
+    ceiling, floor = rules["no_finding_above"], rules["full_severity_below"]
+    offenders: dict[str, list[str]] = {}
+    severe: dict[str, list[str]] = {}
+    for signal_id, ratios in snapshot["ratios"].items():
+        for url, ratio in zip(snapshot["pages"], ratios):
+            if ratio is None:
+                continue
+            if ratio <= ceiling:
+                offenders.setdefault(signal_id, []).append(url)
+            if ratio < floor:
+                severe.setdefault(signal_id, []).append(url)
+    return offenders, severe
 
 
 def _assemble(
@@ -243,6 +271,7 @@ def _assemble(
     offenders: dict[str, list[str]] | None = None,
     severe: dict[str, list[str]] | None = None,
     extra: dict | None = None,
+    snapshot: dict | None = None,
 ) -> dict:
     weights = data.weights()
     available = available or categories
@@ -341,7 +370,10 @@ def _assemble(
     )
 
     if record:
-        path = state.append_audit(project_slug(start_url), result)
+        # The snapshot goes to disk with the record and never to stdout: it is
+        # for rescoring, and the skill that reads the envelope has no use for it.
+        stored = {**result, "snapshot": snapshot} if snapshot else result
+        path = state.append_audit(project_slug(start_url), stored)
         try:
             inside = path.relative_to(state.geo_home()).as_posix()
             result["crawl"]["record"] = f"{state.display_home()}/{inside}"
@@ -414,16 +446,31 @@ def rescore(args, run_id: str) -> dict:
         "recorded_composite": (record.get("scores") or {}).get("composite"),
     }
 
+    snapshot = record.get("snapshot")
+    if snapshot:
+        offenders, severe = _classify(snapshot, data.thresholds("findings"))
+        findings = [
+            _check_finding(check["id"], check["page"], check.get("excerpt"))
+            for check in snapshot.get("checks") or []
+        ]
+    else:
+        # Recorded before snapshots existed: page lists can only come from the
+        # recorded findings, and page-level and check findings cannot be rebuilt.
+        offenders = {f["id"]: f.get("pages") or [] for f in record.get("findings") or []}
+        severe = {}
+    brand = (record.get("scan") or {}).get("brand")
+    if brand and "brand" in by_category:
+        findings.extend(findings_for(by_category["brand"][0], brand))
+    rescore_block["snapshot"] = bool(snapshot)
+
     return _assemble(
         run_id=run_id,
         start_url=record.get("crawl", {}).get("start_url", ""),
         categories=categories,
         per_category={name: by_category[name] for name in categories},
         findings=findings,
-        offenders={
-            finding["id"]: finding.get("pages") or []
-            for finding in record.get("findings") or []
-        },
+        offenders=offenders,
+        severe=severe,
         crawl_block=record.get("crawl", {}),
         evidence=record.get("evidence") or {},
         record=False,

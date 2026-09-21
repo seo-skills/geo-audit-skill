@@ -90,5 +90,14 @@ Every command's output is validated against it in CI, including a failing run.
 
 `score(snapshot, scoring_version, data_version)` is a pure function. Reproducibility
 is claimed for rescoring a recorded snapshot, not for re-crawling a live site, which
-can legitimately differ — the site changed. `geo audit --rescore` arrives in 0.2.0 and
-recomputes from the stored record with no network access.
+can legitimately differ — the site changed. `geo audit --rescore` recomputes from the
+stored record with no network access.
+
+The record holds every scorer input, not only the envelope that was printed. Beside
+it, on disk only, is a snapshot: each page's ratio on each signal, and what fetching
+and robots.txt showed. That is what page-level findings and check findings - a broken
+link, a blocked crawler - are made from, so a rescore reproduces every finding, not
+only the number. Pages are reclassified with the *current* thresholds and checks are
+rebuilt from the *current* templates, which makes a rescore a recomputation rather
+than a replay. Records written before the snapshot existed rescore without those
+findings, and say so: `rescore.snapshot` is `false`.
