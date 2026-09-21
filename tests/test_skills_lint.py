@@ -341,3 +341,19 @@ def test_the_guide_names_every_signal_a_kind_moves():
         text = paragraphs.get(kind, "")
         for signal_id in spec["lead"] + spec["defer"]:
             assert f"`{signal_id}`" in text, f"the {kind} paragraph never mentions {signal_id}"
+
+
+@pytest.mark.parametrize(
+    "section, source",
+    [
+        ("technical/sections/crawlers.md", "https://www.rfc-editor.org/rfc/rfc9309"),
+        ("schema/sections/types.md", "https://schema.org/"),
+        ("schema/sections/types.md", "https://developers.google.com/search/docs/appearance/structured-data/"),
+        ("llmstxt/SKILL.md", "https://llmstxt.org/"),
+        ("content/sections/rubrics.md", "https://developers.google.com/search/docs/fundamentals/creating-helpful-content"),
+    ],
+)
+def test_heuristics_cite_their_primary_source(section, source):
+    """PRD §3.7: sources, not personalities - auditor heuristics cite primary
+    sources with URLs. Each of these sections makes a claim the source backs."""
+    assert source in (ROOT / "skills" / section).read_text(encoding="utf-8")

@@ -1,7 +1,10 @@
 # Type requirements and worked examples
 
-Requirements come from `data/schema_requirements.json`, derived from schema.org type
-pages and Google's structured data documentation. Required properties are what make a
+Requirements come from `data/schema_requirements.json`, derived from
+[schema.org type pages](https://schema.org/docs/schemas.html) and
+[Google's structured data documentation](https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data),
+whose [search gallery](https://developers.google.com/search/docs/appearance/structured-data/search-gallery)
+lists the types Google acts on. Required properties are what make a
 node legal; recommended are what make it useful.
 
 <!-- generated:schema-types:begin -->

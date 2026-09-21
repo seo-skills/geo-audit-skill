@@ -16,6 +16,11 @@ something the build checks, and two rounds of practitioner eval are folded in.
 
 ### Fixed — hardening toward 1.0
 
+- **Skill heuristics named their sources without linking them.** PRD §3.7 asks for
+  primary sources with URLs. RFC 9309's robots.txt rules, schema.org and Google's
+  structured-data documentation, llmstxt.org and Google's helpful-content guidance are
+  now linked where each claim is made - every URL checked to resolve - and a test keeps
+  them there.
 - **A bot challenge served with 503 was reported as a server error.** PRD §3.2 says
   bot-blocked means 403 *or challenge*, but only the status code was checked: a
   Cloudflare interstitial answered with 503 told the client to repair a server that

@@ -46,9 +46,10 @@ is an accident.
 ## The failure that looks like nothing
 
 A robots.txt returning 5xx is worse than one that disallows everything, because it
-looks fine in a browser. RFC 9309 section 2.3.1.4 tells compliant crawlers to treat an
-unreachable robots.txt as a complete disallow. `technical.crawler_access` scores it
+looks fine in a browser. [RFC 9309 section 2.3.1.4](https://www.rfc-editor.org/rfc/rfc9309#section-2.3.1.4)
+tells compliant crawlers to treat an unreachable robots.txt as a complete disallow. `technical.crawler_access` scores it
 zero and `detail.robots_status` names the code.
 
-A 4xx is the opposite and is fine: section 2.3.1.3 makes an unavailable robots.txt
-mean everything is allowed.
+A 4xx is the opposite and is fine: [section 2.3.1.3](https://www.rfc-editor.org/rfc/rfc9309#section-2.3.1.3)
+makes an unavailable robots.txt mean everything is allowed. Google reads the same rules
+the same way: [robots.txt specifications](https://developers.google.com/search/docs/crawling-indexing/robots/robots_txt).

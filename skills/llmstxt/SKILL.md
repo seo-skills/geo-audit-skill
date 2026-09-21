@@ -7,7 +7,7 @@ allowed-tools: Bash, Read
 
 # llms.txt
 
-A small convention from llmstxt.org: one H1, a blockquote summary, then H2 sections of
+A small convention from [llmstxt.org](https://llmstxt.org/): one H1, a blockquote summary, then H2 sections of
 markdown links. It is not a standard and no engine is known to require it. What it is
 good for is stating your own priorities, in your own words, in a place a model will
 look.

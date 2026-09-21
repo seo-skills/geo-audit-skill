@@ -14,7 +14,8 @@ how the page feels. The difference shows in what you can quote back.
 
 ## `content.advisory.helpfulness`
 
-**Would a reader with this question leave satisfied, or keep searching?**
+**Would a reader with this question leave satisfied, or keep searching?** Google frames
+the same question in [Creating helpful, reliable, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content).
 
 1. Answers the question the title asks, rather than the adjacent easier one.
 2. States limits and cases where the advice does not apply.
