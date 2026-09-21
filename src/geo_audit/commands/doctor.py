@@ -15,22 +15,9 @@ import sys
 from pathlib import Path
 
 from geo_audit import data, envelope, state
-from geo_audit._version import CLI_VERSION, DIST_NAME, PUBLISHED_ON_PYPI, REPO_URL, STATE_VERSION
+from geo_audit._version import CLI_VERSION, DIST_NAME, STATE_VERSION, install_target
 from geo_audit.errors import GeoError
 from geo_audit.lib import browser
-
-
-def install_target(extra: str | None = None) -> str:
-    """What `uv tool install` should be given today.
-
-    Before the first release the package name resolves to nothing, so every hint
-    that named it was a dead end - the browser-extra one surfaced on the first
-    real install. The source install works now and keeps working after.
-    """
-    if PUBLISHED_ON_PYPI:
-        return f"'{DIST_NAME}[{extra}]'" if extra else DIST_NAME
-    source = f"git+{REPO_URL}"
-    return f"'{DIST_NAME}[{extra}] @ {source}'" if extra else source
 
 
 def _check(id_: str, status: str, detail: str, hint: str | None = None) -> dict:

@@ -163,3 +163,57 @@ def test_no_market_statistics_in_user_facing_copy():
     )
     assert not re.search(r"\d+\s?%", source)
     assert "billion" not in source.lower()
+
+
+# --- the §3.9 states that had no test ---------------------------------------
+# The PRD says golden tests assert every state's copy. Four had none, and two of
+# those were wrong in ways nobody saw: a dead-end install command, and
+# "Only 0 audit is recorded ... run `geo audit` again".
+
+
+def test_loading_state_reports_crawl_progress_on_stderr(site, geo_home, capsys):
+    import re
+
+    main(["audit", f"{site.url}/hub.html", "--allow-private", "--rate", "50", "--max-pages", "4",
+          "--json"], out=io.StringIO())
+    stderr = capsys.readouterr().err
+    assert re.search(r"\[2/4\] Crawling \S+ [-—] \d+/\d+ pages, \d+ failed", stderr), stderr[:300]
+
+
+def test_empty_state_with_no_audit_names_the_site_and_the_command(geo_home):
+    """Not `<url>`, and not "Only 0 audit ... again"."""
+    for command in ("report", "compare"):
+        buffer = io.StringIO()
+        code = main([command, "https://example.com", "--json", "--quiet"], out=buffer)
+        message = __import__("json").loads(buffer.getvalue())["error"]["message"]
+        assert code == 2
+        assert message == copytext.NO_AUDITS.format(site="example.com", url="https://example.com"), command
+
+
+def test_zero_mentions_is_a_result_not_an_error(geo_home, monkeypatch):
+    from geo_audit.commands import scan as scan_cmd
+
+    def nobody_has_heard_of_it(name, brand, spec, allow_private=False):
+        return {"platform": name, "label": spec["label"], "checked": True, "status": 200,
+                "results": 0, "examples": [], "docs": spec["docs"], "observed_at": "2026-09-21T00:00:00Z"}
+
+    monkeypatch.setattr(scan_cmd, "check", nobody_has_heard_of_it)
+    _, output = render(["scan", "Acme"])
+    assert "No mentions of “Acme” found on" in output
+    assert "This is a result, not an error." in output
+
+
+def test_pdf_unavailable_offers_an_install_that_works(site, geo_home, monkeypatch):
+    """The PRD's literal copy named the PyPI package, which does not exist before
+    the first release: the same dead end the skills, docs and doctor had lost."""
+    from geo_audit._version import install_target
+    from geo_audit.report import pdf as pdf_lib
+
+    main(["audit", f"{site.url}/hub.html", "--allow-private", "--rate", "50", "--max-pages", "4",
+          "--json", "--quiet"], out=io.StringIO())
+    monkeypatch.setattr(pdf_lib, "write_pdf", lambda html, target: "the browser component is not installed")
+    buffer = io.StringIO()
+    main(["report", f"{site.url}/hub.html", "--pdf", "--json", "--quiet"], out=buffer)
+    skipped = __import__("json").loads(buffer.getvalue())["report"]["pdf_skipped"]
+    assert skipped.startswith("PDF skipped: the browser component is not installed.")
+    assert f"uv tool install {install_target('browser')} && playwright install chromium" in skipped

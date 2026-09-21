@@ -12,6 +12,7 @@ network is used.
 
 from __future__ import annotations
 
+from geo_audit import copy as copytext
 from geo_audit import data, envelope, state
 from geo_audit.errors import GeoError
 from geo_audit.lib.ids import is_run_id
@@ -188,10 +189,14 @@ def run(args, run_id: str) -> dict:
     slug = project_slug(args.url)
     records = _records_for(slug)
 
+    if not args.from_run and not args.to_run and not records:
+        raise GeoError(
+            "GEO_E_BAD_ARGS", copytext.NO_AUDITS.format(site=host_of(args.url), url=args.url)
+        )
     if not args.from_run and not args.to_run and len(records) < 2:
         raise GeoError(
             "GEO_E_BAD_ARGS",
-            f"Only {len(records)} audit is recorded for {host_of(args.url)}. "
+            f"Only one audit is recorded for {host_of(args.url)}. "
             f"Run `geo audit {args.url}` again to have something to compare.",
         )
 

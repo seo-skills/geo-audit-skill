@@ -74,10 +74,10 @@ def test_doctor_reports_the_missing_browser_extra_as_a_warning(geo_home, monkeyp
 def test_every_install_hint_names_something_that_installs(monkeypatch, published):
     """The first real install: doctor's browser-extra hint named a PyPI package
     that did not exist yet, the dead end the skills and docs had already lost."""
-    from geo_audit.commands import doctor
+    from geo_audit import _version
 
-    monkeypatch.setattr(doctor, "PUBLISHED_ON_PYPI", published)
-    plain, extra = doctor.install_target(), doctor.install_target("browser")
+    monkeypatch.setattr(_version, "PUBLISHED_ON_PYPI", published)
+    plain, extra = _version.install_target(), _version.install_target("browser")
     if published:
         assert plain == "seomator-geo-audit" and extra == "'seomator-geo-audit[browser]'"
     else:

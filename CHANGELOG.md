@@ -16,6 +16,16 @@ something the build checks, and two rounds of practitioner eval are folded in.
 
 ### Fixed — hardening toward 1.0
 
+- **Four of the PRD's eight interaction states had no test, and two were wrong.**
+  Checking every PRD claim against the code found the report's PDF-unavailable message
+  naming a PyPI package that does not exist before the first release, and the no-audit
+  state never used: `report` said "Run `geo audit <url>`" and `compare` said "Only 0
+  audit is recorded ... run `geo audit` again". Both now print the PRD's own copy, naming
+  the site and the exact command; the PDF message gives an install that works; and the
+  loading, zero-mentions, no-audit and PDF states each have a test, as §3.9 requires.
+- **The report never said how many signals the score was computed on.** PRD §3.4 has it
+  say "computed on 31 of 36 signals"; it now does, under the score, with anything not
+  measured named in plain words.
 - **`--rescore` did not reproduce a run, only its number.** G1 says the record holds
   every scorer input; it held the site-level signals, so page-level findings could not
   be rebuilt, and check findings - a broken link, a blocked AI crawler - were not passed

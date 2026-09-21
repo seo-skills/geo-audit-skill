@@ -129,6 +129,9 @@ class ClientContext:
     # Categories this run did not reach, so the weights above add up to less
     # than 100 - said on the page rather than left for a client to work out.
     unscored: list[dict] = field(default_factory=list)
+    # PRD §3.4: "the report says 'computed on 31 of 36 signals'". It qualifies
+    # the number, so it sits under the number.
+    completeness_note: str | None = None
     glossary: list[dict] = field(default_factory=list)
     methodology: list[dict] = field(default_factory=list)
     signal_classes: list[dict] = field(default_factory=list)
@@ -376,6 +379,22 @@ def _category_detail(envelope: dict, categories: list[CategoryScore]) -> list[di
     return out
 
 
+def _completeness_note(completeness: dict) -> str | None:
+    computed, total = completeness.get("computed"), completeness.get("total")
+    if not total:
+        return None
+    note = f"Computed on {computed} of {total} signals."
+    missing = completeness.get("missing") or []
+    if missing:
+        templates = data.load("findings")["signals"]
+        names = [
+            (templates.get(signal_id) or {}).get("name") or signal_id.split(".", 1)[-1].replace("_", " ")
+            for signal_id in missing
+        ]
+        note += " Not measured: " + ", ".join(names) + " - the score is taken over the rest."
+    return note
+
+
 def _pages_analysed(envelope: dict, fixes: list[Fix]) -> list[dict]:
     """Every crawled page and how many findings name it. No titles: the crawl
     record carries no page text, because the skill reads it and page text is
@@ -465,6 +484,7 @@ def build(
         category_detail=_category_detail(envelope, categories),
         pages_analysed=_pages_analysed(envelope, fixes),
         glossary=[{"term": term, "meaning": meaning} for term, meaning in GLOSSARY],
+        completeness_note=_completeness_note(completeness),
         unscored=[
             {"name": name, "weight": spec["weight"]}
             for name, spec in data.weights().items()

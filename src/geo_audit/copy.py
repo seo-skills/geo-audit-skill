@@ -18,7 +18,7 @@ CRAWL_EXPECTATION = (
 
 # 2 — empty
 NO_AUDITS = (
-    "No audits recorded for {site} yet. Run `geo audit https://{site}` to create "
+    "No audits recorded for {site} yet. Run `geo audit {url}` to create "
     "the first one."
 )
 NO_SCORABLE_PAGES = (
@@ -38,7 +38,7 @@ NO_BLOCKS = (
 # 3 — PDF unavailable
 PDF_UNAVAILABLE = (
     "PDF skipped: {reason}. HTML report written to {path}. To enable PDF: "
-    "`uv tool install 'seomator-geo-audit[browser]' && playwright install chromium`"
+    "`uv tool install {install} && playwright install chromium`"
 )
 
 # 6 — success, report

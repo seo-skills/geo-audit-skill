@@ -92,7 +92,7 @@ def test_comparing_needs_two_runs(site, geo_home):
     audit(site)
     code, envelope = run(["compare", f"{site.url}/hub.html"])
     assert code == 2
-    assert "Only 1 audit is recorded" in envelope["error"]["message"]
+    assert "Only one audit is recorded" in envelope["error"]["message"]
 
 
 def test_an_unchanged_site_shows_no_movement(site, geo_home):

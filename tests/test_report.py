@@ -600,3 +600,16 @@ def test_a_category_outside_the_run_is_named_not_left_to_guesswork(audited, site
     client = _client(audited)
     assert client.unscored == [{"name": "brand", "weight": 20}]
     assert "brand (weight 20) was not part of this run" in html_of(site)
+
+
+def test_the_report_says_how_many_signals_the_score_was_computed_on(audited, site):
+    """PRD §3.4: a missing capability nulls signals and lowers completeness, and
+    "the report says 'computed on 31 of 36 signals'". It did not say it anywhere."""
+    completeness = audited["completeness"]
+    client = _client(audited)
+    expected = f"Computed on {completeness['computed']} of {completeness['total']} signals"
+    assert client.completeness_note.startswith(expected)
+    html = html_of(site)
+    assert expected in html
+    for signal_id in completeness["missing"]:
+        assert signal_id not in html, "missing signals are named, never shown as ids"

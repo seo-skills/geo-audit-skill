@@ -15,6 +15,7 @@ from pathlib import Path
 
 from geo_audit import copy as copytext
 from geo_audit import envelope, state
+from geo_audit._version import install_target
 from geo_audit.errors import GeoError
 from geo_audit.lib.evidence import short
 from geo_audit.lib.ids import is_run_id
@@ -29,15 +30,12 @@ from geo_audit.report import render as render_lib
 MODES = ("client", "operator")
 
 
-def _record_for(slug: str, run_id: str | None) -> dict:
+def _record_for(slug: str, run_id: str | None, url: str) -> dict:
     records, _ = state.read_audits(slug)
     audits = [record for record in records if record.get("command") == "audit"]
     if not audits:
-        raise GeoError(
-            "GEO_E_BAD_ARGS",
-            "No audits are recorded for this site yet. Run `geo audit <url>` first; "
-            "`geo report` renders a run that already happened.",
-        )
+        # PRD §3.9 state 2: name the site and the exact command, not `<url>`.
+        raise GeoError("GEO_E_BAD_ARGS", copytext.NO_AUDITS.format(site=host_of(url) or url, url=url))
     if run_id is None:
         return audits[-1]
     if not is_run_id(run_id):
@@ -86,7 +84,7 @@ def run(args, run_id: str) -> dict:
 
     state.init()
     slug = project_slug(args.url)
-    record = _record_for(slug, args.run)
+    record = _record_for(slug, args.run, args.url)
     brand = brand_lib.load(args.brand_config)
     advisory_answers = advisory_lib.load(args.advisory)
 
@@ -127,7 +125,7 @@ def run(args, run_id: str) -> dict:
         pdf_path = target.with_suffix(".pdf")
         reason = pdf_lib.write_pdf(target, pdf_path)
         if reason:
-            pdf_skipped = copytext.PDF_UNAVAILABLE.format(reason=reason, path=target)
+            pdf_skipped = copytext.PDF_UNAVAILABLE.format(reason=reason, path=target, install=install_target("browser"))
             pdf_path = None
 
     return envelope.build(

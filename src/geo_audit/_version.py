@@ -29,6 +29,20 @@ REPO_URL = "https://github.com/seo-skills/geo-audit-skill"
 # to the README's "Not on PyPI yet" note, which rules every other install line.
 PUBLISHED_ON_PYPI = False
 
+
+def install_target(extra: str | None = None) -> str:
+    """What `uv tool install` should be given today.
+
+    Before the first release the package name resolves to nothing, so every hint
+    that named it was a dead end - `geo doctor`'s browser-extra hint and the
+    report's PDF-unavailable message among them. The source install works now
+    and keeps working after.
+    """
+    if PUBLISHED_ON_PYPI:
+        return f"'{DIST_NAME}[{extra}]'" if extra else DIST_NAME
+    source = f"git+{REPO_URL}"
+    return f"'{DIST_NAME}[{extra}] @ {source}'" if extra else source
+
 SCHEMA_VERSION = 1
 SCORING_VERSION = "1.0"
 # 2: `<article>` is only the content root when the page has exactly one. Taking

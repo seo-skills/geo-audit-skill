@@ -32,6 +32,7 @@
       {% if client.tier %}<span class="tier">{{ client.tier }}</span>{% endif %}
     </div>
     {% if client.tier_meaning %}<p class="verdict-meaning">{{ client.tier_meaning }}</p>{% endif %}
+    {% if client.completeness_note %}<p class="caveat">{{ client.completeness_note }}</p>{% endif %}
     <p class="caveat">{{ client.score_caveat }}</p>
 
     {% if client.evidence_note %}
