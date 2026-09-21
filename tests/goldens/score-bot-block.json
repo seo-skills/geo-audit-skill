@@ -3,8 +3,16 @@
   "command": "score",
   "completeness": {
     "computed": 0,
-    "missing": [],
-    "total": 0
+    "missing": [
+      "citability.answer_first",
+      "citability.attribution",
+      "citability.evidence_density",
+      "citability.extractability",
+      "citability.render_parity",
+      "citability.self_containment",
+      "citability.structure"
+    ],
+    "total": 7
   },
   "data_version": "2026.09",
   "error": null,
@@ -162,5 +170,69 @@
   "schema_version": 1,
   "scores": null,
   "scoring_version": "1.0",
-  "signals": []
+  "signals": [
+    {
+      "class": "heuristic",
+      "detail": {},
+      "id": "citability.self_containment",
+      "max": 25,
+      "page": "http://fixture/bot-block",
+      "skipped_reason": "the page returned no scorable content",
+      "value": null
+    },
+    {
+      "class": "heuristic",
+      "detail": {},
+      "id": "citability.answer_first",
+      "max": 20,
+      "page": "http://fixture/bot-block",
+      "skipped_reason": "the page returned no scorable content",
+      "value": null
+    },
+    {
+      "class": "deterministic",
+      "detail": {},
+      "id": "citability.structure",
+      "max": 15,
+      "page": "http://fixture/bot-block",
+      "skipped_reason": "the page returned no scorable content",
+      "value": null
+    },
+    {
+      "class": "heuristic",
+      "detail": {},
+      "id": "citability.evidence_density",
+      "max": 15,
+      "page": "http://fixture/bot-block",
+      "skipped_reason": "the page returned no scorable content",
+      "value": null
+    },
+    {
+      "class": "deterministic",
+      "detail": {},
+      "id": "citability.extractability",
+      "max": 15,
+      "page": "http://fixture/bot-block",
+      "skipped_reason": "the page returned no scorable content",
+      "value": null
+    },
+    {
+      "class": "deterministic",
+      "detail": {},
+      "id": "citability.attribution",
+      "max": 10,
+      "page": "http://fixture/bot-block",
+      "skipped_reason": "the page returned no scorable content",
+      "value": null
+    },
+    {
+      "class": "heuristic",
+      "detail": {},
+      "id": "citability.render_parity",
+      "max": 10,
+      "page": "http://fixture/bot-block",
+      "skipped_reason": "the page returned no scorable content",
+      "value": null
+    }
+  ]
 }

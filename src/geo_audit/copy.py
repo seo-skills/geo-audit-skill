@@ -25,6 +25,7 @@ NO_SCORABLE_PAGES = (
     "The crawl found no scorable pages on {site}. The start URL returned "
     "{status}. Nothing was scored."
 )
+NOT_SCORABLE = "the page returned no scorable content"
 NO_MENTIONS = (
     "No mentions of \u201c{brand}\u201d found on {platforms} (checked {date}). "
     "This is a result, not an error."

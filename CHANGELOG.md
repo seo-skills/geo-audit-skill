@@ -16,6 +16,12 @@ something the build checks, and two rounds of practitioner eval are folded in.
 
 ### Fixed — hardening toward 1.0
 
+- **A page nothing could be measured on reported `0 of 0, nothing missing`**, which
+  reads as a complete run and divides by zero for anyone who takes the fraction at
+  face value. Seven citability signals were in scope and a 403 reached none of them,
+  so that is what the envelope says now: `0 of 7`, each one named, alongside seven
+  signals with a null value and a reason. The count comes from `composite()` itself
+  rather than a second copy of the rule, so it cannot drift from a scorable run.
 - **Arithmetic still decided the order inside the blocking tier**, which is the one
   place it was meant not to. A page the server refused is never scored, so its
   finding carries no `impact` and no `points_lost`, and it lost every tiebreak to a

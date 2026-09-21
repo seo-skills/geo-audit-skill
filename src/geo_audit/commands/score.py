@@ -14,7 +14,7 @@ from geo_audit.commands.common import Options, evidence_block, load_page, page_b
 from geo_audit.lib import browser
 from geo_audit.lib.slug import host_of, project_slug
 from geo_audit.scoring import citability
-from geo_audit.scoring.model import composite, findings_for, prioritize
+from geo_audit.scoring.model import Signal, composite, findings_for, prioritize
 
 
 def run(args, run_id: str) -> dict:
@@ -30,13 +30,31 @@ def run(args, run_id: str) -> dict:
     evidence = evidence_block(page)
 
     if not page.scorable:
+        # Nothing was measured, so say what was in scope and that none of it
+        # was reached - `0 of 0, nothing missing` reads as a complete run, and
+        # divides by zero for anyone who takes it at face value. Running the
+        # unmeasured signals through `composite` keeps that count agreeing with
+        # a scorable run forever, instead of a second copy of the same rule.
+        unmeasured = [
+            Signal(
+                id=signal_id,
+                cls=meta["class"],
+                max=meta["max"],
+                value=None,
+                page=block["final_url"],
+                skipped_reason=copytext.NOT_SCORABLE,
+            )
+            for signal_id, meta in data.weights()["citability"]["signals"].items()
+        ]
+        _, completeness = composite(unmeasured)
         result = envelope.build(
             "score",
             ok=True,
             run_id=run_id,
             evidence=evidence,
-            completeness={"computed": 0, "total": 0, "missing": []},
+            completeness=completeness,
             scores=None,
+            signals=[s.to_dict() for s in unmeasured],
             findings=[f.to_dict() for f in prioritize(page.findings)],
             extra={
                 "page": block,

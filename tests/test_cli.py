@@ -41,6 +41,27 @@ def test_exit_0_when_the_page_blocks_us(site, geo_home):
     assert envelope["findings"][0]["severity"] == "critical"
 
 
+def test_an_unscorable_page_says_what_it_could_not_measure(site, geo_home):
+    """`0 of 0, nothing missing` reads as a complete run and divides by zero.
+
+    Seven citability signals were in scope and the block reached none of them,
+    which is what the envelope now says - the same shape a scorable page
+    returns, with the values absent rather than the signals.
+    """
+    from geo_audit import data
+
+    _, output = run(["score", f"{site.url}/bot-block", "--allow-private", "--quiet"])
+    envelope = json.loads(output)
+    declared = set(data.weights()["citability"]["signals"])
+
+    assert envelope["scores"] is None
+    assert envelope["completeness"]["computed"] == 0
+    assert envelope["completeness"]["total"] == len(declared)
+    assert set(envelope["completeness"]["missing"]) == declared
+    assert {s["id"] for s in envelope["signals"]} == declared
+    assert all(s["value"] is None and s["skipped_reason"] for s in envelope["signals"])
+
+
 def test_exit_2_on_a_relative_url(geo_home):
     code, output = run(["score", "example.com", "--quiet"])
     assert code == 2
