@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import json
 import re
 import subprocess
@@ -16,6 +17,30 @@ sys.path.insert(0, str(ROOT / "tools"))
 import scan_secrets  # noqa: E402
 
 from geo_audit._version import CLI_VERSION  # noqa: E402
+
+
+def _unencoded_text_io(path: Path):
+    """Lines calling read_text or write_text with no encoding, by keyword or position."""
+    for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+        if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)):
+            continue
+        if node.func.attr not in ("read_text", "write_text"):
+            continue
+        positional = len(node.args) > (0 if node.func.attr == "read_text" else 1)
+        if not positional and not any(keyword.arg == "encoding" for keyword in node.keywords):
+            yield node.lineno
+
+
+def test_text_is_read_and_written_as_utf8_everywhere():
+    """Without an encoding, text I/O uses the platform default - cp1252 on
+    Windows, where a UTF-8 report holding a curly quote could not be read back."""
+    offenders = [
+        f"{path.relative_to(ROOT)}:{line}"
+        for folder in ("src", "tests", "tools")
+        for path in sorted((ROOT / folder).rglob("*.py"))
+        for line in _unencoded_text_io(path)
+    ]
+    assert offenders == []
 
 
 def test_the_repository_has_no_secrets():

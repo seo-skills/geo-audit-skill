@@ -379,7 +379,7 @@ def test_the_same_record_renders_the_same_document(audited, site, tmp_path):
     report(site, "--out", str(first))
     report(site, "--out", str(second))
     strip_date = lambda text: re.sub(r"\d{4}-\d{2}-\d{2}", "DATE", text)  # noqa: E731
-    assert strip_date(first.read_text()) == strip_date(second.read_text())
+    assert strip_date(first.read_text(encoding="utf-8")) == strip_date(second.read_text(encoding="utf-8"))
 
 
 # --- PDF -------------------------------------------------------------------

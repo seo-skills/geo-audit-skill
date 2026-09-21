@@ -60,7 +60,7 @@ def test_every_kind_in_the_site_list_is_one_the_cli_accepts():
 
 def test_dry_run_audits_nothing(tmp_path):
     config = tmp_path / "sites.json"
-    config.write_text(json.dumps({"sites": [{"url": "https://example.com", "max_pages": 3}]}))
+    config.write_text(json.dumps({"sites": [{"url": "https://example.com", "max_pages": 3}]}), encoding="utf-8")
     completed = subprocess.run(
         [sys.executable, str(HARNESS), "--sites", str(config), "--dry-run"],
         capture_output=True, text=True, cwd=ROOT,
@@ -84,7 +84,7 @@ def test_the_harness_produces_a_blank_form(site, geo_home, tmp_path):
                     }
                 ]
             }
-        )
+        ), encoding="utf-8"
     )
     target = tmp_path / "form.md"
     completed = subprocess.run(
@@ -115,7 +115,7 @@ def test_question_two_is_asked_about_the_copy_a_client_receives(site, geo_home, 
     config = tmp_path / "sites.json"
     config.write_text(
         json.dumps({"sites": [{"url": f"{site.url}/hub.html", "max_pages": 4,
-                               "args": ["--allow-private", "--rate", "50"]}]})
+                               "args": ["--allow-private", "--rate", "50"]}]}), encoding="utf-8"
     )
     target = tmp_path / "form.md"
     subprocess.run(
@@ -145,7 +145,7 @@ def test_the_form_shows_the_order_the_report_shows(site, geo_home, tmp_path):
     config = tmp_path / "sites.json"
     config.write_text(
         json.dumps({"sites": [{"url": f"{site.url}/hub.html", "max_pages": 4, "kind": "docs",
-                               "args": ["--allow-private", "--rate", "50"]}]})
+                               "args": ["--allow-private", "--rate", "50"]}]}), encoding="utf-8"
     )
     target = tmp_path / "form.md"
     subprocess.run(
@@ -166,7 +166,7 @@ def test_the_form_never_contains_an_answer(site, geo_home, tmp_path):
     config = tmp_path / "sites.json"
     config.write_text(
         json.dumps({"sites": [{"url": f"{site.url}/hub.html", "max_pages": 4,
-                               "args": ["--allow-private", "--rate", "50"]}]})
+                               "args": ["--allow-private", "--rate", "50"]}]}), encoding="utf-8"
     )
     target = tmp_path / "form.md"
     subprocess.run(
