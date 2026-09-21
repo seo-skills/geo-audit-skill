@@ -47,7 +47,9 @@ SCHEMA_VERSION = 1
 # 2.0: authorship, attribution and Article markup are scored on articles only. A
 #      major bump because it moves the composite of a site that did not change,
 #      and `compare` must refuse to report that as the site moving.
-SCORING_VERSION = "2.0"
+# 3.0: extractability scores evidence that content needs JavaScript, not length.
+#      Short server-rendered pages had been capped and told to server-render.
+SCORING_VERSION = "3.0"
 # 2: `<article>` is only the content root when the page has exactly one. Taking
 #    the first of many reduced every listing page to a single teaser card.
 NORMALIZER_VERSION = 2

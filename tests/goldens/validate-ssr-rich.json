@@ -238,7 +238,7 @@
     "tier": "good",
     "tier_meaning": "Most passages are quotable as-is; a few sections still need context to stand alone."
   },
-  "scoring_version": "2.0",
+  "scoring_version": "3.0",
   "signals": [
     {
       "class": "deterministic",

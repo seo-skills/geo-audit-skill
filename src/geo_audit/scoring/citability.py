@@ -229,29 +229,35 @@ def evidence_density(doc: Document) -> tuple[float | None, dict]:
 # 5. extractability
 # --------------------------------------------------------------------------
 def extractability(doc: Document) -> tuple[float | None, dict]:
+    """Is the content in the HTML a crawler that does not run JavaScript receives?
+
+    Without a browser, the evidence is what the page says about itself: an app
+    mount with nothing in it, or a notice that JavaScript is required on a page
+    serving too little text to have its content anyway - app templates carry
+    that notice even when the server rendered everything. A page with neither
+    has its content in the HTML and scores full marks, however short it is: how
+    much there is belongs to content.depth. Only a gated page is scored on what
+    still arrives, and capped.
+    """
     config = data.thresholds("extractability")
     chars = doc.content_chars
-    volume_points = 8 * min(chars / config["good_content_chars"], 1.0)
-
     ratio = chars / doc.body_chars if doc.body_chars else 0.0
-    ratio_points = 4 * min(ratio / config["good_content_ratio"], 1.0)
-
-    structured = 0.0
-    if doc.lists >= config["structured_bonus_lists"]:
-        structured += 2
-    if doc.tables >= config["structured_bonus_tables"]:
-        structured += 1
-
     empty_mount = (
         doc.framework_root_chars is not None
         and doc.framework_root_chars < config["empty_framework_root_chars"]
     )
+    gated = empty_mount or (doc.js_required_notice and chars < config["min_content_chars"])
 
-    points = volume_points + ratio_points + structured
-    capped = False
-    if doc.js_required_notice or empty_mount or chars < config["min_content_chars"]:
-        points = min(points, 3.0)
-        capped = True
+    points = 15.0
+    if gated:
+        volume_points = 8 * min(chars / config["good_content_chars"], 1.0)
+        ratio_points = 4 * min(ratio / config["good_content_ratio"], 1.0)
+        structured = 0.0
+        if doc.lists >= config["structured_bonus_lists"]:
+            structured += 2
+        if doc.tables >= config["structured_bonus_tables"]:
+            structured += 1
+        points = min(volume_points + ratio_points + structured, 3.0)
 
     return points, {
         "content_chars": chars,
@@ -263,7 +269,7 @@ def extractability(doc: Document) -> tuple[float | None, dict]:
         "js_required_notice": doc.js_required_notice,
         "framework_root_chars": doc.framework_root_chars,
         "empty_framework_root": empty_mount,
-        "capped_thin_or_js_gated": capped,
+        "js_gated": gated,
         "min_content_chars": config["min_content_chars"],
     }
 

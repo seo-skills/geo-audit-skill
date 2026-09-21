@@ -66,7 +66,7 @@
       "source": null,
       "warnings": []
     },
-    "bytes": 59986,
+    "bytes": 59852,
     "from_run": "<volatile>",
     "mode": "client",
     "observed_at": "<volatile>",
@@ -84,16 +84,16 @@
   "schema_version": 1,
   "scores": {
     "categories": {
-      "citability": 61,
+      "citability": 70,
       "content": 36,
       "platform": 16,
       "schema": 24,
       "technical": 82
     },
-    "composite": 48,
+    "composite": 51,
     "tier": "weak",
     "tier_meaning": "Answers exist on the page but are buried in context that does not travel."
   },
-  "scoring_version": "2.0",
+  "scoring_version": "3.0",
   "signals": []
 }

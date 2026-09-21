@@ -176,7 +176,7 @@ def test_evidence_density_counts_facts_not_words():
 def test_extractability_caps_a_javascript_gated_page():
     points, detail = citability.extractability(doc_for("csr-shell.html"))
     assert detail["js_required_notice"] is True
-    assert detail["capped_thin_or_js_gated"] is True
+    assert detail["js_gated"] is True
     assert points <= 3.0
 
 
@@ -192,7 +192,7 @@ def test_extractability_catches_an_empty_mount_point_with_no_noscript_notice():
     assert detail["js_required_notice"] is False
     assert detail["framework_root_chars"] == 0
     assert detail["empty_framework_root"] is True
-    assert detail["capped_thin_or_js_gated"] is True
+    assert detail["js_gated"] is True
 
 
 def test_a_server_rendered_page_has_no_empty_mount_point():

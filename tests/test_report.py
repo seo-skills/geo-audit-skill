@@ -528,9 +528,12 @@ def test_the_summary_is_built_from_the_numbers(audited):
     assert best in client.summary and worst in client.summary
 
 
-def test_the_summary_leads_with_a_blocker_when_there_is_one(audited):
-    """The hub fixture has one: the client-rendered page no crawler can read."""
-    client = _client(audited)
+def test_the_summary_leads_with_a_blocker_when_there_is_one(site, geo_home):
+    """A start URL the server refuses blocks the whole site. The hub fixture has
+    none: its one client-rendered page is one page of several, which is a
+    page-level finding, not a site-wide blocker."""
+    _, refused = run(["audit", f"{site.url}/bot-block", "--allow-private", "--rate", "50", "--max-pages", "8"])
+    client = _client(refused)
     blocker = next(f for f in client.top_fixes if f.blocking)
     assert blocker.title in client.summary
 

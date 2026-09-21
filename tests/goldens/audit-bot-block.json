@@ -212,22 +212,6 @@
       "title": "The page refused an ordinary crawler request"
     },
     {
-      "effort": "high",
-      "excerpt": null,
-      "id": "citability.extractability",
-      "impact": 3.0,
-      "page_level": false,
-      "pages": [
-        "http://fixture/injection.html",
-        "http://fixture/schema-broken.html"
-      ],
-      "points_lost": 12.0,
-      "priority": 2,
-      "remediation": "Server-render the main content, or pre-render it for crawlers. Most AI crawlers do not execute JavaScript, so content that only appears after hydration does not exist to them.",
-      "severity": "critical",
-      "title": "Little usable content is present in the HTML the crawler receives"
-    },
-    {
       "effort": "medium",
       "excerpt": null,
       "id": "content.expertise",
@@ -238,7 +222,7 @@
         "http://fixture/schema-broken.html"
       ],
       "points_lost": 21.5,
-      "priority": 3,
+      "priority": 2,
       "remediation": "A byline in prose is invisible to a parser. Give the author a named byline linked to a page that says what they have done, and mirror it in Person JSON-LD with jobTitle, description and sameAs. This finding fires even on pages that do name their author in the text, because that is not the form an engine reads.",
       "severity": "high",
       "title": "Authorship is not machine-readable"
@@ -254,7 +238,7 @@
         "http://fixture/schema-broken.html"
       ],
       "points_lost": 19.0,
-      "priority": 4,
+      "priority": 3,
       "remediation": "An engine quoting a page has to find the whole answer on it. Cover the question, the constraints and at least one worked case, and use lists or a table where the content is genuinely tabular. Length is not the goal; completeness is, and length is what it costs.",
       "severity": "high",
       "title": "Pages are too thin to answer anything on their own"
@@ -269,7 +253,7 @@
         "http://fixture/schema-broken.html"
       ],
       "points_lost": 25.0,
-      "priority": 5,
+      "priority": 4,
       "remediation": "Fix the JSON syntax and add the required properties for each declared type. A block that does not parse is worth exactly as much as no block at all.",
       "severity": "high",
       "title": "Structured data is malformed or missing required properties"
@@ -285,7 +269,7 @@
         "http://fixture/schema-broken.html"
       ],
       "points_lost": 20.0,
-      "priority": 6,
+      "priority": 5,
       "remediation": "Add an Organization or Person node with name, url, logo, description and sameAs links to the profiles that identify you. sameAs is what lets an engine connect this site to the entity it already knows about.",
       "severity": "high",
       "title": "No machine-readable publisher identity"
@@ -302,7 +286,7 @@
         "http://fixture/schema-broken.html"
       ],
       "points_lost": 10.0,
-      "priority": 7,
+      "priority": 6,
       "remediation": "Serve everything over HTTPS and send a Strict-Transport-Security header. Engines discount, and some browsers block, content served over plain HTTP.",
       "severity": "high",
       "title": "The site is not served securely"
@@ -318,7 +302,7 @@
         "http://fixture/schema-broken.html"
       ],
       "points_lost": 25.0,
-      "priority": 8,
+      "priority": 7,
       "remediation": "Publish a dateModified and update it when the content actually changes, not on every deploy. A page with no date is undatable, and an engine asked for current information cannot choose it over one that is.",
       "severity": "medium",
       "title": "Pages do not say when they were last checked"
@@ -334,7 +318,7 @@
         "http://fixture/schema-broken.html"
       ],
       "points_lost": 35.0,
-      "priority": 9,
+      "priority": 8,
       "remediation": "Add /llms.txt: one H1, a blockquote summary, then sections of markdown links to the pages worth reading. It is a convention rather than a standard - but it is the only place you get to state your own priorities in your own words, and `geo llmstxt --generate` writes a first draft from your own pages.",
       "severity": "medium",
       "title": "The site publishes no llms.txt"
@@ -350,7 +334,7 @@
         "http://fixture/schema-broken.html"
       ],
       "points_lost": 30.0,
-      "priority": 10,
+      "priority": 9,
       "remediation": "Add og:title, og:description and og:image to every page. Engines and the apps around them build the link preview from these; without them the preview falls back to whatever the page happens to start with, which is usually navigation.",
       "severity": "medium",
       "title": "Pages have no preview card"
@@ -366,7 +350,7 @@
         "http://fixture/schema-broken.html"
       ],
       "points_lost": 8.5,
-      "priority": 11,
+      "priority": 10,
       "remediation": "Add a visible byline, a published date and a last-modified date, and mirror them in Article or Organization JSON-LD. Attribution is what lets an engine decide the page is safe to quote.",
       "severity": "medium",
       "title": "The page does not say who wrote it or when"
@@ -382,7 +366,7 @@
         "http://fixture/schema-broken.html"
       ],
       "points_lost": 15.0,
-      "priority": 12,
+      "priority": 11,
       "remediation": "Add Article or BlogPosting with headline, author, datePublished, dateModified and image. This is how an engine decides a page is datable, attributable content rather than a landing page.",
       "severity": "medium",
       "title": "Content pages are not described as articles"
@@ -397,7 +381,7 @@
         "http://fixture/injection.html"
       ],
       "points_lost": 15.0,
-      "priority": 13,
+      "priority": 12,
       "remediation": "Add JSON-LD describing what the page is. Structured data is the only part of a page an engine does not have to interpret, which makes it the cheapest way to be understood correctly.",
       "severity": "medium",
       "title": "The page carries no structured data"
@@ -413,7 +397,7 @@
         "http://fixture/schema-broken.html"
       ],
       "points_lost": 5.0,
-      "priority": 14,
+      "priority": 13,
       "remediation": "Add the specific figure, date, version or measurement to each claim, and link the primary source. Passages carrying a checkable fact are the ones engines quote.",
       "severity": "medium",
       "title": "Claims arrive without numbers, dates or sources"
@@ -428,7 +412,7 @@
         "http://fixture/bot-block"
       ],
       "points_lost": 5.0,
-      "priority": 15,
+      "priority": 14,
       "remediation": "Return 200 on the canonical URL instead of redirecting to it. Every hop costs crawl budget and some crawlers stop following after one.",
       "severity": "medium",
       "title": "Pages do not return 200 directly"
@@ -444,7 +428,7 @@
         "http://fixture/schema-broken.html"
       ],
       "points_lost": 10.0,
-      "priority": 16,
+      "priority": 15,
       "remediation": "Where the content fits, add FAQPage, HowTo, Product, Event or BreadcrumbList. These types map onto the shape of an answer, so an engine can lift them with no interpretation at all.",
       "severity": "low",
       "title": "No structured data that answers a question directly"
@@ -460,7 +444,7 @@
         "http://fixture/schema-broken.html"
       ],
       "points_lost": 6.0,
-      "priority": 17,
+      "priority": 16,
       "remediation": "Advertise a sitemap in robots.txt and, if the site publishes regularly, link an RSS or Atom feed from the head. Both are how a crawler finds pages nothing links to yet.",
       "severity": "low",
       "title": "The site is hard to discover in bulk"
@@ -473,17 +457,17 @@
   "schema_version": 1,
   "scores": {
     "categories": {
-      "citability": 72,
+      "citability": 84,
       "content": 34,
       "platform": 16,
       "schema": 15,
       "technical": 76
     },
-    "composite": 49,
+    "composite": 53,
     "tier": "weak",
     "tier_meaning": "Answers exist on the page but are buried in context that does not travel."
   },
-  "scoring_version": "2.0",
+  "scoring_version": "3.0",
   "signals": [
     {
       "class": "heuristic",
@@ -565,15 +549,15 @@
     {
       "class": "deterministic",
       "detail": {
-        "capped_thin_or_js_gated": true,
         "content_root": "main",
         "empty_framework_root": false,
         "framework_root_chars": null,
+        "js_gated": false,
         "js_required_notice": false,
         "lists": 0,
-        "max": 3.0,
-        "mean": 3.0,
-        "min": 3.0,
+        "max": 15.0,
+        "mean": 15.0,
+        "min": 15.0,
         "min_content_chars": 1200,
         "pages_measured": 2,
         "pages_total": 2,
@@ -583,7 +567,7 @@
       "id": "citability.extractability",
       "max": 15,
       "page": null,
-      "value": 3.0
+      "value": 15.0
     },
     {
       "class": "deterministic",

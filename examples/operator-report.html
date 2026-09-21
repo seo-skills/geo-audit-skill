@@ -147,7 +147,7 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--ink); }</style>
   <section aria-labelledby="verdict-heading">
     <h2 id="verdict-heading" class="sr-only" style="position:absolute;left:-9999px">Result</h2>
     <div class="verdict">
-      <span class="score">48</span>
+      <span class="score">51</span>
       <span class="outof">out of 100</span>
       <span class="tier">Weak</span>
     </div>
@@ -165,7 +165,7 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--ink); }</style>
 
     
     <h2>Summary</h2>
-    <p class="summary">fixture scores 48/100 (Weak) over 7 pages. Its strongest area is technical (82) and its weakest is platform (16). One fix comes before every other: Little usable content is present in the HTML the crawler receives.</p>
+    <p class="summary">fixture scores 51/100 (Weak) over 7 pages. Its strongest area is technical (82) and its weakest is platform (16). The largest single gain is “Authorship is not machine-readable”, worth up to 4.34 points on the overall score.</p>
     
 
     
@@ -183,11 +183,11 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--ink); }</style>
     <h2>What stands out</h2>
     <ul>
       
-      <li><strong>Little usable content is present in the HTML the crawler receives</strong> — critical, affects 6 pages.</li>
-      
       <li><strong>Authorship is not machine-readable</strong> — high, affects 7 pages.</li>
       
       <li><strong>Pages do not say when they were last checked</strong> — high, affects 6 pages.</li>
+      
+      <li><strong>Pages are too thin to answer anything on their own</strong> — high, affects 6 pages.</li>
       
     </ul>
     
@@ -195,28 +195,8 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--ink); }</style>
     
     <h2>What to do, in order</h2>
     
-    <div class="fix critical">
-      <h3>1. Little usable content is present in the HTML the crawler receives</h3>
-      <p class="tags">
-        <span class="tag">critical</span>
-        &middot; high effort
-        &middot; 6 pages
-        &middot; up to +2.77 on the overall score
-      </p>
-      <p>Server-render the main content, or pre-render it for crawlers. Most AI crawlers do not execute JavaScript, so content that only appears after hydration does not exist to them.</p>
-      
-      <div class="evidence">
-        <p>Averages 3.93 of 15 over 7 pages; the lowest, 0.03, is http://fixture/csr-shell.html.</p>
-        
-      </div>
-      
-      
-      <p class="pages">http://fixture/csr-shell.html · http://fixture/hub.html · http://fixture/injection.html and 3 more</p>
-      
-    </div>
-    
     <div class="fix high">
-      <h3>2. Authorship is not machine-readable</h3>
+      <h3>1. Authorship is not machine-readable</h3>
       <p class="tags">
         <span class="tag">high</span>
         &middot; medium effort
@@ -236,7 +216,7 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--ink); }</style>
     </div>
     
     <div class="fix high">
-      <h3>3. Pages do not say when they were last checked</h3>
+      <h3>2. Pages do not say when they were last checked</h3>
       <p class="tags">
         <span class="tag">high</span>
         &middot; low effort
@@ -256,7 +236,7 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--ink); }</style>
     </div>
     
     <div class="fix high">
-      <h3>4. Pages are too thin to answer anything on their own</h3>
+      <h3>3. Pages are too thin to answer anything on their own</h3>
       <p class="tags">
         <span class="tag">high</span>
         &middot; high effort
@@ -276,7 +256,7 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--ink); }</style>
     </div>
     
     <div class="fix high">
-      <h3>5. The page carries no structured data</h3>
+      <h3>4. The page carries no structured data</h3>
       <p class="tags">
         <span class="tag">high</span>
         &middot; medium effort
@@ -296,7 +276,7 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--ink); }</style>
     </div>
     
     <div class="fix high">
-      <h3>6. No machine-readable publisher identity</h3>
+      <h3>5. No machine-readable publisher identity</h3>
       <p class="tags">
         <span class="tag">high</span>
         &middot; low effort
@@ -316,7 +296,7 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--ink); }</style>
     </div>
     
     <div class="fix high">
-      <h3>7. The site is not served securely</h3>
+      <h3>6. The site is not served securely</h3>
       <p class="tags">
         <span class="tag">high</span>
         &middot; low effort
@@ -336,7 +316,7 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--ink); }</style>
     </div>
     
     <div class="fix high">
-      <h3>8. A link points at a page that does not exist</h3>
+      <h3>7. A link points at a page that does not exist</h3>
       <p class="tags">
         <span class="tag">high</span>
         &middot; low effort
@@ -355,6 +335,26 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--ink); }</style>
       
     </div>
     
+    <div class="fix medium">
+      <h3>8. The site publishes no llms.txt</h3>
+      <p class="tags">
+        <span class="tag">medium</span>
+        &middot; low effort
+        &middot; 7 pages
+        &middot; up to +4.12 on the overall score
+      </p>
+      <p>Add /llms.txt: one H1, a blockquote summary, then sections of markdown links to the pages worth reading. It is a convention rather than a standard - but it is the only place you get to state your own priorities in your own words, and `geo llmstxt --generate` writes a first draft from your own pages.</p>
+      
+      <div class="evidence">
+        <p>0 of 35 on every page measured (8): one shared template decides it, so one change fixes it everywhere.</p>
+        
+      </div>
+      
+      
+      <p class="pages">http://fixture/csr-shell.html · http://fixture/hub.html · http://fixture/injection.html and 4 more</p>
+      
+    </div>
+    
     
 
     
@@ -363,10 +363,8 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--ink); }</style>
        effort - and kept in the order above within each group. Anything that stops a crawler
        reading the site is in the first group whatever it costs.</p>
     
-    <h3>This week <span class="gain">low effort &middot; up to +23.9 overall</span></h3>
+    <h3>This week <span class="gain">low effort &middot; up to +21.2 overall</span></h3>
     <ol class="plan">
-      
-      <li>Little usable content is present in the HTML the crawler receives <span class="gain">+2.77</span></li>
       
       <li>Pages do not say when they were last checked <span class="gain">+4.29</span></li>
       
@@ -413,10 +411,12 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--ink); }</style>
       
     </ol>
     
-    <h3>This quarter <span class="gain">high effort &middot; up to +3.4 overall</span></h3>
+    <h3>This quarter <span class="gain">high effort &middot; up to +4 overall</span></h3>
     <ol class="plan">
       
       <li>Pages are too thin to answer anything on their own <span class="gain">+3.43</span></li>
+      
+      <li>Little usable content is present in the HTML the crawler receives <span class="gain">+0.53</span></li>
       
     </ol>
     
@@ -442,10 +442,10 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--ink); }</style>
       
         <tr>
           <td class="label" data-label="Category">citability</td>
-          <td class="num label" data-label="Score">61/100 <span class="bar" aria-hidden="true"><span style="width: 61%"></span></span></td>
-          <td class="label" data-label="Rating">fair</td>
+          <td class="num label" data-label="Score">70/100 <span class="bar" aria-hidden="true"><span style="width: 70%"></span></span></td>
+          <td class="label" data-label="Rating">good</td>
           <td class="num label" data-label="Weight">25</td>
-          <td class="num label" data-label="Adds">19.1</td>
+          <td class="num label" data-label="Adds">21.9</td>
           <td class="label" data-label="Measures">Whether a passage can be lifted from the page and used as an answer.</td>
         </tr>
       
@@ -481,10 +481,10 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--ink); }</style>
       <tfoot>
         <tr>
           <td class="label" data-label="Category">Overall</td>
-          <td class="num label" data-label="Score">48/100</td>
+          <td class="num label" data-label="Score">51/100</td>
           <td class="label" data-label="Rating">Weak</td>
           <td class="num label" data-label="Weight">80</td>
-          <td class="num label" data-label="Adds">48</td>
+          <td class="num label" data-label="Adds">51</td>
           <td class="label" data-label="Measures">Each category's score times its weight, over the total weight.</td>
         </tr>
       </tfoot>
@@ -693,7 +693,7 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--ink); }</style>
       </tbody>
     </table>
     
-    <h3>citability &mdash; 61/100</h3>
+    <h3>citability &mdash; 70/100</h3>
     <table class="signals">
       <tbody>
       
@@ -728,7 +728,7 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--ink); }</style>
         <tr>
           <td class="label" data-label="Measure">Content in the HTML</td>
           
-          <td class="num label" data-label="Score">3.93 of 15 <span class="bar" aria-hidden="true"><span style="width: 26%"></span></span></td>
+          <td class="num label" data-label="Score">12.86 of 15 <span class="bar" aria-hidden="true"><span style="width: 86%"></span></span></td>
           
         </tr>
       
@@ -868,87 +868,6 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--ink); }</style>
   
   <section>
     <h2>Everything found</h2>
-    
-    <h3>citability</h3>
-    
-    <div class="fix critical">
-      <h3>Little usable content is present in the HTML the crawler receives</h3>
-      <p class="tags"><span class="tag">critical</span> &middot; high effort &middot; 6 pages &middot; up to +2.77 on the overall score</p>
-      <p>Server-render the main content, or pre-render it for crawlers. Most AI crawlers do not execute JavaScript, so content that only appears after hydration does not exist to them.</p>
-      
-      <div class="evidence">
-        <p>Averages 3.93 of 15 over 7 pages; the lowest, 0.03, is http://fixture/csr-shell.html.</p>
-        
-      </div>
-      
-      <p class="pages">http://fixture/csr-shell.html · http://fixture/hub.html · http://fixture/injection.html · http://fixture/listing.html · http://fixture/schema-broken.html · http://fixture/schema-none.html</p>
-    </div>
-    
-    <div class="fix medium">
-      <h3>Claims arrive without numbers, dates or sources</h3>
-      <p class="tags"><span class="tag">medium</span> &middot; medium effort &middot; 6 pages &middot; up to +2.19 on the overall score</p>
-      <p>Add the specific figure, date, version or measurement to each claim, and link the primary source. Passages carrying a checkable fact are the ones engines quote.</p>
-      
-      <div class="evidence">
-        <p>Averages 6.25 of 15 over 7 pages; the lowest, 0, is http://fixture/csr-shell.html.</p>
-        
-      </div>
-      
-      <p class="pages">http://fixture/csr-shell.html · http://fixture/hub.html · http://fixture/injection.html · http://fixture/listing.html · http://fixture/schema-broken.html · http://fixture/schema-none.html</p>
-    </div>
-    
-    <div class="fix medium">
-      <h3>The page does not say who wrote it or when</h3>
-      <p class="tags"><span class="tag">medium</span> &middot; low effort &middot; 6 pages &middot; up to +1.96 on the overall score</p>
-      <p>Add a visible byline, a published date and a last-modified date, and mirror them in Article or Organization JSON-LD. Attribution is what lets an engine decide the page is safe to quote.</p>
-      
-      <div class="evidence">
-        <p>Averages 2.14 of 10 over 7 pages; the lowest, 0, is http://fixture/schema-broken.html.</p>
-        
-      </div>
-      
-      <p class="pages">http://fixture/csr-shell.html · http://fixture/hub.html · http://fixture/injection.html · http://fixture/listing.html · http://fixture/schema-broken.html · http://fixture/schema-none.html</p>
-    </div>
-    
-    <div class="fix medium">
-      <h3>Passages depend on the paragraph above them</h3>
-      <p class="tags"><span class="tag">medium</span> &middot; medium effort &middot; 1 page &middot; up to +1.43 on the overall score</p>
-      <p>Rewrite the opening sentence of each passage so it names its own subject. An engine lifts one paragraph, not the page: a paragraph that starts with &#34;This also means...&#34; arrives at the reader with nothing to point at.</p>
-      
-      <div class="evidence">
-        <p>Averages 19.26 of 25 over 7 pages; the lowest, 0, is http://fixture/csr-shell.html.</p>
-        
-      </div>
-      
-      <p class="pages">http://fixture/csr-shell.html</p>
-    </div>
-    
-    <div class="fix medium">
-      <h3>Sections build up to the answer instead of leading with it</h3>
-      <p class="tags"><span class="tag">medium</span> &middot; medium effort &middot; 1 page &middot; up to +0.71 on the overall score</p>
-      <p>Put the direct answer in the first sentence under each heading, then explain. Move throat-clearing openers below the answer or delete them.</p>
-      
-      <div class="evidence">
-        <p>Averages 17.14 of 20 over 7 pages; the lowest, 0, is http://fixture/csr-shell.html.</p>
-        
-      </div>
-      
-      <p class="pages">http://fixture/csr-shell.html</p>
-    </div>
-    
-    <div class="fix low">
-      <h3>Heading structure does not segment the page into answerable sections</h3>
-      <p class="tags"><span class="tag">low</span> &middot; low effort &middot; 1 page &middot; up to +0.58 on the overall score</p>
-      <p>Give the page one H1 and at least three H2s, each phrased as the question its section answers. Do not skip heading levels; split any section over 400 words.</p>
-      
-      <div class="evidence">
-        <p>Averages 12.67 of 15 over 7 pages; the lowest, 0, is http://fixture/csr-shell.html.</p>
-        
-      </div>
-      
-      <p class="pages">http://fixture/csr-shell.html</p>
-    </div>
-    
     
     <h3>content</h3>
     
@@ -1160,6 +1079,87 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--ink); }</style>
     </div>
     
     
+    <h3>citability</h3>
+    
+    <div class="fix medium">
+      <h3>Claims arrive without numbers, dates or sources</h3>
+      <p class="tags"><span class="tag">medium</span> &middot; medium effort &middot; 6 pages &middot; up to +2.19 on the overall score</p>
+      <p>Add the specific figure, date, version or measurement to each claim, and link the primary source. Passages carrying a checkable fact are the ones engines quote.</p>
+      
+      <div class="evidence">
+        <p>Averages 6.25 of 15 over 7 pages; the lowest, 0, is http://fixture/csr-shell.html.</p>
+        
+      </div>
+      
+      <p class="pages">http://fixture/csr-shell.html · http://fixture/hub.html · http://fixture/injection.html · http://fixture/listing.html · http://fixture/schema-broken.html · http://fixture/schema-none.html</p>
+    </div>
+    
+    <div class="fix medium">
+      <h3>The page does not say who wrote it or when</h3>
+      <p class="tags"><span class="tag">medium</span> &middot; low effort &middot; 6 pages &middot; up to +1.96 on the overall score</p>
+      <p>Add a visible byline, a published date and a last-modified date, and mirror them in Article or Organization JSON-LD. Attribution is what lets an engine decide the page is safe to quote.</p>
+      
+      <div class="evidence">
+        <p>Averages 2.14 of 10 over 7 pages; the lowest, 0, is http://fixture/schema-broken.html.</p>
+        
+      </div>
+      
+      <p class="pages">http://fixture/csr-shell.html · http://fixture/hub.html · http://fixture/injection.html · http://fixture/listing.html · http://fixture/schema-broken.html · http://fixture/schema-none.html</p>
+    </div>
+    
+    <div class="fix medium">
+      <h3>Passages depend on the paragraph above them</h3>
+      <p class="tags"><span class="tag">medium</span> &middot; medium effort &middot; 1 page &middot; up to +1.43 on the overall score</p>
+      <p>Rewrite the opening sentence of each passage so it names its own subject. An engine lifts one paragraph, not the page: a paragraph that starts with &#34;This also means...&#34; arrives at the reader with nothing to point at.</p>
+      
+      <div class="evidence">
+        <p>Averages 19.26 of 25 over 7 pages; the lowest, 0, is http://fixture/csr-shell.html.</p>
+        
+      </div>
+      
+      <p class="pages">http://fixture/csr-shell.html</p>
+    </div>
+    
+    <div class="fix medium">
+      <h3>Sections build up to the answer instead of leading with it</h3>
+      <p class="tags"><span class="tag">medium</span> &middot; medium effort &middot; 1 page &middot; up to +0.71 on the overall score</p>
+      <p>Put the direct answer in the first sentence under each heading, then explain. Move throat-clearing openers below the answer or delete them.</p>
+      
+      <div class="evidence">
+        <p>Averages 17.14 of 20 over 7 pages; the lowest, 0, is http://fixture/csr-shell.html.</p>
+        
+      </div>
+      
+      <p class="pages">http://fixture/csr-shell.html</p>
+    </div>
+    
+    <div class="fix medium">
+      <h3>Little usable content is present in the HTML the crawler receives</h3>
+      <p class="tags"><span class="tag">medium</span> &middot; high effort &middot; 1 page &middot; up to +0.53 on the overall score</p>
+      <p>Server-render the main content, or pre-render it for crawlers. Most AI crawlers do not execute JavaScript, so content that only appears after hydration does not exist to them.</p>
+      
+      <div class="evidence">
+        <p>Averages 12.86 of 15 over 7 pages; the lowest, 0.03, is http://fixture/csr-shell.html.</p>
+        
+      </div>
+      
+      <p class="pages">http://fixture/csr-shell.html</p>
+    </div>
+    
+    <div class="fix low">
+      <h3>Heading structure does not segment the page into answerable sections</h3>
+      <p class="tags"><span class="tag">low</span> &middot; low effort &middot; 1 page &middot; up to +0.58 on the overall score</p>
+      <p>Give the page one H1 and at least three H2s, each phrased as the question its section answers. Do not skip heading levels; split any section over 400 words.</p>
+      
+      <div class="evidence">
+        <p>Averages 12.67 of 15 over 7 pages; the lowest, 0, is http://fixture/csr-shell.html.</p>
+        
+      </div>
+      
+      <p class="pages">http://fixture/csr-shell.html</p>
+    </div>
+    
+    
   </section>
   
 
@@ -1259,31 +1259,31 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--ink); }</style>
         <tr>
           <td class="label" data-label="Page">http://fixture/hub.html</td>
           <td class="num label" data-label="Status">200</td>
-          <td class="num label" data-label="Findings">14</td>
+          <td class="num label" data-label="Findings">13</td>
         </tr>
       
         <tr>
           <td class="label" data-label="Page">http://fixture/injection.html</td>
           <td class="num label" data-label="Status">200</td>
-          <td class="num label" data-label="Findings">14</td>
+          <td class="num label" data-label="Findings">13</td>
         </tr>
       
         <tr>
           <td class="label" data-label="Page">http://fixture/listing.html</td>
           <td class="num label" data-label="Status">200</td>
-          <td class="num label" data-label="Findings">14</td>
+          <td class="num label" data-label="Findings">13</td>
         </tr>
       
         <tr>
           <td class="label" data-label="Page">http://fixture/schema-broken.html</td>
           <td class="num label" data-label="Status">200</td>
-          <td class="num label" data-label="Findings">14</td>
+          <td class="num label" data-label="Findings">13</td>
         </tr>
       
         <tr>
           <td class="label" data-label="Page">http://fixture/schema-none.html</td>
           <td class="num label" data-label="Status">200</td>
-          <td class="num label" data-label="Findings">14</td>
+          <td class="num label" data-label="Findings">13</td>
         </tr>
       
         <tr>
@@ -1378,7 +1378,7 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--ink); }</style>
       
       <tr><td class="label" data-label="Signal"><code>citability.extractability</code></td>
           <td class="label" data-label="Class">deterministic</td>
-          <td class="num label" data-label="Value">3.93/15</td></tr>
+          <td class="num label" data-label="Value">12.86/15</td></tr>
       
       <tr><td class="label" data-label="Signal"><code>citability.attribution</code></td>
           <td class="label" data-label="Class">deterministic</td>
@@ -1505,7 +1505,7 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--ink); }</style>
 
 
   <footer class="colophon">
-    <p>Evidence PARTIAL &middot; scoring 2.0 &middot;
+    <p>Evidence PARTIAL &middot; scoring 3.0 &middot;
        data 2026.09 &middot; normalizer 2</p>
     
     <p>Generated with SEOmator GEO Audit Skill 0.6.0.</p>

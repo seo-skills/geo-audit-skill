@@ -7,6 +7,20 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **Extractability scores evidence that content needs JavaScript, not length**
+  (`scoring_version` 3.0). A page under 1,200 characters was capped as if gated, and
+  `citability.extractability` being a blocker put *Little usable content is present in
+  the HTML the crawler receives* - with the advice to server-render - first in the
+  eval's reports for Adafruit and EFF, on product and about pages that are simply
+  short. Rendered in a browser, none of the five pages named gained a single
+  character. The signal now scores full marks unless a page shows it is gated: an
+  empty app mount, or a JavaScript notice on a page serving too little to have its
+  content anyway, which also stops template notices on server-rendered pages counting.
+  How much a page says stays with `content.depth`. The detail key
+  `capped_thin_or_js_gated` is now `js_gated`. A major scoring bump: composites move.
+
 ## [0.6.0] - 2026-09-21
 
 ### Changed

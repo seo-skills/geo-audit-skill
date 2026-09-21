@@ -119,18 +119,16 @@ def test_golden_audit(site, geo_home):
 def test_golden_audit_partial(site, geo_home):
     """The start URL is refused, the sitemap still yields pages, so the run is PARTIAL.
 
-    No other golden covers a PARTIAL stamp, a populated `pages_failed`, or two
-    blocking findings competing for the lead - which is where the ordering bug
-    lived: the refused page is never scored, so it carries no impact, and it
-    lost the tiebreak to a blocker that had been measured.
+    No other golden covers a PARTIAL stamp or a populated `pages_failed`. The
+    refused page leads although it was never scored and carries no impact; the
+    tiebreak that once lost it the lead is pinned in test_scoring, since the
+    pages behind this start URL no longer produce a second blocker - short pages
+    stopped counting as gated in scoring 3.0.
     """
     _, envelope = run(["audit", f"{site.url}/bot-block", "--allow-private", "--rate", "50",
                        "--max-pages", "8"])
     assert envelope["evidence"]["stamp"] == "PARTIAL"
-    assert [f["id"] for f in envelope["findings"][:2]] == [
-        "fetch.blocked",
-        "citability.extractability",
-    ]
+    assert envelope["findings"][0]["id"] == "fetch.blocked"
     assert_matches("audit-bot-block", envelope, site.url)
 
 

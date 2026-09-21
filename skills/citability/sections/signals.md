@@ -62,14 +62,20 @@ one most commonly missing from marketing pages.
 
 **Question:** is the content in the HTML a non-rendering crawler receives?
 
-Eight points scaled to 3,000 characters of extracted content; four points for the
-ratio of extracted content to total body text, scaled to 0.25; two points for at
-least one list; one for at least one table.
+Full marks unless the page shows that its content needs JavaScript. Without a
+browser the evidence is what the page says about itself: an app mount (`#root`,
+`#app`, `#__next`, `#__nuxt`) with nothing in it, or a "you need to enable
+JavaScript" notice on a page serving fewer than 1,200 characters of content. App
+templates carry that notice even when the server rendered everything, so on a page
+that has its content it means nothing.
 
-**The cap.** If the page carries a "you need to enable JavaScript" notice, or has
-fewer than 1,200 characters of content, the total is capped at 3 regardless of the
-components. A page that tells the visitor to enable JavaScript has told you what the
-crawler got.
+**A gated page** is scored on what still arrives - eight points scaled to 3,000
+characters of content, four for the ratio of content to body text scaled to 0.25,
+two for a list, one for a table - and capped at 3.
+
+**A short page is not a gated one.** How much a page says is `content.depth`'s
+question. A short server-rendered page has all of its content in the HTML, and
+telling it to server-render is wrong advice.
 
 ## citability.attribution — 10 points, deterministic
 

@@ -4,8 +4,8 @@
   "compare": {
     "categories": {
       "citability": {
-        "after": 61,
-        "before": 61,
+        "after": 70,
+        "before": 70,
         "delta": 0
       },
       "content": {
@@ -60,7 +60,7 @@
       "resolved_titles": []
     },
     "from": {
-      "composite": 48,
+      "composite": 51,
       "observed_at": "<volatile>",
       "pages_ok": 7,
       "run_id": "<volatile>",
@@ -75,7 +75,7 @@
     "signals": [],
     "tier_changed": false,
     "to": {
-      "composite": 48,
+      "composite": 51,
       "observed_at": "<volatile>",
       "pages_ok": 7,
       "run_id": "<volatile>",
@@ -85,12 +85,12 @@
       "from": {
         "data_version": "2026.09",
         "normalizer_version": 2,
-        "scoring_version": "2.0"
+        "scoring_version": "3.0"
       },
       "to": {
         "data_version": "2026.09",
         "normalizer_version": 2,
-        "scoring_version": "2.0"
+        "scoring_version": "3.0"
       }
     }
   },
@@ -123,17 +123,17 @@
   "schema_version": 1,
   "scores": {
     "categories": {
-      "citability": 61,
+      "citability": 70,
       "content": 36,
       "platform": 16,
       "schema": 24,
       "technical": 82
     },
-    "composite": 48,
+    "composite": 51,
     "tier": "weak",
     "tier_meaning": "Answers exist on the page but are buried in context that does not travel."
   },
-  "scoring_version": "2.0",
+  "scoring_version": "3.0",
   "signals": [],
   "site": "127.0.0.1",
   "url": "http://fixture/hub.html"

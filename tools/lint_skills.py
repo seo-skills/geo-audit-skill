@@ -167,7 +167,7 @@ def known_keys() -> set[str]:
                    "prose_blocks", "blocks_with_facts", "external_domains",
                    "content_chars", "content_ratio", "js_required_notice",
                    "framework_root_chars", "empty_framework_root",
-                   "capped_thin_or_js_gated", "static_chars", "rendered_chars",
+                   "js_gated", "static_chars", "rendered_chars",
                    "jsonld_types", "same_as_count", "linked_hosts",
                    "links_to_encyclopedic", "wikipedia_results", "wikidata_results",
                    "reddit_results", "youtube_results", "missing_required",

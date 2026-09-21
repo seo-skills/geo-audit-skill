@@ -143,13 +143,13 @@
   "schema_version": 1,
   "scores": {
     "categories": {
-      "citability": 94
+      "citability": 97
     },
-    "composite": 94,
+    "composite": 97,
     "tier": "excellent",
     "tier_meaning": "AI engines can lift answers from this page with almost no rewriting."
   },
-  "scoring_version": "2.0",
+  "scoring_version": "3.0",
   "signals": [
     {
       "class": "heuristic",
@@ -222,12 +222,12 @@
       "class": "deterministic",
       "detail": {
         "body_chars": 2154,
-        "capped_thin_or_js_gated": false,
         "content_chars": 2052,
         "content_ratio": 0.953,
         "content_root": "main",
         "empty_framework_root": false,
         "framework_root_chars": null,
+        "js_gated": false,
         "js_required_notice": false,
         "lists": 1,
         "min_content_chars": 1200,
@@ -236,7 +236,7 @@
       "id": "citability.extractability",
       "max": 15,
       "page": "http://fixture/ssr-rich.html",
-      "value": 12.47
+      "value": 15.0
     },
     {
       "class": "deterministic",
