@@ -4,11 +4,12 @@ build-backend = "hatchling.build"
 
 [project]
 name = "seomator-geo-audit"
-version = "0.5.0"
+version = "0.6.0"
 description = "SEOmator GEO Audit Skill: a deterministic GEO (Generative Engine Optimization) audit CLI for Claude Code. Every number is reproducible from recorded evidence."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }
+authors = [{ name = "SEOmator" }]
 keywords = ["geo", "seo", "generative-engine-optimization", "ai-search", "audit", "llms-txt"]
 classifiers = [
   "Development Status :: 3 - Alpha",
@@ -36,6 +37,7 @@ geo = "geo_audit.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/seo-skills/geo-audit-skill"
+SEOmator = "https://seomator.com"
 Source = "https://github.com/seo-skills/geo-audit-skill"
 Issues = "https://github.com/seo-skills/geo-audit-skill/issues"
 Changelog = "https://github.com/seo-skills/geo-audit-skill/blob/main/CHANGELOG.md"

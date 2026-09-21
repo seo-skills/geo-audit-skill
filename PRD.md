@@ -44,10 +44,9 @@ Three alternatives were weighed: (A) full rewrite, (B) three incremental PRs (wi
 
 ### 1.2 Relationship to upstream and positioning
 
-<!-- TODO(maintainer): 5–8 lines only you can write. See "Your turn" in the hand-off note.
-     The provisional text below keeps the PRD usable until then. -->
+*Positioning, from the maintainer, 2026-09-21:* SEOmator GEO Audit Skill (`geo-audit-skill`) is SEOmator's free GEO audit for Claude Code, MIT-licensed, © 2026 SEOmator. For more features, agentic ones included, users sign up for SEOmator's product at seomator.com. The README and the PyPI page say so; client reports do not, because an agency sends them under its own name.
 
-*Provisional:* SEOmator GEO Audit Skill (`geo-audit-skill`) is an independent, MIT-licensed project built on geo-seo-claude's structure and prompts, **with the agreement of its author**, who continues to maintain upstream (last upstream commit 2026-09-18). It is not a GitHub fork and does not track upstream. It differs in one claim: **every number in a report is reproducible from recorded evidence.** Upstream optimizes for breadth of advice; this project optimizes for audits you can defend to a client. README and LICENSE carry no upstream credit: the agreement makes the upstream notice unnecessary, and the optional credit line was left out at the maintainer's instruction (D1, D4). We do not install over, migrate in place, or uninstall upstream; the two coexist on one machine (§3.1).
+It is an independent project built on geo-seo-claude's structure and prompts, **with the agreement of its author**, who continues to maintain upstream (last upstream commit 2026-09-18). It is not a GitHub fork and does not track upstream. It differs in one claim: **every number in a report is reproducible from recorded evidence.** Upstream optimizes for breadth of advice; this project optimizes for audits you can defend to a client. README and LICENSE carry no upstream credit: the agreement makes the upstream notice unnecessary, and the optional credit line was left out at the maintainer's instruction (D1, D4). We do not install over, migrate in place, or uninstall upstream; the two coexist on one machine (§3.1).
 
 ---
 
@@ -638,6 +637,15 @@ because a 304 does not vouch for headers - see the open list. The envelope's fro
 level is unchanged: `rescore` gained `from`, `prune` gained the page fields and `skipped`.
 No score moves.
 
+### 0.6.0 - Articles only - released 2026-09-21
+
+Authorship, attribution and Article markup are scored on articles only (open item 8),
+with *not applicable* as a third state beside computed and not measured, and scoring
+moves to 2.0 because the change moves the composite of a site that did not change. The
+skill contract teaches the model the new state, so the skills now expect the 0.6 CLI.
+The positioning in §1.2 is written, and the README and the PyPI page point to
+seomator.com. `plugin.yml` installs each tagged release on Ubuntu, macOS and Windows.
+
 ### Open before the next milestone
 
 1. ~~Publish to PyPI.~~ **Done 2026-09-21:** `seomator-geo-audit` 0.4.0 released through
@@ -648,7 +656,8 @@ No score moves.
    Claude Code installs the published 0.5.0 plugin from a clean config on Windows, as on
    Ubuntu and macOS, and registers all nine skills. It reruns on every release tag. The
    live session - the first real `/geo:audit`, on seomator.com - was on macOS.
-3. Write §1.2.
+3. ~~Write §1.2.~~ **Done 2026-09-21** from the maintainer's positioning: MIT, © SEOmator,
+   with SEOmator's product at seomator.com for more features, agentic ones included.
 4. ~~Confirm the D4 copyright holder.~~ **Confirmed 2026-09-21: SEOmator.**
 5. **Run the practitioner eval.** It is the only gate left before 1.0 and the only
    check in the project that needs a person: `python tests/evals/run_eval.py`, five

@@ -7,6 +7,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-09-21
+
 ### Changed
 
 - **Authorship, attribution and Article markup are scored on articles only**
@@ -22,6 +24,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   sites from their stored pages moved composites by 0 to +4 points, and a shop's
   authorship finding went away. A major scoring bump, so `compare` refuses to set a new
   run against an older one and report the rule change as the site moving.
+- **The README and the PyPI page point to SEOmator.** The package names SEOmator as
+  its author and links seomator.com, where the product offers more features, agentic
+  ones included.
 
 ## [0.5.0] - 2026-09-21
 
@@ -539,7 +544,8 @@ contract behind them, and one skill end to end.
   composite is taken over the signals that were computed; a signal that was not
   measured is never scored as a failure.
 
-[Unreleased]: https://github.com/seo-skills/geo-audit-skill/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/seo-skills/geo-audit-skill/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.6.0
 [0.5.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.5.0
 [0.4.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.4.0
 [0.3.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.3.0
