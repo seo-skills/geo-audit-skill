@@ -383,7 +383,7 @@ freeze is here; 1.0.0 is the promise. The gate is two consecutive practitioner e
 where an outside reviewer would send four of five reports unedited. See
 [tests/evals/README.md](tests/evals/README.md).
 
-## [0.3.0] - 2026-09-20
+## 0.3.0 - 2026-09-20
 
 Reports, comparison, and the last two scoring categories. All six categories now
 compute and their weights sum to 100.
@@ -433,7 +433,7 @@ compute and their weights sum to 100.
 - Three skills shipped naming the old product in their preflight. The lint now
   catches that class.
 
-## [0.2.0] - 2026-09-20
+## 0.2.0 - 2026-09-20
 
 The audit itself: a crawler, four scored categories, and five more skills.
 
@@ -505,7 +505,7 @@ The audit itself: a crawler, four scored categories, and five more skills.
 - An empty page reports the one finding that explains the absence instead of six that
   presuppose content it does not have.
 
-## [0.1.0] - 2026-09-20
+## 0.1.0 - 2026-09-20
 
 The walking skeleton: three commands with the full safety, evidence and exit-code
 contract behind them, and one skill end to end.
@@ -565,6 +565,3 @@ contract behind them, and one skill end to end.
 [0.6.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.6.0
 [0.5.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.5.0
 [0.4.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.4.0
-[0.3.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.3.0
-[0.2.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.2.0
-[0.1.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.1.0

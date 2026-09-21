@@ -91,7 +91,9 @@ Full definitions and thresholds: [docs/concepts/signals.md](docs/concepts/signal
 `completeness` names it, and the score is taken over the signals that were computed.
 The same rule applies one level up: `geo audit --only schema` scores out of schema,
 not out of schema plus five zeroes. A category whose input you did not supply — brand,
-without a name — is out of scope rather than missing.
+without a name — is out of scope rather than missing. A signal that does not apply is out
+of scope the same way: authorship, attribution and Article markup on a home page, a
+product or a tool are `null` and *not applicable*, which is not a gap.
 
 **Model judgement never becomes a number.** Two content questions are marked
 `advisory`: they carry a rubric and no value, a model answers them, and the composite
