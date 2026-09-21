@@ -14,7 +14,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   once under the SHA-256 of its bytes - an unchanged page costs nothing on a re-audit -
   with robots.txt beside it. The record names them by hash; it never contains them, so
   sharing `audits.jsonl` shares no one's pages, and nothing is ever printed. `geo prune`
-  deletes a page once no kept run names it and reports how many.
+  deletes a page once no kept run names it and reports how many. Pages have their own
+  budget, 100 MB a project (`max_page_bytes`): storing a page once bounds nothing for a
+  site whose pages change every run, and a measured page ran to 62 KB gzipped. Past the
+  budget the oldest runs lose their pages first and keep their records, which then
+  rescore from the recorded ratios; a run keeps all its pages or none.
 - **`--rescore` recomputes from the stored pages.** It reads back the pages an audit
   read and runs extraction, every signal and every finding again with today's code, so
   a rule changed since the audit is re-applied to the exact bytes rather than replaying

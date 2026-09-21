@@ -26,6 +26,7 @@ def _limits(args) -> dict:
         "keep_runs": args.keep if args.keep is not None else defaults["keep_runs"],
         "keep_days": args.older_than if args.older_than is not None else defaults["keep_days"],
         "max_project_bytes": defaults["max_project_bytes"],
+        "max_page_bytes": defaults["max_page_bytes"],
     }
 
 
@@ -75,7 +76,8 @@ def _project_report(slug: str, limits: dict, now: datetime, apply: bool) -> dict
     for entry in dropped:
         reasons[entry["reason"]] = reasons.get(entry["reason"], 0) + 1
 
-    pages_deleted, page_bytes = pages_lib.collect(slug, pages_lib.referenced(kept), apply)
+    keep_pages = pages_lib.plan_keep(slug, kept, limits["max_page_bytes"])
+    pages_deleted, page_bytes = pages_lib.collect(slug, keep_pages, apply)
 
     after_bytes = before_bytes
     if apply and (dropped or damaged):
@@ -99,6 +101,7 @@ def _project_report(slug: str, limits: dict, now: datetime, apply: bool) -> dict
         # Stored pages go with the runs that named them.
         "pages_deleted": pages_deleted,
         "page_bytes_reclaimed": page_bytes,
+        "page_bytes_kept": sum(pages_lib._size(slug, name) for name in keep_pages),
     }
 
 

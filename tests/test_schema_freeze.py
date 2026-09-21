@@ -199,7 +199,7 @@ def _stand_in(key: str):
     """
     if key in REHYDRATE:
         return REHYDRATE[key]
-    if key.startswith("bytes_") or key.endswith("_ms"):
+    if "bytes" in key or key.endswith("_ms"):
         return 1234
     return "/tmp/scrubbed"
 

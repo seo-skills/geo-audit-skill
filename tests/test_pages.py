@@ -184,3 +184,30 @@ def test_a_304_for_a_page_the_store_no_longer_has_is_asked_again_plainly(serve, 
     second = _audit_guide(site)
     assert second["crawl"]["revalidated"] == 0
     assert second["scores"] == first["scores"]
+
+
+# --- a budget for the page store ----------------------------------------------
+
+
+def test_the_page_store_keeps_the_newest_runs_whole_within_its_budget(geo_home):
+    """Measured on seomator.com: 62 KB a page gzipped. Storing a page once bounds
+    growth only for pages that do not change; a site that changes every page on
+    every run would add megabytes an audit. So pages get their own budget, and
+    the oldest runs lose theirs first - their records stay, and rescore from the
+    recorded ratios. A run keeps all its pages or none, so no replay is partial."""
+    slug = "budget-test"
+    old = pages.put(slug, "".join(f"old page line {i}\n" for i in range(3000)))
+    new = pages.put(slug, "".join(f"new page line {i}\n" for i in range(3000)))
+    shared = pages.put(slug, "robots.txt shared by both runs\n")
+    newest_first = [
+        {"snapshot": {"fetches": [{"body": new}], "robots": {"body": shared}}},
+        {"snapshot": {"fetches": [{"body": old}], "robots": {"body": shared}}},
+    ]
+
+    def size(digest):
+        return (pages.store_dir(slug) / f"{digest}{pages.SUFFIX}").stat().st_size
+
+    room_for_one = size(new) + size(shared)
+    assert pages.plan_keep(slug, newest_first, room_for_one) == {new, shared}
+    assert pages.plan_keep(slug, newest_first, room_for_one + size(old)) == {new, shared, old}
+    assert pages.plan_keep(slug, newest_first, room_for_one - 1) == set(), "whole runs or nothing"

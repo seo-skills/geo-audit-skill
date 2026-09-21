@@ -63,6 +63,32 @@ def referenced(records: list[dict]) -> set[str]:
     return names
 
 
+def _size(slug: str, digest: str) -> int:
+    path = store_dir(slug) / f"{digest}{SUFFIX}"
+    return path.stat().st_size if path.exists() else 0
+
+
+def plan_keep(slug: str, newest_first: list[dict], budget: int) -> set[str]:
+    """Which stored pages to keep: the newest runs' pages, as far as the budget goes.
+
+    Storing a page once bounds growth only for pages that do not change, and a
+    measured page ran to 62 KB gzipped. So the store has a budget. A run keeps
+    all of its pages or none - a partial replay would score a different site -
+    and past the budget the older runs lose theirs; their records stay, and a
+    rescore of them falls back to the recorded ratios.
+    """
+    keep: set[str] = set()
+    used = 0
+    for record in newest_first:
+        names = referenced([record]) - keep
+        cost = sum(_size(slug, name) for name in names)
+        if used + cost > budget:
+            break
+        keep |= names
+        used += cost
+    return keep
+
+
 def collect(slug: str, keep: set[str], apply: bool) -> tuple[int, int]:
     """Pages no kept run names: how many, how many bytes, deleted if `apply`."""
     count = size = 0

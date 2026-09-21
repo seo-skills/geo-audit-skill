@@ -41,6 +41,10 @@ VOLATILE_FIELDS = (
     # Sizes of files whose content carries a host and port.
     "bytes_before",
     "bytes_after",
+    # Gzipped sizes: zlib builds differ between platforms, so the same page can
+    # compress to a different number of bytes on another machine.
+    "page_bytes_kept",
+    "page_bytes_reclaimed",
     "bytes_reclaimed",
     # $GEO_HOME as displayed: a machine path by definition.
     "home",
