@@ -39,6 +39,8 @@ CATEGORY_BLURB = {
     "technical": "Whether a crawler can reach, read and index the page at all.",
     "schema": "Whether the page describes itself in a form nobody has to interpret.",
     "brand": "Whether the name resolves to an entity an engine can look up.",
+    "content": "Whether the writing says who stands behind it, when it was last checked, and enough to answer on its own.",
+    "platform": "Whether the site publishes what engines read around its pages: llms.txt, feeds, social cards and language versions.",
 }
 
 SEVERITY_ORDER = ("critical", "high", "medium", "low")

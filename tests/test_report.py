@@ -422,3 +422,13 @@ def test_a_real_pdf_renders_through_the_print_pipeline(audited, site, tmp_path):
     assert raw.startswith(b"%PDF-"), "not a PDF"
     assert len(raw) > 10_000, "a one-page stub means the print stylesheet did not apply"
     assert b"/Type /Page" in raw or b"/Type/Page" in raw
+
+
+def test_every_category_says_what_it_measures():
+    """Round three's dry run: the client report's category table had blank
+    "What it measures" cells for content and platform - in every report sent.
+    """
+    from geo_audit import data
+
+    for category in data.weights():
+        assert context_lib.CATEGORY_BLURB.get(category), f"{category} has no description"

@@ -34,6 +34,10 @@ before a practitioner spends time on them (`tests/evals/results/eval-2026-09-21-
   had been on the llms.txt and feeds findings all along, and a bot-blocked page too. Such
   a page is now named only on findings about its response. No score moved: llms.txt has
   one value on every page, so only the list of pages to look at changed.
+- **Every client report had two blank cells** in the table that explains the scores:
+  *What it measures* was empty for content and platform, because only four of the six
+  categories had a description. Both have one, and a test requires one for any category
+  added later.
 - **Two findings named their own severity** - MDN's report put *high* beside "which is
   why this is medium". Severity moves with a site kind and the page-level cap, so a test
   now rejects finding text that says which level it sits at.
