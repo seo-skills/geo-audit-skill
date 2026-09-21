@@ -432,3 +432,81 @@ def test_every_category_says_what_it_measures():
 
     for category in data.weights():
         assert context_lib.CATEGORY_BLURB.get(category), f"{category} has no description"
+
+
+# --- strengths -------------------------------------------------------------
+
+
+def _signal(signal_id, value, maximum=10, cls="deterministic"):
+    return {"id": signal_id, "class": cls, "value": value, "max": maximum, "page": None, "detail": {}}
+
+
+WEIGHTS = {"technical": 15, "platform": 10, "schema": 10}
+
+
+def test_a_strength_is_a_strong_signal_with_no_finding_of_its_own():
+    """Three rounds of maintainer notes: a report that lists only faults reads
+    as grudging, and a 76 with nothing named for it is the first thing edited.
+    """
+    signals = [
+        _signal("technical.transport_security", 10),   # strong, no finding
+        _signal("technical.status_health", 10),        # strong, but reported below
+        _signal("schema.presence", 5),                 # not strong
+        _signal("schema.validity", None),              # not measured
+        _signal("content.expertise", None, cls="advisory"),
+    ]
+    findings = [{"id": "technical.status_health"}]
+    shown = context_lib.strengths(signals, findings, WEIGHTS, None)
+    assert [s["id"] for s in shown] == ["technical.transport_security"]
+    assert shown[0]["text"]
+
+
+def test_a_strength_never_sits_beside_a_finding_about_it():
+    """95% HTTPS and one page on http: "served over HTTPS" beside "not served
+    securely" is the contradiction this rule exists to prevent."""
+    signals = [_signal("technical.transport_security", 9.5)]
+    page_level = [{"id": "technical.transport_security", "page_level": True}]
+    assert context_lib.strengths(signals, page_level, WEIGHTS, None) == []
+
+
+def test_heavier_categories_first_and_the_kind_first_of_all():
+    signals = [_signal("platform.llms_txt", 10), _signal("technical.transport_security", 10)]
+    plain = [s["id"] for s in context_lib.strengths(signals, [], WEIGHTS, None)]
+    docs = [s["id"] for s in context_lib.strengths(signals, [], WEIGHTS, "docs")]
+    assert plain == ["technical.transport_security", "platform.llms_txt"]
+    assert docs == ["platform.llms_txt", "technical.transport_security"]
+
+
+def test_at_most_three_strengths():
+    signals = [_signal(f"technical.{name}", 10) for name in
+               ("transport_security", "status_health", "indexability", "metadata", "url_structure")]
+    assert len(context_lib.strengths(signals, [], WEIGHTS, None)) == 3
+
+
+def test_a_report_with_strengths_says_what_is_working(audited, site):
+    html = html_of(site)
+    shown = report(site)["strengths"]
+    assert shown, "the fixture site must have at least one strength"
+    assert "What is already working" in html
+
+
+def test_a_site_with_no_strengths_gets_no_empty_section():
+    brand = brand_lib.load(None)
+    envelope = {"signals": [_signal("schema.presence", 1)], "findings": [], "scores": {}}
+    client, _ = context_lib.build(envelope, brand, generated_on="2026-09-21")
+    assert client.strengths == []
+    assert "What is already working" not in render_lib.render_client(client)
+
+
+def test_strengths_are_spread_across_categories_before_repeating_one():
+    """Round three's dry run: plausible's three strengths were all citability, and
+    its best category - technical, 95 - went unmentioned. A practitioner names
+    what works across areas before naming a second thing in one."""
+    signals = [
+        _signal("citability.self_containment", 25, 25), _signal("citability.answer_first", 20, 20),
+        _signal("citability.extractability", 15, 15), _signal("technical.transport_security", 10),
+    ]
+    weights = {"citability": 25, "technical": 15}
+    shown = [s["id"] for s in context_lib.strengths(signals, [], weights, None)]
+    assert shown[:2] == ["citability.self_containment", "technical.transport_security"]
+    assert len(shown) == 3

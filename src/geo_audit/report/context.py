@@ -93,6 +93,7 @@ class ClientContext:
     advisory: list[dict] = field(default_factory=list)
     # Set when the findings were ordered for a kind of site. The scores never are.
     ordered_for: str | None = None
+    strengths: list[dict] = field(default_factory=list)
     methodology: list[dict] = field(default_factory=list)
     signal_classes: list[dict] = field(default_factory=list)
     versions: dict = field(default_factory=dict)
@@ -138,6 +139,52 @@ def _ordered_for(site_kind: str | None) -> str | None:
         f"Ordered for {spec['label']}. {spec['note']} "
         "The scores are the same whatever the kind of site."
     )
+
+
+def strengths(
+    signals: list[dict], findings: list[dict], weights: dict[str, int], site_kind: str | None
+) -> list[dict]:
+    """What the site already does well: up to three, never contradicted.
+
+    Three rounds of maintainer notes said it - a report that lists only what is
+    wrong reads as grudging, and a 76 with nothing named for it is the first
+    thing a practitioner edits before sending.
+
+    A strength is a site-wide signal at or above `strength_at_least` of its
+    maximum that has no finding anywhere in the report, page-level included, so
+    "served over HTTPS" never sits beside "not served securely". Heavier
+    categories come first, then the signals that carry more of their category,
+    one per category before a second from any; with a site kind, what it leads
+    with comes first and what it defers last.
+    """
+    floor = data.thresholds("findings")["strength_at_least"]
+    templates = data.load("findings")["signals"]
+    reported = {finding["id"] for finding in findings}
+    spec = site_kinds()[site_kind] if site_kind else {"lead": [], "defer": []}
+    ranked = []
+    for signal in signals:
+        signal_id, value, maximum = signal["id"], signal.get("value"), signal.get("max")
+        if signal.get("class") == "advisory" or value is None or not maximum:
+            continue
+        if value / maximum < floor or signal_id in reported:
+            continue
+        sentence = (templates.get(signal_id) or {}).get("strength")
+        if not sentence:
+            continue
+        kind_rank = 0 if signal_id in spec["lead"] else 2 if signal_id in spec["defer"] else 1
+        category = signal_id.split(".", 1)[0]
+        ranked.append(((kind_rank, -weights.get(category, 0), -maximum, signal_id), sentence))
+    # One per category before a second from any: the heaviest category otherwise
+    # takes every slot, and plausible's best area - technical, 95 - went unnamed.
+    ordered = sorted(ranked)
+    chosen, used = [], set()
+    for key, sentence in ordered:
+        category = key[-1].split(".", 1)[0]
+        if category not in used:
+            chosen.append((key, sentence))
+            used.add(category)
+    chosen += [pair for pair in ordered if pair not in chosen]
+    return [{"id": key[-1], "text": sentence} for key, sentence in chosen[:3]]
 
 
 def _fixes_from(findings: list[dict]) -> list[Fix]:
@@ -222,6 +269,9 @@ def build(
         evidence_stamp=evidence.get("stamp", "CURRENT"),
         evidence_note=_evidence_note(envelope),
         ordered_for=_ordered_for(site_kind),
+        strengths=strengths(
+            envelope.get("signals") or [], envelope.get("findings") or [], weights, site_kind
+        ),
         categories=categories,
         headlines=fixes[:3],
         top_fixes=fixes[:8],

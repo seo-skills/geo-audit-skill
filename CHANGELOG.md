@@ -82,6 +82,15 @@ before a practitioner spends time on them (`tests/evals/results/eval-2026-09-21-
 
 ### Added
 
+- ***What is already working*, in every report** - the second deliberate exception to
+  "no new features", and for the same reason as the first: three rounds of maintainer
+  notes found reports that list only faults read as grudging, and the gate is reports
+  sent *unedited*. Up to three site-wide signals at 90% or more of their maximum, one
+  per category before a second from any, each with a fixed sentence stored beside its
+  finding template. A signal with any finding, page-level included, is never named, so
+  the report cannot praise what it also faults; no sentence says *every* or *all*,
+  because a strength is an average. On the eval sites plausible now opens with
+  self-contained passages, substantial pages and crawler access rather than with nothing.
 - **`geo report --site-kind`**, the one deliberate exception to "no new features" in
   this release. Both practitioner rounds found a publisher's checklist leading the
   report on a specification and then on a reference site, and the eval judges the

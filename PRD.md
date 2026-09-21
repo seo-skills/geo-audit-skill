@@ -587,6 +587,15 @@ every score are identical across kinds. The table is `data/site_kinds.json`, it
 mirrors `skills/audit/sections/site-kind.md`, and a test holds the two vocabularies
 together.
 
+**A second exception: *What is already working*.** Three rounds of maintainer notes
+said the same thing - a report that lists only faults reads as grudging, and a 76 with
+nothing named for it is the first thing a practitioner edits - and the gate is reports
+sent *unedited*. It is report-time and deterministic: up to three site-wide signals at
+90% or more of their maximum (`strength_at_least` in `thresholds.json`), one per
+category before a second from any, each with a fixed sentence beside its finding
+template. A signal with any finding, page-level included, is never a strength, so the
+report cannot praise what it also faults. No score moves.
+
 ### Open before the next milestone
 
 1. Configure the PyPI pending trusted publisher - `RELEASING.md` has the five fields -

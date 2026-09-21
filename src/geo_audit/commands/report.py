@@ -147,6 +147,7 @@ def run(args, run_id: str) -> dict:
                 "pdf_skipped": pdf_skipped,
                 "advisory_answered": sorted(advisory_answers),
                 "site_kind": args.site_kind,
+                "strengths": [strength["id"] for strength in client.strengths],
                 "from_run": record.get("run_id"),
                 "observed_at": record.get("observed_at"),
                 "brand": {

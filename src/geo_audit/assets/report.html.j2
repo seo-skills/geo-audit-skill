@@ -42,6 +42,15 @@
     <div class="note"><p>{{ client.ordered_for }}</p></div>
     {% endif %}
 
+    {% if client.strengths %}
+    <h2>What is already working</h2>
+    <ul>
+      {% for strength in client.strengths %}
+      <li>{{ strength.text }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
     {% if client.headlines %}
     <h2>What stands out</h2>
     <ul>

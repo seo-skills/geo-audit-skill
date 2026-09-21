@@ -544,3 +544,25 @@ def test_no_finding_text_names_its_own_severity():
             for field_name in ("title", "remediation"):
                 text = template.get(field_name) or ""
                 assert not self_rating.search(text), f"{finding_id}.{field_name} names its severity"
+
+
+def test_every_signal_can_say_what_is_working():
+    """A strength is only shown with its sentence, so a signal without one could
+    be the site's best and never be named."""
+    from geo_audit import data
+
+    for signal_id, template in data.load("findings")["signals"].items():
+        assert template.get("strength"), f"{signal_id} has no strength sentence"
+
+
+def test_no_strength_claims_more_than_an_average_can_show():
+    """A strength means the site-wide value is at or above the threshold - an
+    average. "Every page" is a claim an average cannot make."""
+    import re
+
+    from geo_audit import data
+
+    absolute = re.compile(r"\b(?:every|all|each|always|never)\b", re.I)
+    for signal_id, template in data.load("findings")["signals"].items():
+        text = template.get("strength") or ""
+        assert not absolute.search(text), f"{signal_id}: {text!r}"

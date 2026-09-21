@@ -40,8 +40,8 @@ It reads from disk and never crawls, so it always describes a run that happened.
 ## The two modes
 
 **Client** is the default because it is the one that gets sent. It carries the score,
-the categories, the findings with their pages and remediation, the advisory section,
-and the methodology appendix.
+what is already working, the categories, the findings with their pages and
+remediation, the advisory section, and the methodology appendix.
 
 **Operator** is the same document plus a provenance section: run id, evidence hash,
 crawl settings, the failed-page table, the robots-disallowed list, every signal with

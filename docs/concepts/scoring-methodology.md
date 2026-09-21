@@ -108,6 +108,7 @@ measurement that knows nothing about intent.
 | findings | `full_severity_below` | 0.4 |
 | findings | `no_finding_above` | 0.7 |
 | findings | `severity_ladder` | 4 entries |
+| findings | `strength_at_least` | 0.9 |
 | render_parity | `floor_ratio` | 0.5 |
 | render_parity | `good_ratio` | 0.9 |
 | self_containment | `dangling_openers` | 36 entries |

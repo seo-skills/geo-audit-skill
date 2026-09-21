@@ -6,8 +6,11 @@ The document runs in reader order rather than audit order: where do I stand, wha
 it costing me, what do I do on Monday.
 
 1. **The answer.** Brand header, site, date, the score as a number and a tier label
-   together, one sentence on what that tier means, then what stands out and what to do
-   in order.
+   together, one sentence on what that tier means, which kind of site it was ordered
+   for if one was given, then what is already working, what stands out and what to do
+   in order. *What is already working* names up to three strong signals from different
+   categories, and never one the report has a finding about; a site with none gets no
+   section rather than an empty one.
 2. **Category scores.** Number and rating together, with the weight each carried.
 3. **Everything found**, grouped by category, each with its pages and its remediation.
 4. **Advisory analysis**, visually distinct, stated as judgement, excluded from every

@@ -106,7 +106,8 @@
       "low"
     ],
     "no_finding_above": 0.7,
-    "full_severity_below": 0.4
+    "full_severity_below": 0.4,
+    "strength_at_least": 0.9
   },
   "content": {
     "depth": {
