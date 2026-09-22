@@ -17,10 +17,9 @@ from geo_audit import data, envelope, state
 from geo_audit.commands import crawl as crawl_cmd
 from geo_audit.commands.common import Options, Page, _check_finding, classify
 from geo_audit.errors import GeoError
-from geo_audit.lib import crawl as crawl_lib
 from geo_audit.lib import pages as pages_lib
 from geo_audit.lib.ids import is_run_id
-from geo_audit.lib.slug import host_of, project_slug
+from geo_audit.lib.slug import project_slug
 from geo_audit.scoring import (
     citability,
     content as content_scorer,
@@ -184,20 +183,8 @@ def run(args, run_id: str) -> dict:
     categories = parse_only(args.only, available)
     options = crawl_cmd.options_from(args)
 
-    def progress(done: int, total: int, failed: int) -> None:
-        if not args.quiet:
-            import sys
-
-            print(
-                copytext.PROGRESS.format(
-                    step=2,
-                    total=4,
-                    action=f"Crawling {host_of(args.url)} - {done}/{total} pages, {failed} failed",
-                ),
-                file=sys.stderr,
-            )
-
-    result = crawl_lib.crawl(args.url, options, progress=progress)
+    result = crawl_cmd.crawl_reporting(args, options, step=2, steps=4)
+    _step(args, 3, f"Scoring {len(result.pages)} pages")
     site_facts, llms = _site_facts(result, args) if "platform" in categories else ({}, None)
 
     rules = data.thresholds("findings")
@@ -241,6 +228,7 @@ def run(args, run_id: str) -> dict:
             }
         }
 
+    _step(args, 4, "Recording the audit")
     return _assemble(
         run_id=run_id,
         start_url=args.url,
@@ -257,6 +245,13 @@ def run(args, run_id: str) -> dict:
         extra=extra,
         snapshot=snapshot,
     )
+
+
+def _step(args, step: int, action: str) -> None:
+    if not args.quiet:
+        import sys
+
+        print(copytext.PROGRESS.format(step=step, total=4, action=action), file=sys.stderr)
 
 
 def _score_pages(pages, robots, categories: tuple[str, ...], site_facts: dict) -> tuple[dict, list, dict]:

@@ -34,6 +34,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `Next: geo scan "<brand>" --site https://example.com` whatever site was named, so the
   suggestion scanned someone else's domain. With a site it now suggests
   `geo audit <site> --brand "<brand>"`, which folds brand presence into that site's score.
+- **An audit's progress is four lines, not fifty-one.** It wrote `[1/1] audit <url>`, then
+  a `[2/4] Crawling` line for every page, and never a step 3 or 4 - on a terminal, in
+  logs, and in the output the audit skill reads back. On a terminal the page count now
+  rewrites one line in place; elsewhere only the final count is written; and the steps
+  run `[1/4]` to `[4/4]` (crawling, scoring, recording). `geo crawl` numbers its own two.
 
 ## [1.0.0] - 2026-09-22
 

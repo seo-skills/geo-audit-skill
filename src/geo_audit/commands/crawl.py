@@ -17,6 +17,34 @@ from geo_audit.lib.slug import host_of
 from geo_audit.scoring.model import merge, prioritize
 
 
+def crawl_reporting(args, options: crawl_lib.CrawlOptions, *, step: int, steps: int) -> crawl_lib.CrawlResult:
+    """Crawl, reporting the page count on stderr as step `step` of `steps`.
+
+    A line per page made fifty lines of one audit, on a terminal and in the
+    output a skill reads alike. On a terminal the count now rewrites one line
+    in place - it only grows, so a carriage return needs no clearing - and
+    anywhere else only the final count is written.
+    """
+    import sys
+
+    stream = sys.stderr
+    live = not args.quiet and stream.isatty()
+
+    def line(done: int, total: int, failed: int) -> str:
+        action = f"Crawling {host_of(args.url)} - {done}/{total} pages, {failed} failed"
+        return copytext.PROGRESS.format(step=step, total=steps, action=action)
+
+    def progress(done: int, total: int, failed: int) -> None:
+        if live:
+            print("\r" + line(done, total, failed), end="", file=stream, flush=True)
+
+    result = crawl_lib.crawl(args.url, options, progress=progress)
+    if not args.quiet:
+        final = line(len(result.pages), options.max_pages, len(result.failures))
+        print(("\r" if live else "") + final, file=stream)
+    return result
+
+
 def options_from(args) -> crawl_lib.CrawlOptions:
     return crawl_lib.CrawlOptions(
         allow_private=args.allow_private,
@@ -94,21 +122,7 @@ def evidence_block(result: crawl_lib.CrawlResult) -> dict:
 
 def run(args, run_id: str) -> dict:
     options = options_from(args)
-
-    def progress(done: int, total: int, failed: int) -> None:
-        if not args.quiet:
-            import sys
-
-            print(
-                copytext.PROGRESS.format(
-                    step=2,
-                    total=4,
-                    action=f"Crawling {host_of(args.url)} - {done}/{total} pages, {failed} failed",
-                ),
-                file=sys.stderr,
-            )
-
-    result = crawl_lib.crawl(args.url, options, progress=progress)
+    result = crawl_reporting(args, options, step=2, steps=2)
     findings = prioritize(merge([f for page in result.pages for f in page.findings]))
 
     return envelope.build(

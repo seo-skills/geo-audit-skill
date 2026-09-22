@@ -398,6 +398,13 @@ def _json_mode(args: argparse.Namespace, out: TextIO) -> bool:
     return not (hasattr(out, "isatty") and out.isatty())
 
 
+def _steps(args: argparse.Namespace) -> int:
+    """How many progress lines a command writes; its own count on from this one."""
+    if args.command == "audit" and not getattr(args, "rescore", None):
+        return 4
+    return 2 if args.command == "crawl" else 1
+
+
 def progress(args: argparse.Namespace, message: str) -> None:
     if not getattr(args, "quiet", False):
         print(message, file=sys.stderr)
@@ -437,7 +444,7 @@ def main(argv: list[str] | None = None, out: TextIO | None = None) -> int:
     try:
         _apply_config(args)
         _validate_url(args)
-        progress(args, f"[1/1] {args.command} {getattr(args, 'url', '')}".rstrip())
+        progress(args, f"[1/{_steps(args)}] {args.command} {getattr(args, 'url', '')}".rstrip())
         envelope = COMMANDS[args.command](args, run_id)
     except GeoError as error:
         failure = envelope_mod.build(
