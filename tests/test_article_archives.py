@@ -30,6 +30,7 @@ def _doc(url: str, jsonld: object = None):
 @pytest.mark.parametrize("path, reason", [
     ("/blog/category/backlinks", "a category archive"),
     ("/categories/news/", "a category archive"),
+    ("/de/blog/kategorie/content", "a category archive"),
     ("/tag/python", "a tag archive"),
     ("/blog/tags/python/page/3", "a tag archive"),
     ("/author/jane", "an author archive"),

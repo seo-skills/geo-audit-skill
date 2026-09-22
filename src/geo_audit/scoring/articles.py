@@ -36,9 +36,12 @@ ARTICLES_ONLY = f"{NOT_APPLICABLE}: articles only"
 # `/`, or a bare locale such as `/en-US/` or `/de`.
 _HOME = re.compile(r"/?(?:[a-z]{2}(?:[-_][a-z]{2,4})?/?)?", re.IGNORECASE)
 # `.../category/<name>`, `.../tag/<name>`, `.../author/<name>` and their plurals,
-# optionally paged: where CMSs put the lists of posts filed under one term.
-_ARCHIVE = re.compile(r".*/(category|categories|tag|tags|author|authors)/[^/]+(?:/page/\d+)?/?", re.IGNORECASE)
-_ARCHIVE_OF = {"categor": "a category", "tag": "a tag", "author": "an author"}
+# optionally paged: where CMSs put the lists of posts filed under one term. German
+# `kategorie` too, which seomator.com's `/de/blog/kategorie/<name>` uses.
+_ARCHIVE = re.compile(
+    r".*/(category|categories|kategorie|kategorien|tag|tags|author|authors)/[^/]+(?:/page/\d+)?/?", re.IGNORECASE
+)
+_ARCHIVE_OF = {"categor": "a category", "kategor": "a category", "tag": "a tag", "author": "an author"}
 
 
 def declared_types(doc: Document) -> set[str]:

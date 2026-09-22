@@ -22,8 +22,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Category, tag and author archives are not articles** (same bump). They list posts
   that sit beside them, not beneath them, so the index rule missed them, and on
   seomator.com two findings named seven category archives and an about page - no
-  article at all. A page at `.../category/<name>`, `.../tag/<name>` or
-  `.../author/<name>` (plurals too, optionally paged) is now *not applicable* for the
+  article at all. A page at `.../category/<name>` (or German `kategorie`), `.../tag/<name>`
+  or `.../author/<name>` (plurals too, optionally paged) is now *not applicable* for the
   article-only signals, unless it declares an article type. Rescored from its stored
   pages, seomator.com moves from 91 to 94 and those findings go from 43, 8 and 8 pages
   to its about page alone. A major scoring bump, so `compare` refuses to set a new run
