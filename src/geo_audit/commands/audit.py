@@ -324,6 +324,17 @@ def _classify(snapshot: dict, rules: dict) -> tuple[dict[str, list[str]], dict[s
     return offenders, severe
 
 
+def _said_of_pages(meaning: str) -> str:
+    """A tier's meaning, said of more than one page.
+
+    `data/tiers.json` words each meaning for the one page `geo score` reads, so
+    a fifty-page audit led with "AI engines can lift answers from this page".
+    Rewording the data would move `data_version`, which `compare` treats as a
+    change of yardstick, for what is a change of grammar.
+    """
+    return meaning.replace("from this page", "from these pages").replace("on the page", "on these pages")
+
+
 def _assemble(
     *,
     run_id: str,
@@ -429,7 +440,7 @@ def _assemble(
         scores={
             "composite": total,
             "tier": tier["label"],
-            "tier_meaning": tier["meaning"],
+            "tier_meaning": _said_of_pages(tier["meaning"]) if evidence.get("pages_ok", 0) > 1 else tier["meaning"],
             "categories": category_scores,
         },
         signals=[signal.to_dict() for signal in all_signals],

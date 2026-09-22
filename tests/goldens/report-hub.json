@@ -66,7 +66,7 @@
       "source": null,
       "warnings": []
     },
-    "bytes": 72042,
+    "bytes": 72045,
     "from_run": "<volatile>",
     "mode": "client",
     "observed_at": "<volatile>",
@@ -92,7 +92,7 @@
     },
     "composite": 51,
     "tier": "weak",
-    "tier_meaning": "Answers exist on the page but are buried in context that does not travel."
+    "tier_meaning": "Answers exist on these pages but are buried in context that does not travel."
   },
   "scoring_version": "3.0",
   "signals": []

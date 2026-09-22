@@ -21,6 +21,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   shown for one site claimed 26.7 points on a site that could gain nine. It now prints
   "up to +1.8 overall", as the HTML report does; `geo score`, which has no overall gain
   per fix, says whose points they are ("+10.3 citability points available").
+- **A site's verdict is worded for its pages.** An audit's tier meaning came straight
+  from the per-page wording, so a fifty-page report led with "AI engines can lift
+  answers from this page". Audits of more than one page now say "from these pages";
+  the data, and so `data_version`, are unchanged.
 
 ## [1.0.0] - 2026-09-22
 
