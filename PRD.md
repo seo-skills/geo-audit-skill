@@ -681,10 +681,11 @@ script). Scores and findings are unchanged; round four re-opens on this release,
 5. **Run the practitioner eval.** It is the only gate left before 1.0 and the only
    check in the project that needs a person: `python tests/evals/run_eval.py`, five
    sites the practitioner knows, two questions each. **Round four is ready to answer**
-   (2026-09-21): its form, `tests/evals/results/eval-2026-09-21-round4.md`, was produced
-   by the released 0.7.0, which stays unchanged until it is answered, and its client
-   reports are single self-contained HTML files under `~/.geo/projects/`. Its dry run
-   found the extractability defect 0.7.0 fixes. What is left is two people: the
+   (re-opened 2026-09-22): its form, `tests/evals/results/eval-2026-09-22-round4.md`, was
+   produced by the released 0.8.0, which stays unchanged until it is answered, and its
+   client reports are single self-contained HTML files under `~/.geo/projects/`. Its
+   dry run found the extractability defect 0.7.0 fixes; its first form, on 0.7.0, was
+   withdrawn unsent because those reports rendered without their stylesheet. What is left is two people: the
    maintainer and one practitioner who does not work on the tool, each answering
    independently. The gate is four of five reports sent unedited, twice running.
 6. M4, if the go/no-go in D3 says yes: `crm`, `serve`, `import`, locking.
