@@ -9,8 +9,10 @@ from __future__ import annotations
 
 import os
 import platform
+import shlex
 import shutil
 import stat
+import subprocess
 import sys
 from pathlib import Path
 
@@ -148,12 +150,15 @@ def run(args, run_id: str) -> dict:
         _browser_check(),
     ]
     if shutil.which("playwright") is None and browser.available():
+        # The interpreter running geo imports playwright, so it can run the
+        # CLI that this check just found missing from PATH.
+        python = subprocess.list2cmdline([sys.executable]) if os.name == "nt" else shlex.quote(sys.executable)
         checks.append(
             _check(
                 "browser_binary",
                 "warn",
                 "the playwright package is installed but its CLI is not on PATH",
-                "Run `playwright install chromium` once to download the browser.",
+                f"Run `{python} -m playwright install chromium` once to download the browser.",
             )
         )
     # `ok` describes whether the command produced a valid result, and doctor

@@ -7,6 +7,16 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **The browser-extra install hint works.** `geo doctor` and the report's PDF-unavailable
+  message said `uv tool install 'seomator-geo-audit[browser]' && playwright install
+  chromium`, and the second half failed with command not found: `uv tool` puts only the
+  tool's own commands on PATH. The hint now adds `--with-executables-from playwright`.
+  Doctor's warning for a `playwright` package without its command now runs it through
+  the interpreter that imports it (`<python> -m playwright install chromium`) instead
+  of naming the command it had just found missing.
+
 ## [1.0.0] - 2026-09-22
 
 Nothing new is built for 1.0. It is the promise the work since 0.4.0 was built to keep,

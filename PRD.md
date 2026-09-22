@@ -276,7 +276,7 @@ Eight states. (The review record lists nine; "resume prompt" died when R-E7 drop
 |---|---|---|
 | 1 | **Loading** (stderr) | `[2/4] Crawling example.com — 12/50 pages, 2 failed` · In chat, once: "Running the audit. It crawls up to 50 pages at one request per second, so expect a few minutes." |
 | 2 | **Empty** | No audit: "No audits recorded for example.com yet. Run `geo audit https://example.com` to create the first one." · Zero pages: "The crawl found no scorable pages on example.com. The start URL returned 403. Nothing was scored." · Zero mentions: "No mentions of “Acme” found on Wikipedia, Wikidata, Reddit or YouTube (checked 2026-09-20). This is a result, not an error." · Zero blocks: "No citable content blocks found on this page. Score 0 — reason: no extractable blocks." |
-| 3 | **PDF unavailable** | "PDF skipped: the browser component is not installed. HTML report written to <path>. To enable PDF: `uv tool install 'seomator-geo-audit[browser]' && playwright install chromium`" |
+| 3 | **PDF unavailable** | "PDF skipped: the browser component is not installed. HTML report written to <path>. To enable PDF: `uv tool install 'seomator-geo-audit[browser]' --with-executables-from playwright && playwright install chromium`" |
 | 4 | **Error** | "Couldn't reach example.com: connection timed out after 30 s (GEO_E_TIMEOUT). Check the URL, or try again. Details: ~/.geo/logs/last-run.log" — no score is shown. |
 | 5 | **Partial** | "PARTIAL audit: 41 of 50 pages scored. 9 could not be evaluated — 6 blocked by bot protection, 3 timed out (listed below). Scores reflect the 41 pages only." |
 | 6 | **Success** | "GEO score 62/100 (Fair) for example.com — 50 pages, evidence CURRENT. Report: <path>. Next: `/geo:report example.com`" |

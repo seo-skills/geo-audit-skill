@@ -79,7 +79,9 @@ def test_every_install_hint_names_something_that_installs(monkeypatch, published
     monkeypatch.setattr(_version, "PUBLISHED_ON_PYPI", published)
     plain, extra = _version.install_target(), _version.install_target("browser")
     if published:
-        assert plain == "seomator-geo-audit" and extra == "'seomator-geo-audit[browser]'"
+        assert plain == "seomator-geo-audit"
+        assert extra == "'seomator-geo-audit[browser]' --with-executables-from playwright"
     else:
         assert plain == "git+https://github.com/seo-skills/geo-audit-skill"
-        assert extra == "'seomator-geo-audit[browser] @ git+https://github.com/seo-skills/geo-audit-skill'"
+        assert extra == ("'seomator-geo-audit[browser] @ git+https://github.com/seo-skills/geo-audit-skill'"
+                         " --with-executables-from playwright")

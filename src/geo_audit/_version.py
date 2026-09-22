@@ -37,11 +37,19 @@ def install_target(extra: str | None = None) -> str:
     that named it was a dead end - `geo doctor`'s browser-extra hint and the
     report's PDF-unavailable message among them. The source install works now
     and keeps working after.
+
+    The browser extra also needs its command: `uv tool` puts only the tool's
+    own commands on PATH, so the `playwright install chromium` every hint runs
+    next failed with command not found until the flag exposed it.
     """
     if PUBLISHED_ON_PYPI:
-        return f"'{DIST_NAME}[{extra}]'" if extra else DIST_NAME
-    source = f"git+{REPO_URL}"
-    return f"'{DIST_NAME}[{extra}] @ {source}'" if extra else source
+        target = f"'{DIST_NAME}[{extra}]'" if extra else DIST_NAME
+    else:
+        source = f"git+{REPO_URL}"
+        target = f"'{DIST_NAME}[{extra}] @ {source}'" if extra else source
+    if extra == "browser":
+        target += " --with-executables-from playwright"
+    return target
 
 SCHEMA_VERSION = 1
 # 2.0: authorship, attribution and Article markup are scored on articles only. A
