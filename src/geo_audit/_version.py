@@ -57,7 +57,9 @@ SCHEMA_VERSION = 1
 #      and `compare` must refuse to report that as the site moving.
 # 3.0: extractability scores evidence that content needs JavaScript, not length.
 #      Short server-rendered pages had been capped and told to server-render.
-SCORING_VERSION = "3.0"
+# 4.0: expertise reads the article's author, not the first Person on the page (a
+#      site-wide founder), and category, tag and author archives are not articles.
+SCORING_VERSION = "4.0"
 # 2: `<article>` is only the content root when the page has exactly one. Taking
 #    the first of many reduced every listing page to a single teaser card.
 NORMALIZER_VERSION = 2

@@ -11,8 +11,14 @@ it lists beneath itself, what it declares itself to be. Nothing here guesses
 from the prose, because a guess that drops a real article loses a real finding,
 and a page with no evidence either way is presumed an article, as every page
 was before. Sampled on 79 pages from eight real sites, the rules kept all 31
-articles and excluded 27 of the 48 other pages. What they leave in - an index with flat
-links, an about page, a tool that declares nothing - is scored as it was.
+articles and excluded 27 of the 48 other pages. What they leave in - an about page, a
+tool that declares nothing - is scored as it was.
+
+A category, tag or author archive is an index whose pages do not sit beneath it:
+seomator.com's `/blog/category/backlinks` lists posts at `/blog/<slug>`, so the
+links-beneath rule missed seven of them, and two findings named nothing but those
+archives and an about page. Where such a page sits is the evidence: the path a CMS
+gives its archives.
 """
 
 from __future__ import annotations
@@ -29,6 +35,10 @@ ARTICLES_ONLY = f"{NOT_APPLICABLE}: articles only"
 
 # `/`, or a bare locale such as `/en-US/` or `/de`.
 _HOME = re.compile(r"/?(?:[a-z]{2}(?:[-_][a-z]{2,4})?/?)?", re.IGNORECASE)
+# `.../category/<name>`, `.../tag/<name>`, `.../author/<name>` and their plurals,
+# optionally paged: where CMSs put the lists of posts filed under one term.
+_ARCHIVE = re.compile(r".*/(category|categories|tag|tags|author|authors)/[^/]+(?:/page/\d+)?/?", re.IGNORECASE)
+_ARCHIVE_OF = {"categor": "a category", "tag": "a tag", "author": "an author"}
 
 
 def declared_types(doc: Document) -> set[str]:
@@ -75,6 +85,10 @@ def not_an_article(doc: Document) -> str | None:
     }
     if len(children) >= data.thresholds("articles")["index_min_children"]:
         return f"an index of {len(children)} pages beneath it"
+    archive = _ARCHIVE.fullmatch(path)
+    if archive:
+        kind = next(name for stem, name in _ARCHIVE_OF.items() if archive.group(1).lower().startswith(stem))
+        return f"{kind} archive"
 
     for kind in requirements["not_article_types"]:
         if kind in declared:

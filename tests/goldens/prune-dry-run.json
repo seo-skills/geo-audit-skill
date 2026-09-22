@@ -42,6 +42,6 @@
   "run_id": "<volatile>",
   "schema_version": 1,
   "scores": null,
-  "scoring_version": "3.0",
+  "scoring_version": "4.0",
   "signals": []
 }

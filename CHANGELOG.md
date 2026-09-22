@@ -7,6 +7,28 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **Expertise is judged on the article's author** (`scoring_version` 4.0).
+  `content.expertise` took the first Person on the page, and a site-wide Organization
+  graph names people too: on seomator.com that was the founder, a Person with a name
+  only, ahead of each post's author, whose node carried a job title, a description and
+  a profile URL. Every post read as missing them, and the report's first fix, *Authors
+  are named but not described*, was false on all 43 pages it named. The signal now reads
+  the Person an article's `author` names, resolving an `@id` reference; then one the
+  page's own nodes name as author; then a Person the page declares. A founder, an
+  employee or a commenter is not the author. The detail's `byline` names whoever was
+  credited, where it had said `null` beside a present byline.
+- **Category, tag and author archives are not articles** (same bump). They list posts
+  that sit beside them, not beneath them, so the index rule missed them, and on
+  seomator.com two findings named seven category archives and an about page - no
+  article at all. A page at `.../category/<name>`, `.../tag/<name>` or
+  `.../author/<name>` (plurals too, optionally paged) is now *not applicable* for the
+  article-only signals, unless it declares an article type. Rescored from its stored
+  pages, seomator.com moves from 91 to 94 and those findings go from 43, 8 and 8 pages
+  to its about page alone. A major scoring bump, so `compare` refuses to set a new run
+  against an older one.
+
 ### Fixed
 
 - **The browser-extra install hint works.** `geo doctor` and the report's PDF-unavailable

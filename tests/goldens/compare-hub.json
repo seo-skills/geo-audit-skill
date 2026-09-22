@@ -85,12 +85,12 @@
       "from": {
         "data_version": "2026.09",
         "normalizer_version": 2,
-        "scoring_version": "3.0"
+        "scoring_version": "4.0"
       },
       "to": {
         "data_version": "2026.09",
         "normalizer_version": 2,
-        "scoring_version": "3.0"
+        "scoring_version": "4.0"
       }
     }
   },
@@ -133,7 +133,7 @@
     "tier": "weak",
     "tier_meaning": "Answers exist on these pages but are buried in context that does not travel."
   },
-  "scoring_version": "3.0",
+  "scoring_version": "4.0",
   "signals": [],
   "site": "127.0.0.1",
   "url": "http://fixture/hub.html"

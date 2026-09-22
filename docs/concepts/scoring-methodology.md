@@ -71,7 +71,7 @@ measurement that knows nothing about intent.
 ## Current constants
 
 <!-- generated:constants:begin -->
-*Generated from `data/` at data_version 2026.09, scoring_version 3.0, normalizer_version 2, schema_version 1.*
+*Generated from `data/` at data_version 2026.09, scoring_version 4.0, normalizer_version 2, schema_version 1.*
 
 ### Tiers
 
