@@ -10,7 +10,12 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }
 authors = [{ name = "SEOmator" }]
-keywords = ["geo", "seo", "generative-engine-optimization", "ai-search", "audit", "llms-txt"]
+keywords = [
+  "geo", "seo", "generative-engine-optimization", "answer-engine-optimization", "aeo",
+  "llm-seo", "ai-search", "ai-search-visibility", "audit", "site-audit", "llms-txt",
+  "structured-data", "schema-org", "ai-crawlers", "robots-txt", "chatgpt", "perplexity",
+  "claude-code",
+]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Environment :: Console",

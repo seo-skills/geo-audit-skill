@@ -3,6 +3,13 @@
 A GEO (Generative Engine Optimization) audit toolkit for Claude Code: a deterministic
 Python CLI, plus thin skills that narrate what it computes.
 
+It audits how a page or a whole site reads to AI search - ChatGPT, Claude, Perplexity,
+Google AI Overviews, Bing Copilot: which of their crawlers robots.txt lets in, whether a
+passage can be lifted into an answer without rewriting, whether the markup says who wrote
+the page and when, and whether the per-engine plumbing (llms.txt, preview cards, feeds,
+hreflang) is there. The same work is sometimes called answer engine optimization (AEO) or
+LLM SEO.
+
 ```
 plugin   /plugin marketplace add seo-skills/geo-audit-skill  ->  /plugin install geo@seomator
 CLI      uv tool install seomator-geo-audit                  ->  geo audit <url>
@@ -70,10 +77,11 @@ Nine skills ship with the plugin: `/geo:audit`, `/geo:citability`, `/geo:technic
 `/geo:report`. They call the CLI and read its JSON.
 They never guess a number, and they never see raw page text.
 
-## What it measures today
+## What a GEO audit checks
 
-Six categories, weighted to 100. Every signal is classified, and the class decides
-what it is allowed to do to a number.
+Six categories, weighted to 100: thirty scored checks, plus two advisory questions a
+model answers and no code turns into a number. Every signal is classified, and the class
+decides what it is allowed to do to a score.
 
 | Category | Weight | Signals | Asks |
 |---|---|---|---|
@@ -84,7 +92,52 @@ what it is allowed to do to a number.
 | **schema** | 10 | 5 | Does the page describe itself in a form nobody has to interpret? |
 | **platform** | 10 | 4 | Is the per-surface plumbing there: llms.txt, preview cards, feeds, hreflang? |
 
-Full definitions and thresholds: [docs/concepts/signals.md](docs/concepts/signals.md).
+Every check, by category:
+
+<!-- generated:checks:begin -->
+**citability** (25 of 100) - Self-contained passages · Answer-first sections · Heading structure · Evidence in claims · Content in the HTML · Attribution · Content without JavaScript
+
+**technical** (15 of 100) - AI crawler access · Indexability · Titles and descriptions · Status codes · HTTPS · URL structure
+
+**schema** (10 of 100) - Structured data present · Valid markup · Publisher markup · Article markup · Answer markup
+
+**brand** (20 of 100) - Encyclopedic entry · Community discussion · Video presence · Profile links
+
+**content** (20 of 100) - Depth · Authorship · Freshness · Readability
+
+**platform** (10 of 100) - llms.txt file · Preview cards · Feeds and sitemaps · Language versions
+<!-- generated:checks:end -->
+
+Full definitions, point tables and thresholds:
+[docs/concepts/signals.md](docs/concepts/signals.md).
+
+`geo score <url>` runs the page-level checks on one URL. `geo audit <url>` crawls the
+site (50 pages by default, one request per second, robots.txt respected for every link
+it discovers) and scores the site-level ones too: llms.txt, feeds and sitemaps, language
+versions, and crawler access from the site's own robots.txt. A capped crawl says so in
+the report, so the number is never presented as the whole site.
+
+### Which AI crawlers it checks
+
+Blocking a search or answer crawler keeps a site out of that engine's answers; blocking a
+training crawler is a separate decision, and the report separates them.
+
+<!-- generated:crawler-summary:begin -->
+| Operator | Crawlers checked |
+|---|---|
+| OpenAI | `GPTBot`, `OAI-SearchBot`, `ChatGPT-User` |
+| Perplexity | `PerplexityBot`, `Perplexity-User` |
+| Anthropic | `ClaudeBot`, `Claude-SearchBot`, `Claude-User` |
+| Google | `Google-Extended`, `Googlebot` |
+| Microsoft | `Bingbot` |
+| Apple | `Applebot`, `Applebot-Extended` |
+| Meta | `meta-externalagent` |
+| Amazon | `Amazonbot` |
+| Common Crawl | `CCBot` |
+<!-- generated:crawler-summary:end -->
+
+What each one gates, with the operator's documentation:
+[skills/technical/sections/crawlers.md](skills/technical/sections/crawlers.md).
 
 ### Three rules that shape every number
 
@@ -105,6 +158,28 @@ their own labelled section of the report.
 it. Crawler access is technical; answer-shaped schema types are schema; preview cards
 are platform.
 
+## What an audit produces
+
+One run gives you four things, from the same recorded evidence:
+
+* **A terminal summary** - the score with its tier, the category scores, and the fixes in
+  the order they pay, each with what it recovers on the overall score.
+* **A client report** you can send: one self-contained HTML file, no scripts, no
+  tracking, that opens with the score and what the tier means, then *what is already
+  working*, *what stands out*, *what to do, in order* (each fix with its evidence, the
+  pages it affects and the gain), a plan grouped by effort, the category scores, the AI
+  crawler table, every finding, the pages analysed and a glossary. `geo report --pdf`
+  writes the same document for sending or printing.
+* **An operator copy** (`--mode operator`) with the run id, the evidence hash, the crawl
+  limits, the pages that failed and the full signal table.
+* **A JSON envelope** for anything downstream, validated against a shipped JSON Schema in
+  CI, with `scoring_version`, `data_version` and `normalizer_version` on every response.
+
+The run is recorded under `~/.geo`, with the pages it read. `--rescore <run_id>`
+recomputes the score from those stored pages with no network at all, and `geo compare`
+says what changed since last time, refusing any pair whose difference would measure the
+tool rather than the site.
+
 ## Reading the output
 
 ```
@@ -119,6 +194,35 @@ GEO citability score 62/100 (Fair) for example.com — 1 page, evidence CURRENT.
 * **Scores compare only with themselves.** A score is comparable with another score
   from this tool at the same `scoring_version` and `data_version`. Numbers from
   other GEO tools measure different things and are not interchangeable.
+
+## Questions people ask
+
+**What is GEO?** Optimizing for the answers AI engines write, not only for a list of blue
+links. A page ranks in AI search by being reachable, quotable and attributable, which is
+what this tool measures.
+
+**How is this different from an SEO audit?** It scores what a model can lift and credit:
+self-contained passages, evidence in claims, machine-readable authorship, structured data,
+llms.txt, and which AI crawlers robots.txt admits. It does not measure rankings, backlinks
+or traffic, and it is not a replacement for a search console.
+
+**Does it need a browser?** No. The optional `browser` extra adds two things: a check of
+what the page looks like once JavaScript has run, and PDF export.
+
+**Do I need Claude Code?** No. The CLI stands alone and prints JSON. The plugin adds nine
+skills that read that JSON and explain it; they never compute a number themselves.
+
+**How many pages does it crawl?** 50 by default, one request per second across the whole
+crawl, five in flight, robots.txt respected for every discovered link. `--max-pages`
+changes it.
+
+**Does my content leave my machine?** No. The CLI fetches the pages you point it at and
+stores them under `~/.geo` so a rescore can reproduce the number. Its output carries
+derived signals and short, escaped excerpts, never page text, and nothing is uploaded.
+
+**Can I compare the score with another tool's?** No. A score is comparable with another
+score from this tool at the same `scoring_version` and `data_version`. Other tools
+measure different things.
 
 ## Safety
 

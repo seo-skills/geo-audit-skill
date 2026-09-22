@@ -259,7 +259,32 @@ def rubrics_region() -> str:
     return "\n".join(lines)
 
 
+def checks_region() -> str:
+    """The signal names per category, for the README's summary of the audit."""
+    findings = data.load("findings")["signals"]
+    lines = []
+    for name, category in data.weights().items():
+        checks = [
+            (findings.get(signal_id) or {}).get("name")
+            or signal_id.split(".", 1)[-1].replace("_", " ").capitalize()
+            for signal_id in category["signals"]
+        ]
+        lines += [f"**{name}** ({category['weight']} of 100) - " + " \u00b7 ".join(checks), ""]
+    return "\n".join(lines).rstrip()
+
+
+def crawler_summary_region() -> str:
+    """One row per operator, naming every token, for the README."""
+    by_operator: dict[str, list[str]] = {}
+    for crawler in data.crawlers():
+        by_operator.setdefault(crawler["operator"], []).append(f"`{crawler['token']}`")
+    lines = ["| Operator | Crawlers checked |", "|---|---|"]
+    lines += [f"| {operator} | {', '.join(tokens)} |" for operator, tokens in by_operator.items()]
+    return "\n".join(lines)
+
+
 REGIONS = {
+    ROOT / "README.md": {"checks": checks_region, "crawler-summary": crawler_summary_region},
     ROOT / "skills/content/sections/rubrics.md": {"rubrics": rubrics_region},
     ROOT / "skills/technical/sections/crawlers.md": {"crawlers": crawlers_region},
     ROOT / "skills/schema/sections/types.md": {"schema-types": schema_types_region},
