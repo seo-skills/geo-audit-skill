@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import io
 import json
+from pathlib import Path
 
 from geo_audit.cli import main
 from geo_audit.lib.extract import extract
@@ -203,3 +204,19 @@ def test_a_site_with_no_articles_is_not_missing_its_bylines(serve, geo_home):
         assert signals[signal_id]["skipped_reason"].startswith(NOT_APPLICABLE)
         assert signal_id not in envelope["completeness"]["missing"]
     assert not [f for f in envelope["findings"] if f["id"] in ("content.expertise", "citability.attribution", "schema.article")]
+
+
+def test_the_operator_copy_says_not_applicable_too(serve, geo_home):
+    """The operator's signal table printed "not measured" for every empty value,
+    so it contradicted the client copy on exactly these three signals."""
+    product = ('<html><head><title>Kit</title><script type="application/ld+json">'
+               '{"@type": "Product", "name": "Kit"}</script></head><body>' + ARTICLE + "</body></html>")
+    home = ('<html><head><title>Shop</title></head><body><main><h1>Shop</h1>' + PROSE
+            + '<a href="/product/kit">Kit</a></main></body></html>')
+    site = serve({"/": Reply(body=home), "/product/kit": Reply(body=product), "/robots.txt": ROBOTS})
+    _audit(site)
+    buffer = io.StringIO()
+    main(["report", f"{site.url}/", "--mode", "operator", "--json", "--quiet"], out=buffer)
+    html = Path(json.loads(buffer.getvalue())["report"]["path"]).read_text(encoding="utf-8")
+    row = html.split("<code>content.expertise</code>", 1)[1].split("</tr>", 1)[0]
+    assert "not applicable" in row and "not measured" not in row

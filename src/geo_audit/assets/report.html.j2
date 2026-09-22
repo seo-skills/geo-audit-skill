@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
 <title>GEO audit — {{ client.site }} — {{ client.generated_on }}</title>
 <style>{{ stylesheet }}</style>
 </head>
@@ -26,14 +27,21 @@
   {# 1 — the answer #}
   <section aria-labelledby="verdict-heading">
     <h2 id="verdict-heading" class="sr-only" style="position:absolute;left:-9999px">Result</h2>
-    <div class="verdict">
-      <span class="score">{{ client.composite if client.composite is not none else '—' }}</span>
-      <span class="outof">out of 100</span>
-      {% if client.tier %}<span class="tier">{{ client.tier }}</span>{% endif %}
+    <div class="hero">
+      <div class="verdict">
+        <span class="score">{{ client.composite if client.composite is not none else '—' }}</span>
+        <span class="outof">out of 100</span>
+        {% if client.tier %}<span class="tier" data-tier="{{ client.tier | lower }}">{{ client.tier }}</span>{% endif %}
+      </div>
+      {% if client.composite is not none %}
+      <div class="meter"{% if client.tier %} data-tier="{{ client.tier | lower }}"{% endif %} aria-hidden="true"><span style="width: {{ client.composite }}%"></span></div>
+      {% endif %}
+      {% if client.tier_meaning %}<p class="verdict-meaning">{{ client.tier_meaning }}</p>{% endif %}
+      <div class="fineprint">
+        {% if client.completeness_note %}<p class="caveat">{{ client.completeness_note }}</p>{% endif %}
+        <p class="caveat">{{ client.score_caveat }}</p>
+      </div>
     </div>
-    {% if client.tier_meaning %}<p class="verdict-meaning">{{ client.tier_meaning }}</p>{% endif %}
-    {% if client.completeness_note %}<p class="caveat">{{ client.completeness_note }}</p>{% endif %}
-    <p class="caveat">{{ client.score_caveat }}</p>
 
     {% if client.evidence_note %}
     <div class="note"><p>{{ client.evidence_note }}</p></div>
@@ -50,7 +58,7 @@
 
     {% if client.strengths %}
     <h2>What is already working</h2>
-    <ul>
+    <ul class="ticks">
       {% for strength in client.strengths %}
       <li>{{ strength.text }}</li>
       {% endfor %}
@@ -59,9 +67,9 @@
 
     {% if client.headlines %}
     <h2>What stands out</h2>
-    <ul>
+    <ul class="headlines">
       {% for fix in client.headlines %}
-      <li><strong>{{ fix.title }}</strong> — {{ fix.severity }}, affects {{ fix.page_count }} page{{ '' if fix.page_count == 1 else 's' }}.</li>
+      <li><span class="pill {{ fix.severity }}">{{ fix.severity }}</span> <strong>{{ fix.title }}</strong> <span class="muted">affects {{ fix.page_count }} page{{ '' if fix.page_count == 1 else 's' }}</span></li>
       {% endfor %}
     </ul>
     {% endif %}
@@ -73,9 +81,9 @@
       <h3>{{ loop.index }}. {{ fix.title }}</h3>
       <p class="tags">
         <span class="tag">{{ fix.severity }}</span>
-        &middot; {{ fix.effort }} effort
-        &middot; {{ fix.page_count }} page{{ '' if fix.page_count == 1 else 's' }}
-        {% if fix.impact %}&middot; up to +{{ '%g' % fix.impact }} on the overall score{% elif fix.points %}&middot; recovers up to {{ fix.points }} points in {{ fix.category }}{% endif %}
+        <span class="chip">{{ fix.effort }} effort</span>
+        <span class="chip">{{ fix.page_count }} page{{ '' if fix.page_count == 1 else 's' }}</span>
+        {% if fix.impact %}<span class="chip gain">up to +{{ '%g' % fix.impact }} overall</span>{% elif fix.points %}<span class="chip gain">up to {{ fix.points }} points in {{ fix.category }}</span>{% endif %}
       </p>
       <p>{{ fix.remediation }}</p>
       {% if fix.evidence or fix.excerpt %}
@@ -85,7 +93,7 @@
       </div>
       {% endif %}
       {% if fix.pages %}
-      <p class="pages">{{ fix.pages[:3] | join(' · ') }}{% if fix.page_count > 3 %} and {{ fix.page_count - 3 }} more{% endif %}</p>
+      <p class="pages">{% for page in fix.pages[:3] %}<span class="path">{{ page | page_path(client.site) }}</span>{% endfor %}{% if fix.page_count > 3 %}<span class="more">and {{ fix.page_count - 3 }} more</span>{% endif %}</p>
       {% endif %}
     </div>
     {% endfor %}
@@ -97,12 +105,14 @@
        effort - and kept in the order above within each group. Anything that stops a crawler
        reading the site is in the first group whatever it costs.</p>
     {% for group in client.plan %}
-    <h3>{{ group.name }} <span class="gain">{{ group.effort }} effort{% if group.gain %} &middot; up to +{{ '%g' % group.gain }} overall{% endif %}</span></h3>
-    <ol class="plan">
-      {% for fix in group.fixes %}
-      <li>{{ fix.title }}{% if fix.impact %} <span class="gain">+{{ '%g' % fix.impact }}</span>{% endif %}</li>
-      {% endfor %}
-    </ol>
+    <div class="plan-group">
+      <h3>{{ group.name }} <span class="gain">{{ group.effort }} effort{% if group.gain %} &middot; up to +{{ '%g' % group.gain }} overall{% endif %}</span></h3>
+      <ol class="plan">
+        {% for fix in group.fixes %}
+        <li><span>{{ fix.title }}</span>{% if fix.impact %} <span class="gain">+{{ '%g' % fix.impact }}</span>{% endif %}</li>
+        {% endfor %}
+      </ol>
+    </div>
     {% endfor %}
     {% endif %}
   </section>
@@ -117,8 +127,8 @@
       {% for category in client.categories %}
         <tr>
           <td class="label" data-label="Category">{{ category.name }}</td>
-          <td class="num label" data-label="Score">{{ category.score }}/100 <span class="bar" aria-hidden="true"><span style="width: {{ category.score }}%"></span></span></td>
-          <td class="label" data-label="Rating">{{ category.tier }}</td>
+          <td class="num label" data-label="Score"><span class="val">{{ category.score }}/100</span><span class="bar" data-tier="{{ category.tier }}" aria-hidden="true"><span style="width: {{ category.score }}%"></span></span></td>
+          <td class="label" data-label="Rating"><span class="tier-word" data-tier="{{ category.tier }}">{{ category.tier }}</span></td>
           <td class="num label" data-label="Weight">{{ category.weight if category.weight else '—' }}</td>
           <td class="num label" data-label="Adds">{{ category.contribution }}</td>
           <td class="label" data-label="Measures">{{ category.blurb }}</td>
@@ -130,7 +140,7 @@
         <tr>
           <td class="label" data-label="Category">Overall</td>
           <td class="num label" data-label="Score">{{ client.composite }}/100</td>
-          <td class="label" data-label="Rating">{{ client.tier or '' }}</td>
+          <td class="label" data-label="Rating">{% if client.tier %}<span class="tier-word" data-tier="{{ client.tier | lower }}">{{ client.tier }}</span>{% endif %}</td>
           <td class="num label" data-label="Weight">{{ client.categories | map(attribute='weight') | select | sum }}</td>
           <td class="num label" data-label="Adds">{{ client.composite }}</td>
           <td class="label" data-label="Measures">Each category's score times its weight, over the total weight.</td>
@@ -158,8 +168,8 @@
           <td class="label" data-label="Crawler">{{ row.token }}</td>
           <td class="label" data-label="Operator">{{ row.operator }}</td>
           <td class="label" data-label="Used for">{{ row.purpose }}</td>
-          <td class="label access {{ 'allowed' if row.allowed else 'blocked' }}" data-label="Access">{{ 'Allowed' if row.allowed else 'Blocked' }}</td>
-          <td class="label" data-label="What to do">{{ row.advice }}</td>
+          <td class="label access {{ 'allowed' if row.allowed else 'blocked' }}" data-label="Access"><span>{{ 'Allowed' if row.allowed else 'Blocked' }}</span></td>
+          <td class="label{{ ' advice-none' if row.allowed }}" data-label="What to do">{{ row.advice }}</td>
         </tr>
       {% endfor %}
       </tbody>
@@ -172,16 +182,16 @@
   <section>
     <h2>Category detail</h2>
     {% for group in client.category_detail %}
-    <h3>{{ group.name }}{% if group.score is not none %} &mdash; {{ group.score }}/100{% endif %}</h3>
+    <h3 class="detail">{{ group.name }}{% if group.score is not none %} <span class="chip">{{ group.score }}/100</span>{% endif %}</h3>
     <table class="signals">
       <tbody>
       {% for signal in group.signals %}
         <tr>
           <td class="label" data-label="Measure">{{ signal.name }}</td>
           {% if signal.percent is not none %}
-          <td class="num label" data-label="Score">{{ signal.value }} of {{ signal.max }} <span class="bar" aria-hidden="true"><span style="width: {{ signal.percent }}%"></span></span></td>
+          <td class="num label" data-label="Score"><span class="val wide">{{ signal.value }} of {{ signal.max }}</span><span class="bar" aria-hidden="true"><span style="width: {{ signal.percent }}%"></span></span></td>
           {% else %}
-          <td class="label" data-label="Score">{{ signal.status }}{% if signal.note %}: {{ signal.note }}{% endif %}</td>
+          <td class="label status" data-label="Score">{{ signal.status }}{% if signal.note %}: {{ signal.note }}{% endif %}</td>
           {% endif %}
         </tr>
       {% endfor %}
@@ -196,11 +206,11 @@
   <section>
     <h2>Everything found</h2>
     {% for category, fixes in client.by_category.items() %}
-    <h3>{{ category }}</h3>
+    <h3 class="group">{{ category }}</h3>
     {% for fix in fixes %}
     <div class="fix {{ fix.severity }}">
       <h3>{{ fix.title }}</h3>
-      <p class="tags"><span class="tag">{{ fix.severity }}</span> &middot; {{ fix.effort }} effort &middot; {{ fix.page_count }} page{{ '' if fix.page_count == 1 else 's' }}{% if fix.impact %} &middot; up to +{{ '%g' % fix.impact }} on the overall score{% endif %}</p>
+      <p class="tags"><span class="tag">{{ fix.severity }}</span> <span class="chip">{{ fix.effort }} effort</span> <span class="chip">{{ fix.page_count }} page{{ '' if fix.page_count == 1 else 's' }}</span>{% if fix.impact %} <span class="chip gain">up to +{{ '%g' % fix.impact }} overall</span>{% endif %}</p>
       <p>{{ fix.remediation }}</p>
       {% if fix.evidence or fix.excerpt %}
       <div class="evidence">
@@ -208,7 +218,7 @@
         {% if fix.excerpt %}<blockquote>{{ fix.excerpt }}</blockquote>{% endif %}
       </div>
       {% endif %}
-      {% if fix.pages %}<p class="pages">{{ fix.pages | join(' · ') }}</p>{% endif %}
+      {% if fix.pages %}<p class="pages">{% for page in fix.pages %}<span class="path">{{ page | page_path(client.site) }}</span>{% endfor %}</p>{% endif %}
     </div>
     {% endfor %}
     {% endfor %}
@@ -272,7 +282,7 @@
       <tbody>
       {% for page in client.pages_analysed %}
         <tr>
-          <td class="label" data-label="Page">{{ page.url }}</td>
+          <td class="label" data-label="Page"><span class="path">{{ page.url | page_path(client.site) }}</span></td>
           <td class="num label" data-label="Status">{{ page.status if page.status else '—' }}{% if not page.read %} (not read){% endif %}</td>
           <td class="num label" data-label="Findings">{{ page.findings }}</td>
         </tr>

@@ -7,6 +7,27 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Reports rendered without most of their stylesheet.** The page template
+  HTML-escaped the stylesheet, and a browser decodes no entities inside `<style>`, so
+  every rule holding a quote or a `>` was dropped: the font (reports showed in Times),
+  the bar fills (every bar was empty), the narrow-screen table labels and the print
+  rule for links among them. Every report through 0.7.0 was affected. The stylesheet
+  now enters the page as trusted markup, and is refused if it could ever end its own
+  `<style>` element.
+- The operator copy labelled not-applicable signals "not measured".
+
+### Changed
+
+- **The report is redesigned.** The score sits in a card over the masthead, with the
+  tier as a coloured badge and a meter; each fix is a card with a severity stripe, a
+  severity badge and chips for effort, pages and gain, its evidence in a panel and its
+  pages as paths rather than full URLs; the plan is a panel per horizon; bars are
+  coloured by tier and line up; crawler access reads as Allowed and Blocked badges;
+  not-measured and not-applicable rows are set quietly apart. In print, cards are
+  never split across pages. Colour still rides with a word everywhere.
+
 ## [0.7.0] - 2026-09-21
 
 ### Changed

@@ -56,7 +56,7 @@
       {% for signal in operator.signals %}
       <tr><td class="label" data-label="Signal"><code>{{ signal.id }}</code></td>
           <td class="label" data-label="Class">{{ signal.class }}</td>
-          <td class="num label" data-label="Value">{% if signal.value is none %}not measured{% else %}{{ signal.value }}/{{ signal.max }}{% endif %}</td></tr>
+          <td class="num label" data-label="Value">{% if signal.value is none %}{{ 'not applicable' if (signal.skipped_reason or '').startswith('not applicable') else 'not measured' }}{% else %}{{ signal.value }}/{{ signal.max }}{% endif %}</td></tr>
       {% endfor %}
     </tbody>
   </table>

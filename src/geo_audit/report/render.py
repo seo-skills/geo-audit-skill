@@ -14,8 +14,10 @@ anything from a page it audited.
 from __future__ import annotations
 
 from importlib import resources
+from urllib.parse import urlsplit
 
 from jinja2 import ChoiceLoader, DictLoader, Environment, FunctionLoader, StrictUndefined, select_autoescape
+from markupsafe import Markup
 
 from geo_audit.report.context import ClientContext, OperatorContext
 
@@ -27,25 +29,50 @@ def _asset(name: str) -> str:
     return resources.files("geo_audit.assets").joinpath(name).read_text(encoding="utf-8")
 
 
+def page_path(url: str, site: str) -> str:
+    """A page as a reader scans it: its path when it is on the audited site.
+
+    The site is already in the masthead, and repeating it on every page of every
+    finding buried the part that differs. A page elsewhere keeps its host.
+    """
+    parts = urlsplit(url)
+    host = (parts.hostname or "").removeprefix("www.")
+    path = (parts.path or "/") + (f"?{parts.query}" if parts.query else "")
+    if host == (site or "").removeprefix("www."):
+        return path
+    return f"{host}{path}"
+
+
 def _environment() -> Environment:
-    return Environment(
+    environment = Environment(
         loader=FunctionLoader(lambda name: _asset(name)),
         autoescape=select_autoescape(default=True, default_for_string=True),
         undefined=StrictUndefined,
         trim_blocks=False,
         lstrip_blocks=False,
     )
+    environment.filters["page_path"] = page_path
+    return environment
 
 
-def _stylesheet(client: ClientContext) -> str:
+def _stylesheet(client: ClientContext) -> Markup:
     """The stylesheet carries brand tokens, so it is a template too.
 
     Rendered with autoescape off: CSS is not HTML, and escaping a hex colour
     into `&#35;` would break every rule. The values substituted here are hex
     colours validated by `brand.load`, never free text.
+
+    It enters the page as trusted markup for the same reason: a browser decodes
+    no entities inside <style>, so the page template escaping it cost every
+    rule with a quote or a `>` - the font and the bar fills among them. The
+    trust holds only while nothing in it can end the element, so that is
+    checked rather than assumed.
     """
     css = Environment(autoescape=False, undefined=StrictUndefined).from_string(_asset("report.css"))
-    return css.render(client=client)
+    rendered = css.render(client=client)
+    if "</" in rendered:
+        raise ValueError("the stylesheet contains '</', which could end its <style> element")
+    return Markup(rendered)
 
 
 def render_client(client: ClientContext) -> str:

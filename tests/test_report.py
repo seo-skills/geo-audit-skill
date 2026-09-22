@@ -322,6 +322,29 @@ def test_one_intentional_breakpoint(audited, site):
     assert breakpoints == ["30rem"], f"expected one breakpoint, found {breakpoints}"
 
 
+def test_the_stylesheet_reaches_the_browser_unescaped(audited, site):
+    """Autoescape is for page content. A browser decodes no entities inside
+    <style>, so an escaped stylesheet loses every rule holding a quote or a
+    `>`: the font rule, so reports rendered in Times, and the bar fills, so
+    every bar was empty. Every report through 0.7.0 shipped that way."""
+    css = html_of(site).split("<style>", 1)[1].split("</style>", 1)[0]
+    for entity in ("&#34;", "&#39;", "&gt;", "&lt;", "&amp;"):
+        assert entity not in css, f"{entity} in the stylesheet"
+    assert ".bar > span" in css
+    assert '"Segoe UI"' in css
+
+
+def test_a_stylesheet_that_could_close_its_own_tag_is_refused(monkeypatch):
+    """Trusting the stylesheet is safe only while nothing in it can end the
+    <style> element. Brand colours are validated hex today; this holds if a
+    later field is not."""
+    from geo_audit.report import render as render_lib
+
+    monkeypatch.setattr(render_lib, "_asset", lambda name: "a { color: red } </style><script>x</script>")
+    with pytest.raises(ValueError):
+        render_lib._stylesheet(None)
+
+
 def test_the_report_is_a_single_self_contained_file(audited, site):
     """It gets emailed. It cannot depend on anything being fetched."""
     rendered = html_of(site)
