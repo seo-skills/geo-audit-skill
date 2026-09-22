@@ -33,7 +33,9 @@ geo audit <url> --json
 
 Defaults are 50 pages, one request per second across the whole crawl, five in flight,
 robots.txt respected for discovered links. They are part of the contract and are
-reported back in `crawl.limits`.
+reported back in `crawl.limits`. When the sitemap lists more pages than the limit, the
+crawl spreads its pages over the site's sections and `crawl.stopped_because` is
+`max_pages`: say the score covers that sample, not the whole site.
 
 | You want | Add |
 |---|---|

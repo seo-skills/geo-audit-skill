@@ -38,6 +38,15 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   seomator.com 91 to 94 with all three false findings gone, plausible.io 77 to 78, and
   smashingmagazine.com, eff.org, adafruit.com and developer.mozilla.org unchanged - eff
   marks its about pages `og:type article`, so they stay articles.
+- **A capped crawl spreads its pages over the site.** The sitemap's URLs were read in
+  sorted order, so a crawl stopped by `--max-pages` audited the alphabetical prefix of a
+  site: seomator.com's 50 of 310 ran from `/` to `/blog/how-to-*`, with no tool page
+  after "b" and no post after "h", and the audit skill called the site a publisher from
+  that slice. Each section of the site - a first path segment, top-level pages being
+  one more - now gives a page in turn, in hash-of-path order within it, so the choice
+  still depends on the sitemap alone. Links found on pages keep their sorted order.
+  It changes which pages an unchanged site's capped audit reads, so it ships inside the
+  scoring 4.0 bump rather than as a second break.
 
 ### Fixed
 
