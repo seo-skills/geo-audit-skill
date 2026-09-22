@@ -16,6 +16,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Doctor's warning for a `playwright` package without its command now runs it through
   the interpreter that imports it (`<python> -m playwright install chromium`) instead
   of naming the command it had just found missing.
+- **A fix's gain is printed on the scale of the score above it.** `geo audit` printed each
+  fix's category points as "+9 points available" under "GEO score 91/100", so the fixes
+  shown for one site claimed 26.7 points on a site that could gain nine. It now prints
+  "up to +1.8 overall", as the HTML report does; `geo score`, which has no overall gain
+  per fix, says whose points they are ("+10.3 citability points available").
 
 ## [1.0.0] - 2026-09-22
 

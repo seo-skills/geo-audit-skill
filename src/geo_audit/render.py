@@ -97,8 +97,13 @@ def _render_findings(envelope: dict, out: TextIO, style: Style, limit: int = 3) 
         pages = finding.get("pages") or []
         if len(pages) > 1:
             meta += f" · {len(pages)} pages"
-        if finding["points_lost"] > 0:
-            meta += f" · +{finding['points_lost']:g} points available"
+        # `points_lost` is on the category's 0-100 scale, so printed under the
+        # overall score it read as overall points: five fixes "worth" 26.7 on
+        # a site at 91. `impact` is the same loss on the overall scale.
+        if finding.get("impact"):
+            meta += f" · up to +{finding['impact']:g} overall"
+        elif finding["points_lost"] > 0:
+            meta += f" · +{finding['points_lost']:g} {finding['id'].split('.', 1)[0]} points available"
         print(style.dim(f"      {meta}"), file=out)
         print(f"      {finding['remediation']}", file=out)
     if len(findings) > limit:
