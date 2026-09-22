@@ -7,8 +7,9 @@ vocabularies below were taken from 163 installed `plugin.json` files and 10
 necessarily wrong, but it is unattested, and an unattested key in a manifest
 the plugin manager parses is worth noticing before a user does.
 
-This is half of the D2 spike. The other half - `/plugin marketplace add` and
-`/plugin install geo` - has to be run by a person inside Claude Code.
+This is half of the D2 spike. The other half - adding the marketplace and
+installing `geo@seomator` from a clean config - runs in `.github/workflows/plugin.yml`
+on every release tag, on Ubuntu, macOS and Windows.
 """
 
 from __future__ import annotations

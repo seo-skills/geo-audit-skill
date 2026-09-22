@@ -71,7 +71,11 @@ patches only the pre-flight resolution and relies on the peer check to stop it.
 ### 4. State
 
 * `$GEO_HOME` is created mode 0700, and `geo doctor` warns if it is looser.
-* No raw HTML is written to disk; records hold derived signals and capped excerpts.
+* Records hold derived signals and capped excerpts. The pages an audit read are kept
+  apart from them in `projects/<slug>/pages/`, gzipped: never printed, never inside
+  `audits.jsonl`, read back only if their bytes still match their hash, and deleted by
+  `geo prune` with the runs that name them. The store carries a `.gitignore`, so a
+  `$GEO_HOME` inside a git repository does not commit them.
 * State carries a version. A CLI that finds newer state refuses to run and changes
   nothing, rather than migrating someone's history downward.
 * `geo doctor` warns when `$GEO_HOME` sits on a sync drive, where append-only
@@ -81,7 +85,7 @@ patches only the pre-flight resolution and relies on the peer check to stop it.
 
 * No install-time mutation: nothing is rewritten, patched or generated during
   installation, so the artifact that was tested is the artifact that runs.
-* Two runtime dependencies (`requests`, `beautifulsoup4`). Playwright is an optional
+* Three runtime dependencies (`requests`, `beautifulsoup4`, `jinja2`). Playwright is an optional
   extra.
 * Releases publish to PyPI through trusted publishing from a tagged workflow, with no
   long-lived token in the repository.

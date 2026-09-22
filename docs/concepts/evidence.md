@@ -64,9 +64,12 @@ audit exits 0 unless you asked for `--fail-on-partial`.
 
 ## Retention
 
-Derived signals, counts, and length-capped excerpts. **No raw HTML is written to
-disk.** An audit record is roughly the size of the envelope you saw, which is a few
-kilobytes, not a page.
+An audit record holds derived signals, counts and length-capped excerpts - roughly the
+size of the envelope you saw. The pages it read are kept apart from it, in
+`projects/<slug>/pages/`: gzipped, stored once under the hash of their bytes, never
+printed and never inside `audits.jsonl`, so sharing a record shares no one's pages.
+`geo prune` deletes a page once no kept run names it, or when the store passes its
+budget of 100 MB a project, oldest runs first.
 
 ## Validating an envelope
 

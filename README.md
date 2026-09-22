@@ -4,7 +4,7 @@ A GEO (Generative Engine Optimization) audit toolkit for Claude Code: a determin
 Python CLI, plus thin skills that narrate what it computes.
 
 ```
-plugin   /plugin marketplace add seo-skills/geo-audit-skill  ->  /plugin install geo
+plugin   /plugin marketplace add seo-skills/geo-audit-skill  ->  /plugin install geo@seomator
 CLI      uv tool install seomator-geo-audit                  ->  geo audit <url>
 ```
 
@@ -61,12 +61,13 @@ flag in a pipeline. Progress goes to stderr, always.
 
 ```
 /plugin marketplace add seo-skills/geo-audit-skill
-/plugin install geo
+/plugin install geo@seomator
 /geo:audit https://example.com
 ```
 
-Six skills ship with the plugin: `/geo:audit`, `/geo:citability`, `/geo:technical`,
-`/geo:schema`, `/geo:llmstxt` and `/geo:brand`. They call the CLI and read its JSON.
+Nine skills ship with the plugin: `/geo:audit`, `/geo:citability`, `/geo:technical`,
+`/geo:schema`, `/geo:content`, `/geo:llmstxt`, `/geo:brand`, `/geo:compare` and
+`/geo:report`. They call the CLI and read its JSON.
 They never guess a number, and they never see raw page text.
 
 ## What it measures today
