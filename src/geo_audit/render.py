@@ -715,12 +715,15 @@ def _render_scan(envelope: dict, out: TextIO, style: Style) -> None:
             ),
             file=out,
         )
-    print(
-        copytext.NEXT_COMMAND.format(
-            command=f"geo scan \"{block.get('brand')}\" --site https://example.com"
-        ),
-        file=out,
+    # With a site named, the next step is folding brand presence into its audit;
+    # without one, it is naming the site. example.com is only ever a placeholder.
+    site = block.get("site")
+    command = (
+        f"geo audit {site} --brand \"{block.get('brand')}\""
+        if site
+        else f"geo scan \"{block.get('brand')}\" --site https://example.com"
     )
+    print(copytext.NEXT_COMMAND.format(command=command), file=out)
 
 
 def _render_prune(envelope: dict, out: TextIO, style: Style) -> None:

@@ -30,6 +30,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   lists 309 URLs, and neither the terminal nor the client report said that 50 were read.
   Both now say "The crawl stopped at its 50-page limit after finding 310 URLs, so the
   score covers 50 of them." The terminal adds how to raise the limit.
+- **`geo scan --site` suggests a next command about that site.** It ended with
+  `Next: geo scan "<brand>" --site https://example.com` whatever site was named, so the
+  suggestion scanned someone else's domain. With a site it now suggests
+  `geo audit <site> --brand "<brand>"`, which folds brand presence into that site's score.
 
 ## [1.0.0] - 2026-09-22
 
