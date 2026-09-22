@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parent.parent
 HARNESS = ROOT / "tests" / "evals" / "run_eval.py"
 
 
-def test_the_protocol_states_the_1_0_gate():
+def test_the_protocol_states_its_bar():
     readme = (ROOT / "tests" / "evals" / "README.md").read_text(encoding="utf-8")
     assert "two consecutive evals" in readme.lower()
     assert "four of five" in readme.lower()
@@ -98,7 +98,7 @@ def test_the_harness_produces_a_blank_form(site, geo_home, tmp_path):
     assert "Top three fixes as ranked by the tool:" in form
     assert "| 1. Are these the right three? | | |" in form
     assert "| 2. Would you send this unedited? | | |" in form
-    assert "the 1.0 gate is 4 of 5, twice running" in form
+    assert "the bar is 4 of 5, twice running" in form
 
 
 def test_question_two_is_asked_about_the_copy_a_client_receives(site, geo_home, tmp_path):
@@ -106,8 +106,8 @@ def test_question_two_is_asked_about_the_copy_a_client_receives(site, geo_home, 
 
     That copy carries run ids, evidence hashes, the failed-page table and every
     signal value - none of which reach a client - so a careful practitioner
-    answers `no` for reasons that say nothing about the product, and the 1.0
-    gate measures the wrong document. The form links the client copy for the
+    answers `no` for reasons that say nothing about the product, and the bar
+    measures the wrong document. The form links the client copy for the
     question and keeps the operator copy for working out why.
     """
     import re
@@ -204,18 +204,19 @@ def test_a_recorded_eval_states_what_changed_because_of_it(path):
     assert "Changes made as a result" in text
 
 
-def test_the_1_0_gate_is_open_until_a_practitioner_answers():
-    """The gate is the practitioner column, not the maintainer's.
+def test_no_practitioner_column_has_been_filled_in_yet():
+    """The bar is the practitioner column, not the maintainer's.
 
     Every recorded eval so far leaves it open on purpose: the protocol asks
     for someone who does not work on the tool, and the person who wrote it
-    cannot supply that. When a practitioner fills one in, this test changes to
-    count how many they would send unedited.
+    cannot supply that. 1.0 was released on the maintainer's approval (PRD D5).
+    When a practitioner fills one in, this test changes to count how many they
+    would send unedited.
     """
     open_columns = sum(
         path.read_text(encoding="utf-8").count("| _open_ |") for path in recorded_evals()
     )
     assert open_columns, (
-        "a practitioner column has been filled in; update this test to check the "
-        "1.0 gate - four of five sent unedited, twice running"
+        "a practitioner column has been filled in; update this test to count it "
+        "against the bar - four of five sent unedited, twice running"
     )

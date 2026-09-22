@@ -142,7 +142,7 @@ def form(results: list[dict], versions: dict) -> str:
         "## Outcome",
         "",
         "- Reports the practitioner would send unedited: __ of 5 "
-        "(the 1.0 gate is 4 of 5, twice running)",
+        "(the bar is 4 of 5, twice running)",
         "- Changes made as a result:",
         "",
     ]

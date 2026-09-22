@@ -1,7 +1,7 @@
 ---
 name: brand
 description: Check whether a brand exists as an entity an AI system can look up: Wikipedia, Wikidata, Reddit and YouTube presence, and whether the site links itself to those profiles. Use when asked about brand visibility, brand mentions, entity presence or why an AI does not seem to know a company exists.
-version: 0.8.0
+version: 1.0.0
 allowed-tools: Bash, Read
 ---
 
@@ -18,10 +18,10 @@ Run this first, once per session:
 geo --version
 ```
 
-Expected: `seomator-geo-audit 0.8.x` or newer.
+Expected: `seomator-geo-audit 1.0.x` or newer.
 
 - **Command not found** -> stop and say: "The geo CLI is not installed. Install it with `uv tool install seomator-geo-audit` (or `pipx install seomator-geo-audit`), then run this again."
-- **Older than 0.8.0** -> stop and say: "This skill needs seomator-geo-audit 0.8.0 or newer. Upgrade with `uv tool upgrade seomator-geo-audit`."
+- **Older than 1.0.0** -> stop and say: "This skill needs seomator-geo-audit 1.0.0 or newer. Upgrade with `uv tool upgrade seomator-geo-audit`."
 - **Anything else odd** -> run `geo doctor` and relay what it reports.
 
 ## Run

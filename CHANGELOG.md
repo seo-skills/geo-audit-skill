@@ -7,6 +7,37 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-09-22
+
+Nothing new is built for 1.0. It is the promise the work since 0.4.0 was built to keep,
+released on the maintainer's approval of round four's reports after a full review of the
+repository.
+
+### The promise
+
+- **The envelope is frozen at `schema_version` 1.** Fields are added freely; a field is
+  removed or renamed only under a new schema version, announced two releases ahead.
+  Every command's output validates against the shipped JSON Schema in CI.
+- **Numbers carry their provenance.** `scoring_version`, `data_version` and
+  `normalizer_version` travel in every envelope, record and report, and `compare`
+  refuses a pair whose difference would measure the tool rather than the site. From 1.0,
+  every data change bumps `data_version`.
+- **Semantic versioning** for the package and the plugin together, which release on one
+  version line.
+
+### Fixed
+
+- Documentation found stale in the pre-release review: the README listed six skills
+  where nine ship and gave a plugin install form that was never verified; SECURITY.md
+  and the evidence doc said no page HTML is written to disk, untrue since 0.5.0; and
+  SECURITY.md undercounted the runtime dependencies.
+- The changelog no longer links 0.1.0 to 0.3.0 to tags that were never made.
+
+### Changed
+
+- The practitioner eval is the bar reports are held to, no longer described as the 1.0
+  gate; the form says so. PyPI lists the package as Production/Stable.
+
 ## [0.8.0] - 2026-09-22
 
 ### Fixed
@@ -583,7 +614,8 @@ contract behind them, and one skill end to end.
   composite is taken over the signals that were computed; a signal that was not
   measured is never scored as a failure.
 
-[Unreleased]: https://github.com/seo-skills/geo-audit-skill/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/seo-skills/geo-audit-skill/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v1.0.0
 [0.8.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.8.0
 [0.7.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.7.0
 [0.6.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.6.0

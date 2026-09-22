@@ -1,5 +1,5 @@
 {
-  "cli_version": "0.8.0",
+  "cli_version": "1.0.0",
   "command": "score",
   "completeness": {
     "computed": 0,

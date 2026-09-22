@@ -2,7 +2,8 @@
 
 The scores in this tool are reproducible. Reproducible is not the same as
 **useful**, and no test in the suite can tell the difference. This is the only
-check that can, and it is the gate on 1.0.
+check that can. It was the planned gate on 1.0; the maintainer released 1.0 on their
+own approval of round four's reports, and it stays the bar the reports are held to.
 
 ## The protocol
 
@@ -45,7 +46,7 @@ version that no longer exists.
 
 ## What the answers are for
 
-The second question is the 1.0 gate: **two consecutive evals where the outside
+The second question is the bar: **two consecutive evals where the outside
 practitioner would send at least four of five reports unedited.**
 
 The first question is diagnostic. A run of `mostly` means the findings are right and

@@ -21,6 +21,7 @@ This PRD is written under the **recommended default** for each. Every default is
 | **D2** | How do users install the skills? | **Claude Code plugin** (`/plugin marketplace add seo-skills/geo-audit-skill` → `/plugin install geo@seomator`). Skills are namespaced `/geo:audit`, `/geo:citability`, … The CLI installs separately from PyPI. | Keep shell installers: R-E8 (copy + hash manifest, ownership-gated) and R-X10 (non-interactive flags, Windows parity job) return exactly as written in the review record, plus a router skill. |
 | **D3** | Is the agency kit (CRM, web UI, proposals) part of this project? | **Resolved 2026-09-20 at the gate: closed.** The gate asked for concrete demand - an issue from a non-maintainer, or the maintainer's own agency use - and at 0.3.0 there is neither, because nothing is published yet. §3.11 and M4 are deferred, not deleted: no Flask, `rich` or `portalocker` dependency ships, and the section stands as a design should the first real request arrive. | Reopen it when someone asks. The import mapping, the single status enum and the locking design in §3.11 are still the plan; only the decision to build now was made. |
 | **D4** | License and copyright line | **Decided: MIT, `© 2026 SEOmator`** (see `LICENSE`). The upstream copyright line is no longer required (D1). The optional README credit line was not included, at the maintainer's instruction. | A different license (e.g. Apache-2.0 for its patent grant) is possible only if the agreement permits relicensing, not merely notice removal. Decide at M0: changing license is trivial before the first outside contribution and needs every contributor's consent after it. |
+| **D5** | Release 1.0 before an outside practitioner has answered? | **Decided 2026-09-22 by the maintainer: yes.** The maintainer read round four's reports on the released 0.8.0 and approved them for 1.0. The outside-practitioner rounds are waived for this release; the eval protocol stays the quality bar for later releases, and round four's practitioner column stays open. | Hold 1.0 until two consecutive practitioner rounds pass, the original gate. |
 
 ---
 
@@ -337,7 +338,7 @@ Each milestone ends in a tagged release. Lanes: after M1, M2's CLI work and M3's
 | **M3 — Report and polish → 0.3.0** | `report` (HTML + PDF, two modes, brand tokens, a11y, print), `compare`; skills `content`, `compare`, `report`; full docs IA with generated reference; first recorded eval. | Client-leak and XSS goldens pass. Every doc claim is CI-asserted. Eval recorded. |
 | **M4 — Agency kit** *(go/no-go, §3.11)* | **Closed at the gate, 2026-09-20.** No concrete demand; deferred rather than deleted. | — |
 | **0.4.0 — Freeze and prepare** | Envelope JSON Schema shipped in the package with `additionalProperties: false`; every command validated against it in CI; golden coverage for all eleven commands; docs cover every command and every error code. | Injecting an unfrozen key fails the build. Goldens stable across machines. |
-| **1.0.0** | Tag the frozen schema. The machinery landed in 0.4.0; 1.0.0 is the promise, not the work. | Two consecutive evals where the outside practitioner would send ≥ 4 of 5 reports unedited. **This is the only open gate.** |
+| **1.0.0** | Tag the frozen schema. The machinery landed in 0.4.0; 1.0.0 is the promise, not the work. | ~~Two consecutive evals where the outside practitioner would send ≥ 4 of 5 reports unedited.~~ **Released 2026-09-22 on the maintainer's approval (D5);** the practitioner rounds stay the quality bar for later releases. |
 
 ---
 
@@ -665,6 +666,16 @@ redesigned inside §3.8's rules (one column, colour beside a word, print-ready, 
 script). Scores and findings are unchanged; round four re-opens on this release, since
 0.7.0's reports were judged without their stylesheet.
 
+### 1.0.0 - The promise - released 2026-09-22
+
+Nothing new is built for 1.0; it is the promise the machinery since 0.4.0 was built to
+keep. The envelope is frozen at `schema_version` 1: a field is added freely, but removed
+or renamed only under a new schema version announced two releases ahead. Scores, data
+and extraction carry their own versions, and `compare` refuses across a change that
+would make a difference measure the tool rather than the site. From 1.0 every data
+change bumps `data_version`, as `CONTRIBUTING.md` asks. Released on the maintainer's
+approval of round four's reports (D5), after a full review of the repository.
+
 ### Open before the next milestone
 
 1. ~~Publish to PyPI.~~ **Done 2026-09-21:** `seomator-geo-audit` 0.4.0 released through
@@ -678,8 +689,8 @@ script). Scores and findings are unchanged; round four re-opens on this release,
 3. ~~Write §1.2.~~ **Done 2026-09-21** from the maintainer's positioning: MIT, © SEOmator,
    with SEOmator's product at seomator.com for more features, agentic ones included.
 4. ~~Confirm the D4 copyright holder.~~ **Confirmed 2026-09-21: SEOmator.**
-5. **Run the practitioner eval.** It is the only gate left before 1.0 and the only
-   check in the project that needs a person: `python tests/evals/run_eval.py`, five
+5. ~~Run the practitioner eval before 1.0.~~ **Waived for 1.0 by the maintainer,
+   2026-09-22 (D5).** It remains the only check in the project that needs a person: `python tests/evals/run_eval.py`, five
    sites the practitioner knows, two questions each. **Round four is ready to answer**
    (re-opened 2026-09-22): its form, `tests/evals/results/eval-2026-09-22-round4.md`, was
    produced by the released 0.8.0, which stays unchanged until it is answered, and its

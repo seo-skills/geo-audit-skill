@@ -12,10 +12,10 @@ CLI      uv tool install seomator-geo-audit                  ->  geo audit <url>
 The CLI computes; the model explains and prioritizes. No score is ever produced by
 an LLM doing arithmetic in prose.
 
-> **Status: 0.8.0.** Eleven commands, nine skills, six scoring categories, an envelope
-> schema the build enforces, and audits that keep the pages they read. What stands between
-> this and 1.0 is [the practitioner eval](tests/evals/README.md) — a human gate, by
-> design. See [the roadmap](#roadmap).
+> **Status: 1.0.0, stable.** Eleven commands, nine skills, six scoring categories, and an
+> envelope schema the build enforces and 1.0 freezes: fields are added, never removed or
+> renamed without a new schema version announced two releases ahead. Reports are held
+> to [the practitioner eval](tests/evals/README.md). See [the roadmap](#roadmap).
 
 **From SEOmator.** This is SEOmator's free, MIT-licensed GEO audit. For more features,
 agentic ones included, sign up at [seomator.com](https://seomator.com).
@@ -163,10 +163,11 @@ would abort exactly the sites that most need a report.
 | 0.6.0 | authorship, attribution and Article markup scored on articles only (scoring 2.0) |
 | 0.7.0 | extractability scores evidence that content needs JavaScript, not length (scoring 3.0) |
 | 0.8.0 | the report renders with its whole stylesheet, redesigned for screen and print |
-| 1.0.0 | the frozen schema tagged, after two consecutive practitioner evals |
+| 1.0.0 | the envelope schema frozen and promised; released on the maintainer's approval |
 
-The gate on 1.0 is not a feature. It is [the eval](tests/evals/README.md): two rounds
-where an outside practitioner would send at least four of five reports unedited.
+The bar a report is held to is not a feature. It is [the eval](tests/evals/README.md):
+two rounds where an outside practitioner would send at least four of five reports
+unedited. 1.0 was released on the maintainer's approval before an outside round ran.
 
 ## Docs
 
