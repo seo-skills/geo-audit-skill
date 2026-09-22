@@ -655,6 +655,16 @@ server-rendered. Extractability now scores evidence that content needs JavaScrip
 nothing else; length stays with `content.depth` (divergence 25, scoring 3.0). The
 counted round four runs on this release.
 
+### 0.8.0 - The report as designed - released 2026-09-22
+
+The maintainer read round four's reports and asked for the design to be polished, and
+the review found why it looked unfinished: the page template HTML-escaped the
+stylesheet, so every rule holding a quote or a `>` - the font, the bar fills, the
+narrow-screen labels - had never applied to any report. With that fixed, the report is
+redesigned inside §3.8's rules (one column, colour beside a word, print-ready, no
+script). Scores and findings are unchanged; round four re-opens on this release, since
+0.7.0's reports were judged without their stylesheet.
+
 ### Open before the next milestone
 
 1. ~~Publish to PyPI.~~ **Done 2026-09-21:** `seomator-geo-audit` 0.4.0 released through

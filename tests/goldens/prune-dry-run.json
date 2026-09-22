@@ -1,5 +1,5 @@
 {
-  "cli_version": "0.7.0",
+  "cli_version": "0.8.0",
   "command": "prune",
   "completeness": null,
   "data_version": "2026.09",
