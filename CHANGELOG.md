@@ -28,6 +28,16 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   pages, seomator.com moves from 91 to 94 and those findings go from 43, 8 and 8 pages
   to its about page alone. A major scoring bump, so `compare` refuses to set a new run
   against an older one.
+- **A site that marks its articles has answered for the pages it left unmarked** (same
+  bump). Presuming every undeclared page is an article kept real articles, but it asked
+  careers pages, plans pages and a German privacy policy for a byline wherever a crawl
+  reached them, and left seomator.com's `/about` in three findings of one page each. In
+  an audit, where two or more pages carry an article type in JSON-LD or `og:type
+  article`, a page carrying neither is not an article. `geo score` reads one page, has
+  no site to compare it with, and presumes as before. Rescored from stored pages:
+  seomator.com 91 to 94 with all three false findings gone, plausible.io 77 to 78, and
+  smashingmagazine.com, eff.org, adafruit.com and developer.mozilla.org unchanged - eff
+  marks its about pages `og:type article`, so they stay articles.
 
 ### Fixed
 

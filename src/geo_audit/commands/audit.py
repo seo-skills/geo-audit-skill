@@ -21,6 +21,7 @@ from geo_audit.lib import pages as pages_lib
 from geo_audit.lib.ids import is_run_id
 from geo_audit.lib.slug import project_slug
 from geo_audit.scoring import (
+    articles,
     citability,
     content as content_scorer,
     platform as platform_scorer,
@@ -157,18 +158,20 @@ def _forced(signal: Signal) -> Signal:
     return Signal(id=signal.id, cls=signal.cls, max=signal.max, value=0.0, detail=signal.detail)
 
 
-def _score_page(page, robots, categories: tuple[str, ...], site_facts: dict | None = None) -> dict[str, list[Signal]]:
+def _score_page(page, robots, categories: tuple[str, ...], site_facts: dict | None = None,
+                site_marks_articles: bool = False) -> dict[str, list[Signal]]:
     scored: dict[str, list[Signal]] = {}
     if "citability" in categories and page.doc is not None:
         # An audit never opens a browser: fifty pages through Chromium is a
         # different product. `geo score` renders a single page.
-        scored["citability"] = citability.score(page.doc, rendered_chars=None)
+        scored["citability"] = citability.score(page.doc, rendered_chars=None,
+                                                site_marks_articles=site_marks_articles)
     if "technical" in categories:
         scored["technical"] = technical.score(page, robots)
     if "schema" in categories and page.doc is not None:
-        scored["schema"] = schema_org.score(page)
+        scored["schema"] = schema_org.score(page, site_marks_articles=site_marks_articles)
     if "content" in categories and page.doc is not None:
-        scored["content"] = content_scorer.score(page)
+        scored["content"] = content_scorer.score(page, site_marks_articles=site_marks_articles)
     if "platform" in categories:
         scored["platform"] = platform_scorer.score(page, site_facts or {})
     return scored
@@ -266,8 +269,11 @@ def _score_pages(pages, robots, categories: tuple[str, ...], site_facts: dict) -
     # robots observations are what page-level and check findings are made from;
     # without them a rescore returned four of seomator.com's six findings.
     snapshot: dict = {"pages": [], "ratios": {}, "checks": []}
+    # Read from the pages rather than passed in, so a rescore asks the same
+    # question of the same pages as the audit that stored them.
+    marks_articles = articles.marks_its_articles(page.doc for page in pages if page.doc is not None)
     for page in pages:
-        scored = _score_page(page, robots, categories, site_facts)
+        scored = _score_page(page, robots, categories, site_facts, marks_articles)
         url = page.result.final_url if page.result else page.url
         index = len(snapshot["pages"])
         snapshot["pages"].append(url)

@@ -10,9 +10,11 @@ A page is excluded only on evidence the site itself gives: where it sits, what
 it lists beneath itself, what it declares itself to be. Nothing here guesses
 from the prose, because a guess that drops a real article loses a real finding,
 and a page with no evidence either way is presumed an article, as every page
-was before. Sampled on 79 pages from eight real sites, the rules kept all 31
-articles and excluded 27 of the 48 other pages. What they leave in - an about page, a
-tool that declares nothing - is scored as it was.
+was before - unless the site itself has answered the question. A site that marks its
+articles, in JSON-LD or `og:type`, has said what the pages it left unmarked are not, and
+that beats a presumption made from one page. Only an audit can ask it: `geo score` reads
+a page with no other page of the same site beside it. Sampled on 79 pages from eight
+real sites, the page rules kept all 31 articles and excluded 27 of the 48 other pages.
 
 A category, tag or author archive is an index whose pages do not sit beneath it:
 seomator.com's `/blog/category/backlinks` lists posts at `/blog/<slug>`, so the
@@ -65,7 +67,34 @@ def declared_types(doc: Document) -> set[str]:
     return found
 
 
-def not_an_article(doc: Document) -> str | None:
+# Two pages, not one: a stray Article blob on a landing page is not a convention.
+_MARKED_MIN_PAGES = 2
+
+
+def marks_an_article(doc: Document) -> bool:
+    """Whether the page says, in either place a site says it, that it is an article."""
+    if declared_types(doc) & set(data.load("schema_requirements")["article_types"]):
+        return True
+    return (doc.meta.get("og:type") or "").strip().lower() == "article"
+
+
+def marks_its_articles(docs) -> bool:
+    """Whether the site says which of its pages are articles.
+
+    A site that marks its articles has answered the question for every page it
+    left unmarked, and that answer beats a presumption made from the page
+    alone. Only an audit can ask it: `geo score` reads one page and has no
+    other page of the site to compare it with.
+    """
+    marked = 0
+    for doc in docs:
+        marked += marks_an_article(doc)
+        if marked >= _MARKED_MIN_PAGES:
+            return True
+    return False
+
+
+def not_an_article(doc: Document, site_marks_articles: bool = False) -> str | None:
     """Why the page is plainly not an article, or None to treat it as one."""
     path = urlsplit(doc.url).path
     if _HOME.fullmatch(path):
@@ -99,12 +128,16 @@ def not_an_article(doc: Document) -> str | None:
     og_type = (doc.meta.get("og:type") or "").strip().lower()
     if og_type.startswith("product") or og_type == "profile":
         return f"declared og:type {og_type}"
+
+    # Last, because every rule above reads this page; this one reads the site.
+    if site_marks_articles and not marks_an_article(doc):
+        return "the site marks its articles and not this page"
     return None
 
 
-def exempt(doc: Document) -> tuple[None, dict] | None:
+def exempt(doc: Document, site_marks_articles: bool = False) -> tuple[None, dict] | None:
     """What an article-only signal returns on a page that is not an article."""
-    reason = not_an_article(doc)
+    reason = not_an_article(doc, site_marks_articles)
     if reason is None:
         return None
     return None, {"reason": ARTICLES_ONLY, "not_an_article": reason}

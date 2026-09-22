@@ -91,7 +91,7 @@ Out of **100**, or **85** when the optional inputs are absent.
 
 Out of **100**, or **85** when the optional inputs are absent.
 
-The category composite is `earned / max-of-computed * 100`, and the site composite weights the categories that were computed. A signal or a category that was not measured leaves both sides of its fraction. A signal that requires an article is scored on the pages that are articles - not on a home page, an index of the pages beneath it, or a page declaring itself a product, an app or a profile - and on a site where none is, it does not apply: it leaves the fraction and the completeness count alike.
+The category composite is `earned / max-of-computed * 100`, and the site composite weights the categories that were computed. A signal or a category that was not measured leaves both sides of its fraction. A signal that requires an article is scored on the pages that are articles - not on a home page, an index of the pages beneath it, a category, tag or author archive, a page declaring itself a product, an app or a profile, or, in an audit of a site that marks its articles, a page it left unmarked - and on a site where none is, it does not apply: it leaves the fraction and the completeness count alike.
 <!-- generated:signals:end -->
 
 Definitions, thresholds and the reasoning behind each live with the skill that

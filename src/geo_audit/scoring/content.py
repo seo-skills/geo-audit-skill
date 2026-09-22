@@ -59,9 +59,9 @@ def depth(doc: Document) -> tuple[float | None, dict]:
     }
 
 
-def expertise(doc: Document) -> tuple[float | None, dict]:
+def expertise(doc: Document, site_marks_articles: bool = False) -> tuple[float | None, dict]:
     """Who is qualified to have written this, in a form a machine can read."""
-    exempt = articles.exempt(doc)
+    exempt = articles.exempt(doc, site_marks_articles)
     if exempt:
         return exempt
     author = _author(doc)
@@ -272,7 +272,7 @@ def advisory_signals() -> list[Signal]:
     ]
 
 
-def score(page, now: datetime | None = None) -> list[Signal]:
+def score(page, now: datetime | None = None, *, site_marks_articles: bool = False) -> list[Signal]:
     spec = data.weights()["content"]["signals"]
     doc = page.doc
     url = page.result.final_url if page.result else page.url
@@ -296,7 +296,7 @@ def score(page, now: datetime | None = None) -> list[Signal]:
 
     return [
         build("content.depth", depth(doc)),
-        build("content.expertise", expertise(doc)),
+        build("content.expertise", expertise(doc, site_marks_articles)),
         build("content.freshness", freshness(doc, now)),
         build("content.readability", readability(doc)),
     ]

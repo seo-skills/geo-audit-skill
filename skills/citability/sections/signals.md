@@ -83,7 +83,8 @@ telling it to server-render is wrong advice.
 
 Scored on articles only: on a home page, an index of the pages beneath it, a category,
 tag or author archive, or a page that declares itself a product, an app or a profile, it
-is `null` and not applicable.
+is `null` and not applicable. In an audit of a site that marks its articles, a page it
+left unmarked is not one either.
 
 Byline 3 · published date 3 · modified date 1 · an Organization or Person node in
 JSON-LD 2 · canonical 1. The JSON-LD check walks nested nodes, so
