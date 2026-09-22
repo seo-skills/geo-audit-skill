@@ -6,8 +6,9 @@ The document runs in reader order rather than audit order: where do I stand, wha
 it costing me, what do I do on Monday.
 
 1. **The answer.** Brand header, site, date, the score as a number and a tier label
-   together, one sentence on what that tier means, which kind of site it was ordered
-   for if one was given, then a **summary** built from the numbers, what is already
+   together, one sentence on what that tier means, and under the number how much of the
+   site it covers when the crawl stopped at its page limit and which signals it was
+   computed on. Then which kind of site it was ordered for if one was given, then a **summary** built from the numbers, what is already
    working, what stands out and what to do in order. Each fix states its gain on the
    *overall* score and the **evidence** the scorer recorded - which parts were found and
    missing, whether one template decides it, and the worst passage quoted. *What is

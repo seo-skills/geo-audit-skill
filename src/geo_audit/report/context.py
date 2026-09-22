@@ -18,6 +18,8 @@ from dataclasses import dataclass, field, fields
 
 from geo_audit import data
 from geo_audit._version import PRODUCT_NAME
+from geo_audit.copy import CAPPED
+from geo_audit.lib.crawl import urls_found
 from geo_audit.report.advisory import merge as advisory_merge
 from geo_audit.report.brand import Brand
 from geo_audit.scoring.model import NOT_APPLICABLE, Finding, for_site_kind, site_kinds
@@ -132,6 +134,9 @@ class ClientContext:
     # PRD §3.4: "the report says 'computed on 31 of 36 signals'". It qualifies
     # the number, so it sits under the number.
     completeness_note: str | None = None
+    # A crawl that stopped at its page limit read part of the site, and the
+    # number is about that part - said under the number for the same reason.
+    coverage_note: str | None = None
     glossary: list[dict] = field(default_factory=list)
     methodology: list[dict] = field(default_factory=list)
     signal_classes: list[dict] = field(default_factory=list)
@@ -399,6 +404,14 @@ def _completeness_note(completeness: dict) -> str | None:
     return note
 
 
+def _coverage_note(crawl: dict, evidence: dict) -> str | None:
+    if crawl.get("stopped_because") != "max_pages":
+        return None
+    return CAPPED.format(
+        limit=(crawl.get("limits") or {}).get("max_pages"), found=urls_found(crawl), scored=evidence.get("pages_ok", 0)
+    )
+
+
 def _pages_analysed(envelope: dict, fixes: list[Fix]) -> list[dict]:
     """Every crawled page and how many findings name it. No titles: the crawl
     record carries no page text, because the skill reads it and page text is
@@ -489,6 +502,7 @@ def build(
         pages_analysed=_pages_analysed(envelope, fixes),
         glossary=[{"term": term, "meaning": meaning} for term, meaning in GLOSSARY],
         completeness_note=_completeness_note(completeness),
+        coverage_note=_coverage_note(crawl, evidence),
         unscored=[
             {"name": name, "weight": spec["weight"]}
             for name, spec in data.weights().items()

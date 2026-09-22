@@ -38,6 +38,7 @@
       {% endif %}
       {% if client.tier_meaning %}<p class="verdict-meaning">{{ client.tier_meaning }}</p>{% endif %}
       <div class="fineprint">
+        {% if client.coverage_note %}<p class="caveat">{{ client.coverage_note }}</p>{% endif %}
         {% if client.completeness_note %}<p class="caveat">{{ client.completeness_note }}</p>{% endif %}
         <p class="caveat">{{ client.score_caveat }}</p>
       </div>

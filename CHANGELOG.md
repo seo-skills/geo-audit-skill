@@ -25,6 +25,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   from the per-page wording, so a fifty-page report led with "AI engines can lift
   answers from this page". Audits of more than one page now say "from these pages";
   the data, and so `data_version`, are unchanged.
+- **A capped crawl says how much of the site it read.** An audit that stopped at its
+  page limit presented the number for those pages as the site's: seomator.com's sitemap
+  lists 309 URLs, and neither the terminal nor the client report said that 50 were read.
+  Both now say "The crawl stopped at its 50-page limit after finding 310 URLs, so the
+  score covers 50 of them." The terminal adds how to raise the limit.
 
 ## [1.0.0] - 2026-09-22
 

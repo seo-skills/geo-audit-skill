@@ -53,6 +53,12 @@ PARTIAL = (
     "evaluated ({reasons}). Scores reflect the {ok} pages only."
 )
 
+# The crawl stopped at its page limit, so the number describes part of a site.
+CAPPED = (
+    "The crawl stopped at its {limit}-page limit after finding {found} URLs, "
+    "so the score covers {scored} of them."
+)
+
 # 6 — success
 SCORE_SUCCESS = (
     "GEO citability score {score}/100 ({tier}) for {site} — {pages} page, "

@@ -15,6 +15,7 @@ from typing import TextIO
 
 from geo_audit import copy as copytext
 from geo_audit._version import DIST_NAME
+from geo_audit.lib.crawl import urls_found
 from geo_audit.lib.slug import host_of
 from geo_audit.scoring.model import NOT_APPLICABLE
 
@@ -234,6 +235,11 @@ def _render_audit(envelope: dict, out: TextIO, style: Style) -> None:
         file=out,
     )
     print(style.dim(f"  {scores.get('tier_meaning', '')}"), file=out)
+    if block.get("stopped_because") == "max_pages":
+        capped = copytext.CAPPED.format(
+            limit=(block.get("limits") or {}).get("max_pages"), found=urls_found(block), scored=evidence.get("pages_ok", 0)
+        )
+        print(style.dim(f"  {capped} Raise the limit with --max-pages."), file=out)
 
     failed = evidence.get("pages_failed") or []
     if failed:

@@ -140,6 +140,12 @@ class CrawlResult:
         return [p for p in self.pages if p.scorable]
 
 
+def urls_found(block: dict) -> int:
+    """How many distinct URLs a recorded crawl knew of: its start URL, what the
+    sitemap listed, and each new one a crawled page linked to."""
+    return 1 + (block.get("seeded_from_sitemap") or 0) + (block.get("discovered") or 0)
+
+
 class _Sessions:
     """One keep-alive session per worker thread, closed together at the end."""
 
