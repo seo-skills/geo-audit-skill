@@ -13,7 +13,7 @@ appears in every envelope, audit record and report footer:
 * normalizer_version content extraction, and therefore evidence hash identity
 """
 
-CLI_VERSION = "1.0.0"
+CLI_VERSION = "1.1.0"
 
 # The product's public identifiers, in one place so they cannot drift apart.
 # `tools/lint_skills.py` asserts pyproject.toml and the plugin manifests agree.

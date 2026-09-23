@@ -1,7 +1,7 @@
 ---
 name: audit
 description: Run a full GEO audit of a site: crawl it, score citability, technical and schema over every page, and rank the fixes by what each one recovers. Use when asked to audit, score or improve a whole site for AI search visibility, or when someone asks how a site performs in ChatGPT, Claude, Perplexity, Gemini or AI Overviews.
-version: 1.0.0
+version: 1.1.0
 allowed-tools: Bash, Read
 ---
 
@@ -19,10 +19,10 @@ Run this first, once per session:
 geo --version
 ```
 
-Expected: `seomator-geo-audit 1.0.x` or newer.
+Expected: `seomator-geo-audit 1.1.x` or newer.
 
 - **Command not found** -> stop and say: "The geo CLI is not installed. Install it with `uv tool install seomator-geo-audit` (or `pipx install seomator-geo-audit`), then run this again."
-- **Older than 1.0.0** -> stop and say: "This skill needs seomator-geo-audit 1.0.0 or newer. Upgrade with `uv tool upgrade seomator-geo-audit`."
+- **Older than 1.1.0** -> stop and say: "This skill needs seomator-geo-audit 1.1.0 or newer. Upgrade with `uv tool upgrade seomator-geo-audit`."
 - **Anything else odd** -> run `geo doctor` and relay what it reports.
 
 ## Run
