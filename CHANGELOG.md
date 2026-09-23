@@ -7,6 +7,18 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **A site that was never reached is an error, not a score of zero.** When the start URL
+  failed below HTTP - no DNS answer, a refused connection, a private address without
+  `--allow-private` - the crawl filed it as one failed page among none, and `geo audit`
+  scored the empty set: `ok: true`, 0/100 "poor", stamp PARTIAL, appended to history. The
+  next `geo compare` then reported the site falling from 69 to 0 with every category
+  delta empty. `geo fetch` and `geo score` already returned the start URL's error for
+  the same address, and `errors.py` documents exit 3 for it; `geo audit` and `geo crawl`
+  now do the same and record nothing. A start URL that answers with an HTTP error - a
+  404, a 403 challenge - is still audited, since that is what the report is for.
+
 ## [1.1.0] - 2026-09-23
 
 ### Changed
