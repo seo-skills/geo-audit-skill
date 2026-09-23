@@ -241,7 +241,11 @@ def _sitemap_urls(
             continue
         found.extend(locations)
 
-    return found[:MAX_SITEMAP_URLS]
+    # Spread before the cap, not after. The cap keeps a document-order prefix,
+    # and userguiding.com lists 2951 URLs with its first blog post at number
+    # 748: all 950 posts, the largest section on the site and the only one with
+    # articles in it, were cut before `_spread` ever saw them.
+    return _spread(found)[:MAX_SITEMAP_URLS]
 
 
 def crawl(

@@ -47,6 +47,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   still depends on the sitemap alone. Links found on pages keep their sorted order.
   It changes which pages an unchanged site's capped audit reads, so it ships inside the
   scoring 4.0 bump rather than as a second break.
+  The 500-URL sitemap cap is spread the same way, because spreading a prefix the cap
+  already took is no spread at all: userguiding.com lists 2951 URLs with its first blog
+  post at number 748, so all 950 posts - the largest section on the site, and the only
+  one holding an article - were cut before the sections were counted. Its audit read 14
+  posts where it had read none, and judged freshness, authorship and Article markup on
+  articles for the first time.
 
 ### Fixed
 
