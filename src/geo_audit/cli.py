@@ -137,7 +137,11 @@ def _global_flags() -> argparse.ArgumentParser:
         help="never prompt (reserved: this release never prompts)",
     )
     parent.add_argument("--quiet", action="store_true", help="suppress progress on stderr")
-    parent.add_argument("--verbose", action="store_true", help="more progress on stderr")
+    parent.add_argument(
+        "--verbose",
+        action="store_true",
+        help="more progress on stderr: a line per page while crawling",
+    )
     parent.add_argument(
         "--allow-private",
         action="store_true",

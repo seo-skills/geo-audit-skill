@@ -9,6 +9,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **`--verbose` does what its help says.** It was declared once and read nowhere: every
+  command accepted it, the docs promised "more progress on stderr" for all eleven, and it
+  changed nothing. It now asks for the line per page that the single rewritten crawl line
+  replaced, which is where a run has more to say. `--quiet` still wins.
 - **A number no run could honour is a usage error.** `--timeout 0` reached the HTTP
   layer, raised ValueError and came back as `GEO_E_INTERNAL` - exit 1, "this is a bug,
   please open an issue" - for a typo; `--max-bytes -1` was reported as the page being too

@@ -51,7 +51,7 @@ options:
   --config PATH      JSON file of default flag values
   --no-input         never prompt (reserved: this release never prompts)
   --quiet            suppress progress on stderr
-  --verbose          more progress on stderr
+  --verbose          more progress on stderr: a line per page while crawling
   --allow-private    permit a private, loopback or link-local start URL
   --fail-on-partial  exit 5 when the result is PARTIAL
   --timeout SECONDS
@@ -86,7 +86,7 @@ options:
   --config PATH      JSON file of default flag values
   --no-input         never prompt (reserved: this release never prompts)
   --quiet            suppress progress on stderr
-  --verbose          more progress on stderr
+  --verbose          more progress on stderr: a line per page while crawling
   --allow-private    permit a private, loopback or link-local start URL
   --fail-on-partial  exit 5 when the result is PARTIAL
   --timeout SECONDS
@@ -129,7 +129,8 @@ options:
   --config PATH         JSON file of default flag values
   --no-input            never prompt (reserved: this release never prompts)
   --quiet               suppress progress on stderr
-  --verbose             more progress on stderr
+  --verbose             more progress on stderr: a line per page while
+                        crawling
   --allow-private       permit a private, loopback or link-local start URL
   --fail-on-partial     exit 5 when the result is PARTIAL
   --timeout SECONDS
@@ -175,7 +176,7 @@ options:
   --config PATH      JSON file of default flag values
   --no-input         never prompt (reserved: this release never prompts)
   --quiet            suppress progress on stderr
-  --verbose          more progress on stderr
+  --verbose          more progress on stderr: a line per page while crawling
   --allow-private    permit a private, loopback or link-local start URL
   --fail-on-partial  exit 5 when the result is PARTIAL
   --timeout SECONDS
@@ -210,7 +211,7 @@ options:
   --config PATH      JSON file of default flag values
   --no-input         never prompt (reserved: this release never prompts)
   --quiet            suppress progress on stderr
-  --verbose          more progress on stderr
+  --verbose          more progress on stderr: a line per page while crawling
   --allow-private    permit a private, loopback or link-local start URL
   --fail-on-partial  exit 5 when the result is PARTIAL
   --from RUN_ID      the earlier run
@@ -242,7 +243,7 @@ options:
   --config PATH      JSON file of default flag values
   --no-input         never prompt (reserved: this release never prompts)
   --quiet            suppress progress on stderr
-  --verbose          more progress on stderr
+  --verbose          more progress on stderr: a line per page while crawling
   --allow-private    permit a private, loopback or link-local start URL
   --fail-on-partial  exit 5 when the result is PARTIAL
   --timeout SECONDS
@@ -278,7 +279,7 @@ options:
   --config PATH      JSON file of default flag values
   --no-input         never prompt (reserved: this release never prompts)
   --quiet            suppress progress on stderr
-  --verbose          more progress on stderr
+  --verbose          more progress on stderr: a line per page while crawling
   --allow-private    permit a private, loopback or link-local start URL
   --fail-on-partial  exit 5 when the result is PARTIAL
   --timeout SECONDS
@@ -319,7 +320,7 @@ options:
   --config PATH      JSON file of default flag values
   --no-input         never prompt (reserved: this release never prompts)
   --quiet            suppress progress on stderr
-  --verbose          more progress on stderr
+  --verbose          more progress on stderr: a line per page while crawling
   --allow-private    permit a private, loopback or link-local start URL
   --fail-on-partial  exit 5 when the result is PARTIAL
   --site URL         also read this site's Organization sameAs links and
@@ -353,7 +354,7 @@ options:
   --config PATH        JSON file of default flag values
   --no-input           never prompt (reserved: this release never prompts)
   --quiet              suppress progress on stderr
-  --verbose            more progress on stderr
+  --verbose            more progress on stderr: a line per page while crawling
   --allow-private      permit a private, loopback or link-local start URL
   --fail-on-partial    exit 5 when the result is PARTIAL
   --run RUN_ID         a specific run, instead of the latest
@@ -389,7 +390,7 @@ options:
   --config PATH      JSON file of default flag values
   --no-input         never prompt (reserved: this release never prompts)
   --quiet            suppress progress on stderr
-  --verbose          more progress on stderr
+  --verbose          more progress on stderr: a line per page while crawling
   --allow-private    permit a private, loopback or link-local start URL
   --fail-on-partial  exit 5 when the result is PARTIAL
   --project SLUG     one project instead of all of them
@@ -417,7 +418,7 @@ options:
   --config PATH      JSON file of default flag values
   --no-input         never prompt (reserved: this release never prompts)
   --quiet            suppress progress on stderr
-  --verbose          more progress on stderr
+  --verbose          more progress on stderr: a line per page while crawling
   --allow-private    permit a private, loopback or link-local start URL
   --fail-on-partial  exit 5 when the result is PARTIAL
 ```

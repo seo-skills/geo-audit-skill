@@ -23,24 +23,37 @@ def crawl_reporting(args, options: crawl_lib.CrawlOptions, *, step: int, steps: 
     A line per page made fifty lines of one audit, on a terminal and in the
     output a skill reads alike. On a terminal the count now rewrites one line
     in place - it only grows, so a carriage return needs no clearing - and
-    anywhere else only the final count is written.
+    anywhere else only the final count is written. `--verbose` asks for the
+    line per page back, which is the one thing this command has more of to say.
     """
     import sys
 
     stream = sys.stderr
     live = not args.quiet and stream.isatty()
+    verbose = getattr(args, "verbose", False) and not args.quiet
 
     def line(done: int, total: int, failed: int) -> str:
         action = f"Crawling {host_of(args.url)} - {done}/{total} pages, {failed} failed"
         return copytext.PROGRESS.format(step=step, total=steps, action=action)
 
+    last = ""
+
     def progress(done: int, total: int, failed: int) -> None:
-        if live:
-            print("\r" + line(done, total, failed), end="", file=stream, flush=True)
+        # `last` tracks what the stream has actually seen, so the final line is
+        # skipped only when it would repeat one, never when nothing was written.
+        nonlocal last
+        text = line(done, total, failed)
+        if verbose:
+            print(text, file=stream)
+            last = text
+        elif live:
+            print("\r" + text, end="", file=stream, flush=True)
+            last = text
 
     result = crawl_lib.crawl(args.url, options, progress=progress)
-    if not args.quiet:
-        final = line(len(result.pages), options.max_pages, len(result.failures))
+    final = line(len(result.pages), options.max_pages, len(result.failures))
+    # On a terminal the final line also ends the one being rewritten in place.
+    if not args.quiet and (live or final != last):
         print(("\r" if live else "") + final, file=stream)
     return result
 
