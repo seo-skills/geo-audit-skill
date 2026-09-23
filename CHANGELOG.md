@@ -36,6 +36,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **The command suggested after `--rescore` can be run.** It named the rescore's own run
   id, and a rescore is not recorded, so following it answered "No audit with run id ...
   was found". It now names the recorded run that was rescored.
+- **Every skill's preflight expects the current version line.** The compare, content and
+  report skills shipped 1.1.0 saying "Expected: `seomator-geo-audit 0.2.x` or newer" two
+  lines above "Older than 1.1.0 -> stop". The lint asked only that the current line
+  appear somewhere in the preflight, and the stop line satisfied it; it now fails any
+  expected line that names another.
 
 ## [1.1.0] - 2026-09-23
 

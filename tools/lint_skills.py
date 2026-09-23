@@ -324,6 +324,16 @@ def lint_skill(report: Report, path: Path, version: str, contract: str, allowed:
             where,
             f"the preflight must name the current version line, {version.rsplit('.', 1)[0]}.x",
         )
+        # Present somewhere is not enough: three skills shipped 1.1.0 expecting
+        # 0.2.x, and the "Older than 1.1.0" line beneath satisfied the check above.
+        stale = sorted(set(re.findall(rf"{re.escape(DIST_NAME)} (\d+\.\d+)\.x", preflight))
+                       - {version.rsplit(".", 1)[0]})
+        report.check(
+            not stale,
+            where,
+            f"the preflight expects {', '.join(line + '.x' for line in stale)}; "
+            f"the current version line is {version.rsplit('.', 1)[0]}.x",
+        )
         report.check(
             "geo --version" in preflight,
             where,
