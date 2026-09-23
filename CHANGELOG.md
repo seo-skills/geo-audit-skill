@@ -9,6 +9,16 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **The page's only `<article>` has to hold the page** (`normalizer_version` 3).
+  Being the only one was the whole test, and userguiding.com wraps its promo banner in
+  an `<article>`. Every page of the site was read as that banner: 48 of the 50 crawled
+  came back at a median of 35 characters with no headings, and a company with 950 blog
+  posts was told its pages were too thin to answer anything. A lone `<article>` is now
+  the content root only when it carries at least a tenth of the page's text, measured
+  after the chrome inside it is removed. Live article pages measure about nine tenths
+  and this banner measured none, so nothing observed sits near the line. userguiding.com
+  moves from 42 to 61, citability from 19 to 57 and content from 4 to 32; the fixture
+  site is unchanged apart from the stamp.
 - **Expertise is judged on the article's author** (`scoring_version` 4.0).
   `content.expertise` took the first Person on the page, and a site-wide Organization
   graph names people too: on seomator.com that was the founder, a Person with a name

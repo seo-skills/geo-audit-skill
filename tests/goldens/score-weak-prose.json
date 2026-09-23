@@ -11,8 +11,8 @@
   "data_version": "2026.09",
   "error": null,
   "evidence": {
-    "content_hash": "ddcf3bb784ca6d938ad2b7fa145a0fba9702431c9cd60619b337cba407118d8a",
-    "normalizer_version": 2,
+    "content_hash": "7c45a711acea620d7ff50e3e6755ee39c77668ea670957f0cae3d513c64b791a",
+    "normalizer_version": 3,
     "pages_failed": [],
     "pages_ok": 1,
     "stamp": "CURRENT"
@@ -94,7 +94,7 @@
       "title": "Heading structure does not segment the page into answerable sections"
     }
   ],
-  "normalizer_version": 2,
+  "normalizer_version": 3,
   "observed_at": "<volatile>",
   "ok": true,
   "page": {

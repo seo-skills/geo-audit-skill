@@ -84,12 +84,12 @@
     "versions": {
       "from": {
         "data_version": "2026.09",
-        "normalizer_version": 2,
+        "normalizer_version": 3,
         "scoring_version": "4.0"
       },
       "to": {
         "data_version": "2026.09",
-        "normalizer_version": 2,
+        "normalizer_version": 3,
         "scoring_version": "4.0"
       }
     }
@@ -98,8 +98,8 @@
   "data_version": "2026.09",
   "error": null,
   "evidence": {
-    "content_hash": "45191b9ec6312f355ad06aed39d9492c26d21eaded15cd8514bb082c973263fe",
-    "normalizer_version": 2,
+    "content_hash": "e4a38ad112fe6b5b2d75d9ef8cb07a9b134c566988fb905008880fcd967c856c",
+    "normalizer_version": 3,
     "pages_failed": [
       {
         "reason": "not_found",
@@ -116,7 +116,7 @@
     "stamp": "PARTIAL"
   },
   "findings": [],
-  "normalizer_version": 2,
+  "normalizer_version": 3,
   "observed_at": "<volatile>",
   "ok": true,
   "run_id": "<volatile>",

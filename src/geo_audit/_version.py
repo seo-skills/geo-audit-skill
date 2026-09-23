@@ -62,5 +62,7 @@ SCHEMA_VERSION = 1
 SCORING_VERSION = "4.0"
 # 2: `<article>` is only the content root when the page has exactly one. Taking
 #    the first of many reduced every listing page to a single teaser card.
-NORMALIZER_VERSION = 2
+# 3: and only when it carries the page's text. A lone `<article>` around a promo
+#    banner reduced every page on userguiding.com to the banner.
+NORMALIZER_VERSION = 3
 STATE_VERSION = 1

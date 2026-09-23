@@ -119,7 +119,7 @@
     },
     "site": "127.0.0.1"
   },
-  "normalizer_version": 2,
+  "normalizer_version": 3,
   "observed_at": "<volatile>",
   "ok": true,
   "run_id": "<volatile>",

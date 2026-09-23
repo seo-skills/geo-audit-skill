@@ -6,7 +6,7 @@
   "error": null,
   "evidence": null,
   "findings": [],
-  "normalizer_version": 2,
+  "normalizer_version": 3,
   "observed_at": "<volatile>",
   "ok": true,
   "prune": {

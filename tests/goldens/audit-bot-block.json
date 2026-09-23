@@ -60,7 +60,7 @@
       {
         "blocks": 8,
         "content_chars": 824,
-        "content_hash": "98f215eb68ffa4eb7f18dfbed028a39bba1770b10d22e0ead53e4d8c046b86f2",
+        "content_hash": "e5db5b8ca8829bdfc01e8f8a1221fbb3af69eae6f204b76c6a46e5e2f7bb9238",
         "content_root": "main",
         "headings": 3,
         "jsonld_types": [],
@@ -71,7 +71,7 @@
       {
         "blocks": 9,
         "content_chars": 703,
-        "content_hash": "4c5e4940010568d61b60d5cc66bce85557cb51fbe327f99cc61fa1d979b359cf",
+        "content_hash": "0660ee45adb182d59c58442b2ee7a201b4c67afea4fde7611cda1b4e685b6d36",
         "content_root": "main",
         "headings": 4,
         "jsonld_types": [],
@@ -183,8 +183,8 @@
   "data_version": "2026.09",
   "error": null,
   "evidence": {
-    "content_hash": "f30162b6b37ef63313b54d5912c51b7404ecfd81d07b07ea705f85b932b10746",
-    "normalizer_version": 2,
+    "content_hash": "6f96d5e44b504a42436143bd1190bdd41c7feb239901ea13e49a533791f5a0ca",
+    "normalizer_version": 3,
     "pages_failed": [
       {
         "reason": "bot_blocked",
@@ -450,7 +450,7 @@
       "title": "The site is hard to discover in bulk"
     }
   ],
-  "normalizer_version": 2,
+  "normalizer_version": 3,
   "observed_at": "<volatile>",
   "ok": true,
   "run_id": "<volatile>",

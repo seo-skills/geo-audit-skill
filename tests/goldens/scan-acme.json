@@ -30,7 +30,7 @@
       "title": "The brand has no encyclopedic entity to resolve to"
     }
   ],
-  "normalizer_version": 2,
+  "normalizer_version": 3,
   "observed_at": "<volatile>",
   "ok": true,
   "run_id": "<volatile>",
