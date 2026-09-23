@@ -71,6 +71,17 @@ def comparable(before: dict, after: dict) -> tuple[bool, str | None]:
             f"data_version {left['data_version']} against {right['data_version']} "
             f"- the weights or thresholds changed"
         )
+    # The normalizer decides what the scorer is allowed to see, so a change to it
+    # moves a score without the formula or the weights moving at all. Version 3
+    # stopped reading a promo banner as the page and took userguiding.com from 42
+    # to 61; `_versions` had collected the number since the field existed and
+    # nothing had ever compared it, so that would have been reported as the site
+    # gaining nineteen points.
+    if left["normalizer_version"] != right["normalizer_version"]:
+        return False, (
+            f"normalizer_version {left['normalizer_version']} against "
+            f"{right['normalizer_version']} - what the scorer reads changed"
+        )
     return True, None
 
 

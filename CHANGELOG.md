@@ -9,6 +9,23 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **A comparison refuses a normalizer change, as it already refuses the other two.**
+  `comparable` collected `normalizer_version` and compared `scoring_version` and
+  `data_version` only. The normalizer decides what the scorer is allowed to see, so
+  changing it moves a score with the formula and the weights standing still: version 3
+  stopped reading a promo banner as the page and took one site from 42 to 61, and
+  `geo compare` would have reported that as the site gaining nineteen points.
+- **A page with no structured data is told once, not five times.** `findings.json` has
+  carried a `consequences` rule since the feature shipped - a cause at its floor
+  suppresses the findings that merely restate it - and `findings_for` applies it to the
+  signals it is handed. The page-level pass handed it one signal at a time, so there was
+  no cause to suppress from and every consequence came back. It only showed on a site
+  whose pages disagree: presence averaging 28.8 over fifty pages while the posts carried
+  none. Suppression is now decided per page, where the cause is measured.
+- **The missing-run error names the runs that exist.** It said "`geo audit --list` shows
+  what is recorded"; there is no such flag, and the parser answers it with
+  `unrecognized arguments` and exit 2 - a worse dead end than the error it explained.
+  It now lists the most recent recorded run ids, or names the file that is empty.
 - **A site-level finding says what is missing, not that everything is.** Four findings
   carry a second wording for the half-present case, chosen from the `present` list the
   scorer records. Rolling fifty pages into one signal kept only the details every page

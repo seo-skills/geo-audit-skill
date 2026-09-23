@@ -189,7 +189,7 @@ def run(args, run_id: str) -> dict:
 
     rules = data.thresholds("findings")
     per_category, findings, snapshot = _score_pages(result.pages, result.robots, categories, site_facts)
-    offenders, severe = _classify(snapshot, rules)
+    offenders, severe, explained = _classify(snapshot, rules)
     # What the scorer read, not only what it computed: each page's response with
     # its body in the page store, with robots.txt and llms.txt beside them.
     slug = project_slug(args.url)
@@ -242,6 +242,7 @@ def run(args, run_id: str) -> dict:
         advisory=advisory,
         offenders=offenders,
         severe=severe,
+        explained=explained,
         extra=extra,
         snapshot=snapshot,
     )
@@ -295,7 +296,7 @@ def _score_pages(pages, robots, categories: tuple[str, ...], site_facts: dict) -
     return per_category, findings, snapshot
 
 
-def _classify(snapshot: dict, rules: dict) -> tuple[dict[str, list[str]], dict[str, list[str]]]:
+def _classify(snapshot: dict, rules: dict) -> tuple[dict[str, list[str]], dict[str, list[str]], dict[str, set[str]]]:
     """Which pages sit below the line for each signal, from the per-page ratios.
 
     A finding's severity and value come from the site, but its page list has to
@@ -316,7 +317,41 @@ def _classify(snapshot: dict, rules: dict) -> tuple[dict[str, list[str]], dict[s
                 offenders.setdefault(signal_id, []).append(url)
             if ratio < floor:
                 severe.setdefault(signal_id, []).append(url)
-    return offenders, severe
+    return offenders, severe, _explained(snapshot)
+
+
+def _explained(snapshot: dict) -> dict[str, set[str]]:
+    """Per consequence, the pages where its cause already explains it.
+
+    `findings_for` applies `consequences` to the signals it is handed, and the
+    page-level pass hands it one signal at a time, so the rule had nothing to
+    suppress from: a page with no structured data was told four more times that
+    its structured data was incomplete. The site-level pass was never wrong,
+    which is why this survived - on userguiding.com presence averaged 28.8 over
+    fifty pages while the blog posts carried none.
+    """
+    declared = data.load("findings").get("consequences") or {}
+    maxes = {
+        signal_id: spec["max"]
+        for category in data.weights().values()
+        for signal_id, spec in category["signals"].items()
+    }
+    pages = snapshot["pages"]
+    out: dict[str, set[str]] = {}
+    for cause, rule in declared.items():
+        if not isinstance(rule, dict):
+            continue
+        ceiling = rule.get("floor", 0) / (maxes.get(cause) or 1)
+        at_floor = {
+            url
+            for url, ratio in zip(pages, snapshot["ratios"].get(cause) or [])
+            if ratio is not None and ratio <= ceiling
+        }
+        if not at_floor:
+            continue
+        for consequence in rule.get("suppresses") or []:
+            out.setdefault(consequence, set()).update(at_floor)
+    return out
 
 
 def _said_of_pages(meaning: str) -> str:
@@ -344,12 +379,14 @@ def _assemble(
     advisory: list[Signal] | None = None,
     offenders: dict[str, list[str]] | None = None,
     severe: dict[str, list[str]] | None = None,
+    explained: dict[str, set[str]] | None = None,
     extra: dict | None = None,
     snapshot: dict | None = None,
 ) -> dict:
     weights = data.weights()
     available = available or categories
     severe = severe or {}
+    explained = explained or {}
     category_scores: dict[str, int] = {}
     category_completeness: dict[str, dict] = {}
     all_signals: list[Signal] = []
@@ -383,7 +420,7 @@ def _assemble(
             for signal in rolled:
                 if signal.id in reported or signal.ratio is None:
                     continue
-                pages = sorted(set(severe.get(signal.id) or []))
+                pages = sorted(set(severe.get(signal.id) or []) - explained.get(signal.id, set()))
                 if not pages:
                     continue
                 for finding in findings_for([_forced(signal)], site):
@@ -473,8 +510,7 @@ def rescore(args, run_id: str) -> dict:
         where = f"for {slug}" if slug else "in any project"
         raise GeoError(
             "GEO_E_BAD_ARGS",
-            f"No audit with run id {wanted} was found {where}. "
-            f"`geo audit --list` shows what is recorded.",
+            f"No audit with run id {wanted} was found {where}. {_what_is_recorded(slug)}",
         )
 
     stored_signals = [
@@ -529,12 +565,12 @@ def rescore(args, run_id: str) -> dict:
         pages, robots, facts = replayed
         page_categories = tuple(name for name in categories if name != "brand")
         per_category, findings, fresh = _score_pages(pages, robots, page_categories, facts)
-        offenders, severe = _classify(fresh, data.thresholds("findings"))
+        offenders, severe, explained = _classify(fresh, data.thresholds("findings"))
         if "brand" in by_category:
             per_category["brand"] = by_category["brand"]
         source = "pages"
     elif snapshot:
-        offenders, severe = _classify(snapshot, data.thresholds("findings"))
+        offenders, severe, explained = _classify(snapshot, data.thresholds("findings"))
         findings = [
             _check_finding(check["id"], check["page"], check.get("excerpt"))
             for check in snapshot.get("checks") or []
@@ -562,6 +598,7 @@ def rescore(args, run_id: str) -> dict:
         findings=findings,
         offenders=offenders,
         severe=severe,
+        explained=explained,
         crawl_block=record.get("crawl", {}),
         evidence=record.get("evidence") or {},
         record=False,
@@ -569,6 +606,27 @@ def rescore(args, run_id: str) -> dict:
         advisory=stored_advisory,
         extra={"rescore": rescore_block},
     )
+
+
+def _what_is_recorded(slug: str | None) -> str:
+    """Name the run ids that are there, for someone who mistyped one.
+
+    This hint used to read "`geo audit --list` shows what is recorded", and
+    there is no such flag: the parser answers it with `unrecognized arguments`
+    and exit 2, which is a worse dead end than the error it was explaining.
+    """
+    slugs = [slug] if slug else _known_slugs()
+    recent = [
+        record["run_id"]
+        for candidate in slugs
+        for record in state.read_audits(candidate)[0]
+        if record.get("run_id")
+    ][-3:]
+    if recent:
+        return "Recorded here: " + ", ".join(reversed(recent)) + "."
+    if slug:
+        return f"Nothing is recorded yet in {state.audits_path(slug)}."
+    return "No project has a recorded audit yet."
 
 
 def _find_record(run_id: str, slug: str | None) -> dict | None:
