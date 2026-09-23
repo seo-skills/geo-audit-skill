@@ -48,9 +48,12 @@ Both runs must already be recorded. `geo audit <url>` twice, with the work in be
 ## When it refuses
 
 `GEO_E_INCOMPARABLE` means the two runs were scored under different rules - the
-formula or the constants moved between them. Relay it as what it is: **the difference
-would have measured the tool, not the site.** Do not work around it by subtracting the
-two composites yourself. Re-run the older URL to get a comparable pair.
+formula, the constants or the normalizer moved between them, or one run scored
+categories the other did not (`--only`, `--brand`). Relay it as what it is: **the
+difference would have measured the tool, not the site.** Do not work around it by
+subtracting the two composites yourself. Re-run the older URL to get a comparable pair;
+for a difference in categories, the message names both sets, and `--from` and `--to`
+pick two runs that match.
 
 ## Turning it into a progress report
 
