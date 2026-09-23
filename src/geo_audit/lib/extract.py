@@ -199,13 +199,25 @@ def _collect_jsonld(soup: BeautifulSoup) -> tuple[list[dict], list[str]]:
     return blocks, errors
 
 
+# Keys whose repeats add up rather than compete. A page may carry several
+# robots tags and every directive in them applies; keeping the first silently
+# dropped the rest, so `<meta robots="index">` before `<meta robots="noindex">`
+# read as indexable. Agent-scoped keys (`googlebot`, `bingbot`) are collected
+# but deliberately not read by the scorer, so they are not merged here.
+_DIRECTIVE_META = frozenset({"robots"})
+
+
 def _collect_meta(soup: BeautifulSoup) -> dict[str, str]:
     meta: dict[str, str] = {}
     for node in soup.find_all("meta"):
         key = node.get("name") or node.get("property") or node.get("itemprop")
         value = node.get("content")
         if isinstance(key, str) and isinstance(value, str):
-            meta.setdefault(key.strip().lower(), normalize_text(value))
+            key, value = key.strip().lower(), normalize_text(value)
+            if key in _DIRECTIVE_META and key in meta:
+                meta[key] = f"{meta[key]}, {value}"
+            else:
+                meta.setdefault(key, value)
     canonical = soup.find("link", attrs={"rel": re.compile(r"^canonical$", re.I)})
     if isinstance(canonical, Tag) and isinstance(canonical.get("href"), str):
         meta["canonical"] = canonical["href"].strip()

@@ -9,6 +9,15 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **A second robots tag is read, not discarded** (part of the scoring 4.0 bump).
+  `_collect_meta` kept the first value for a repeated key, so
+  `<meta name="robots" content="index">` before
+  `<meta name="robots" content="noindex">` read as indexable and the noindex
+  vanished. Directives on a page add up; they do not compete. Found while specifying a
+  `nosnippet` check that would have inherited the same gap. A page carrying repeated
+  robots tags can score differently, which is why this ships inside the bump rather
+  than as a patch. Agent-scoped keys (`googlebot`, `bingbot`) are collected and still
+  deliberately not read.
 - **The page's only `<article>` has to hold the page** (`normalizer_version` 3).
   Being the only one was the whole test, and userguiding.com wraps its promo banner in
   an `<article>`. Every page of the site was read as that banner: 48 of the 50 crawled
