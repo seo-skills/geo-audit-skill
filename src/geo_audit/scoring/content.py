@@ -25,6 +25,8 @@ from geo_audit.scoring.schema_org import _nodes_of, types_in
 
 SENTENCE_END = re.compile(r"(?<=[.!?])\s+")
 DATE_META = ("article:modified_time", "datemodified", "article:published_time", "datepublished")
+# A JSON-LD node that only points at another one by its @id.
+_REFERENCE = {"@id", "@type", "@context"}
 
 
 def _config(section: str) -> dict:
@@ -57,18 +59,18 @@ def depth(doc: Document) -> tuple[float | None, dict]:
     }
 
 
-def expertise(doc: Document) -> tuple[float | None, dict]:
+def expertise(doc: Document, site_marks_articles: bool = False) -> tuple[float | None, dict]:
     """Who is qualified to have written this, in a form a machine can read."""
-    exempt = articles.exempt(doc)
+    exempt = articles.exempt(doc, site_marks_articles)
     if exempt:
         return exempt
-    people = _nodes_of(doc, {"Person"})
+    author = _author(doc)
     byline = doc.meta.get("author")
-    person = people[0] if people else {}
+    person = author or {}
 
     has = {
         "byline": bool(byline) or bool(person.get("name")),
-        "person_schema": bool(people),
+        "person_schema": author is not None,
         "credentials": bool(person.get("jobTitle") or person.get("description")),
         "author_profile": bool(person.get("url") or person.get("sameAs")),
         "organization": bool(types_in(doc) & {"Organization", "NewsMediaOrganization"}),
@@ -78,9 +80,76 @@ def expertise(doc: Document) -> tuple[float | None, dict]:
     return points, {
         "present": sorted(key for key, value in has.items() if value),
         "missing": sorted(key for key, value in has.items() if not value),
-        "byline": byline,
+        "byline": byline or person.get("name"),
         "points_table": weights,
     }
+
+
+def _author(doc: Document) -> dict | None:
+    """The Person the page says wrote it.
+
+    The first Person anywhere was taken for the author, and a site-wide
+    Organization graph names people too: on seomator.com it was the company's
+    founder, a name with nothing else, so every post read as missing the
+    credentials and profile its real author node carried. The author is what an
+    article's `author` names; failing that, what the page's own nodes name as
+    author; failing that, a Person the page declares itself to be about. A
+    Person nested in anything else - a founder, an employee, a commenter - is
+    not the author.
+    """
+    article_types = set(data.load("schema_requirements")["article_types"])
+    by_id: dict[str, dict] = {}
+    articles_first: list[dict] = []
+
+    def walk(node, depth: int = 0) -> None:
+        if depth > 5:
+            return
+        if isinstance(node, list):
+            for item in node:
+                walk(item, depth + 1)
+            return
+        if not isinstance(node, dict):
+            return
+        if isinstance(node.get("@id"), str) and set(node) - _REFERENCE:
+            by_id.setdefault(node["@id"], node)
+        if _types(node) & article_types:
+            articles_first.append(node)
+        for key, child in node.items():
+            if key != "@type":
+                walk(child, depth + 1)
+
+    for entry in doc.jsonld:
+        walk(entry)
+
+    def person_in(value) -> dict | None:
+        for item in value if isinstance(value, list) else [value]:
+            if isinstance(item, dict):
+                if not set(item) - _REFERENCE:
+                    item = by_id.get(item.get("@id"), item)
+                if "Person" in _types(item):
+                    return item
+        return None
+
+    declared = [
+        member
+        for entry in doc.jsonld
+        for node in (entry if isinstance(entry, list) else [entry])
+        if isinstance(node, dict)
+        for member in [node, *(node.get("@graph") if isinstance(node.get("@graph"), list) else [])]
+        if isinstance(member, dict)
+    ]
+    for node in [*articles_first, *declared]:
+        found = person_in(node.get("author"))
+        if found:
+            return found
+    return next((node for node in declared if "Person" in _types(node)), None)
+
+
+def _types(node: dict) -> set[str]:
+    kind = node.get("@type")
+    if isinstance(kind, str):
+        return {kind}
+    return {str(k) for k in kind} if isinstance(kind, list) else set()
 
 
 def _parse_date(value: str) -> datetime | None:
@@ -203,7 +272,7 @@ def advisory_signals() -> list[Signal]:
     ]
 
 
-def score(page, now: datetime | None = None) -> list[Signal]:
+def score(page, now: datetime | None = None, *, site_marks_articles: bool = False) -> list[Signal]:
     spec = data.weights()["content"]["signals"]
     doc = page.doc
     url = page.result.final_url if page.result else page.url
@@ -227,7 +296,7 @@ def score(page, now: datetime | None = None) -> list[Signal]:
 
     return [
         build("content.depth", depth(doc)),
-        build("content.expertise", expertise(doc)),
+        build("content.expertise", expertise(doc, site_marks_articles)),
         build("content.freshness", freshness(doc, now)),
         build("content.readability", readability(doc)),
     ]

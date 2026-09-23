@@ -12,6 +12,7 @@ not by diffing two fetches.
 
 from __future__ import annotations
 
+import copy
 import json
 import re
 from dataclasses import dataclass, field
@@ -132,13 +133,17 @@ def _pick_root(soup: BeautifulSoup) -> tuple[Tag, str]:
     there are a dozen, each a teaser, and taking the first one throws the page
     away: eff.org's homepage reduced to fifty characters of one card, and was
     then scored as though that were the whole site.
+
+    Being the only `<article>` is not enough on its own either. userguiding.com
+    wraps its promo banner in one, and every page on the site - the homepage,
+    the blog, 950 posts - was read as the banner alone.
     """
     node = soup.find("main")
     if isinstance(node, Tag):
         return node, "main"
 
     articles = [n for n in soup.find_all("article") if isinstance(n, Tag)]
-    if len(articles) == 1:
+    if len(articles) == 1 and _holds_the_page(articles[0], soup):
         return articles[0], "article"
 
     node = soup.find(attrs={"role": "main"})
@@ -148,6 +153,27 @@ def _pick_root(soup: BeautifulSoup) -> tuple[Tag, str]:
     if isinstance(body, Tag):
         return body, "body"
     return soup, "document"
+
+
+MIN_ROOT_SHARE = 0.10
+
+
+def _holds_the_page(candidate: Tag, soup: BeautifulSoup) -> bool:
+    """Does this element carry the page's text, or only sit in it?
+
+    Measured after the chrome inside the candidate is gone, because that is
+    what the scorer would see. Real articles carry almost all of it -
+    smashingmagazine posts measure 0.89 and 0.90 - and a banner dressed as an
+    `<article>` carries none: userguiding.com's is 0.00 of an 11,000-character
+    page. Nothing observed lands near the line between them.
+    """
+    body = soup.body if isinstance(soup.body, Tag) else soup
+    page_chars = len(normalize_text(body.get_text(" ")))
+    if not page_chars:
+        return True
+    trial = copy.copy(candidate)
+    _strip(trial, CHROME_TAGS)
+    return len(normalize_text(trial.get_text(" "))) / page_chars >= MIN_ROOT_SHARE
 
 
 def _collect_jsonld(soup: BeautifulSoup) -> tuple[list[dict], list[str]]:
@@ -173,13 +199,25 @@ def _collect_jsonld(soup: BeautifulSoup) -> tuple[list[dict], list[str]]:
     return blocks, errors
 
 
+# Keys whose repeats add up rather than compete. A page may carry several
+# robots tags and every directive in them applies; keeping the first silently
+# dropped the rest, so `<meta robots="index">` before `<meta robots="noindex">`
+# read as indexable. Agent-scoped keys (`googlebot`, `bingbot`) are collected
+# but deliberately not read by the scorer, so they are not merged here.
+_DIRECTIVE_META = frozenset({"robots"})
+
+
 def _collect_meta(soup: BeautifulSoup) -> dict[str, str]:
     meta: dict[str, str] = {}
     for node in soup.find_all("meta"):
         key = node.get("name") or node.get("property") or node.get("itemprop")
         value = node.get("content")
         if isinstance(key, str) and isinstance(value, str):
-            meta.setdefault(key.strip().lower(), normalize_text(value))
+            key, value = key.strip().lower(), normalize_text(value)
+            if key in _DIRECTIVE_META and key in meta:
+                meta[key] = f"{meta[key]}, {value}"
+            else:
+                meta.setdefault(key, value)
     canonical = soup.find("link", attrs={"rel": re.compile(r"^canonical$", re.I)})
     if isinstance(canonical, Tag) and isinstance(canonical.get("href"), str):
         meta["canonical"] = canonical["href"].strip()

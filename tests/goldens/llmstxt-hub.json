@@ -119,12 +119,12 @@
     },
     "site": "127.0.0.1"
   },
-  "normalizer_version": 2,
+  "normalizer_version": 3,
   "observed_at": "<volatile>",
   "ok": true,
   "run_id": "<volatile>",
   "schema_version": 1,
   "scores": null,
-  "scoring_version": "3.0",
+  "scoring_version": "4.0",
   "signals": []
 }

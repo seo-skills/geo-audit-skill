@@ -7,6 +7,59 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **A second robots tag is read, not discarded** (part of the scoring 4.0 bump).
+  `_collect_meta` kept the first value for a repeated key, so
+  `<meta name="robots" content="index">` before
+  `<meta name="robots" content="noindex">` read as indexable and the noindex
+  vanished. Directives on a page add up; they do not compete. Found while specifying a
+  `nosnippet` check that would have inherited the same gap. A page carrying repeated
+  robots tags can score differently, which is why this ships inside the bump rather
+  than as a patch. Agent-scoped keys (`googlebot`, `bingbot`) are collected and still
+  deliberately not read.
+- **The page's only `<article>` has to hold the page** (`normalizer_version` 3).
+  Being the only one was the whole test, and userguiding.com wraps its promo banner in
+  an `<article>`. Every page of the site was read as that banner: 48 of the 50 crawled
+  came back at a median of 35 characters with no headings, and a company with 950 blog
+  posts was told its pages were too thin to answer anything. A lone `<article>` is now
+  the content root only when it carries at least a tenth of the page's text, measured
+  after the chrome inside it is removed. Live article pages measure about nine tenths
+  and this banner measured none, so nothing observed sits near the line. userguiding.com
+  moves from 42 to 61, citability from 19 to 57 and content from 4 to 32; the fixture
+  site is unchanged apart from the stamp.
+- **Expertise is judged on the article's author** (`scoring_version` 4.0).
+  `content.expertise` took the first Person on the page, and a site-wide Organization
+  graph names people too: on seomator.com that was the founder, a Person with a name
+  only, ahead of each post's author, whose node carried a job title, a description and
+  a profile URL. Every post read as missing them, and the report's first fix, *Authors
+  are named but not described*, was false on all 43 pages it named. The signal now reads
+  the Person an article's `author` names, resolving an `@id` reference; then one the
+  page's own nodes name as author; then a Person the page declares. A founder, an
+  employee or a commenter is not the author. The detail's `byline` names whoever was
+  credited, where it had said `null` beside a present byline.
+- **Category, tag and author archives are not articles** (same bump). They list posts
+  that sit beside them, not beneath them, so the index rule missed them, and on
+  seomator.com two findings named seven category archives and an about page - no
+  article at all. A page at `.../category/<name>` (or German `kategorie`), `.../tag/<name>`
+  or `.../author/<name>` (plurals too, optionally paged) is now *not applicable* for the
+  article-only signals, unless it declares an article type. Rescored from its stored
+  pages, seomator.com moves from 91 to 94 and those findings go from 43, 8 and 8 pages
+  to its about page alone. A major scoring bump, so `compare` refuses to set a new run
+  against an older one. One hyphenated prefix on the word counts too: a CMS that cannot
+  nest a collection qualifies it instead, and userguiding.com's five
+  `/blog-category/<name>` lists were being asked for a byline and a publication date.
+- **A site that marks its articles has answered for the pages it left unmarked** (same
+  bump). Presuming every undeclared page is an article kept real articles, but it asked
+  careers pages, plans pages and a German privacy policy for a byline wherever a crawl
+  reached them, and left seomator.com's `/about` in three findings of one page each. In
+  an audit, where two or more pages carry an article type in JSON-LD or `og:type
+  article`, a page carrying neither is not an article. `geo score` reads one page, has
+  no site to compare it with, and presumes as before. Rescored from stored pages:
+  seomator.com 91 to 94 with all three false findings gone, plausible.io 77 to 78, and
+  smashingmagazine.com, eff.org, adafruit.com and developer.mozilla.org unchanged - eff
+  marks its about pages `og:type article`, so they stay articles.
+
 ### Fixed
 
 - **A comparison refuses a normalizer change, as it already refuses the other two.**

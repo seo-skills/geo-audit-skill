@@ -39,7 +39,7 @@ geo audit <url> --only content --json
 | Signal | What it answers |
 |---|---|
 | `content.depth` | Is there enough on the page to answer the question without leaving it? |
-| `content.expertise` | Does anything say who is qualified to have written this? Articles only: elsewhere it is `null` and not applicable. |
+| `content.expertise` | Does anything say who is qualified to have written this? Read from the article's `author`, not from any Person on the page. Articles only: elsewhere it is `null` and not applicable. |
 | `content.freshness` | Is the page datable, and dated recently enough to be chosen? |
 | `content.readability` | Are the sentences short enough to quote cleanly? |
 

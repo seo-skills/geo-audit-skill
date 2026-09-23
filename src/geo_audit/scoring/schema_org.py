@@ -167,8 +167,8 @@ def organization(doc: Document) -> tuple[float | None, dict]:
     }
 
 
-def article(doc: Document) -> tuple[float | None, dict]:
-    exempt = articles.exempt(doc)
+def article(doc: Document, site_marks_articles: bool = False) -> tuple[float | None, dict]:
+    exempt = articles.exempt(doc, site_marks_articles)
     if exempt:
         return exempt
     requirements = _requirements()
@@ -205,7 +205,7 @@ def breadth(doc: Document) -> tuple[float | None, dict]:
     }
 
 
-def score(page) -> list[Signal]:
+def score(page, *, site_marks_articles: bool = False) -> list[Signal]:
     spec = data.weights()["schema"]["signals"]
     doc = page.doc
     url = page.result.final_url if page.result else page.url
@@ -232,6 +232,6 @@ def score(page) -> list[Signal]:
         build("schema.presence", presence(doc)),
         build("schema.validity", validity(doc)),
         build("schema.organization", organization(doc)),
-        build("schema.article", article(doc)),
+        build("schema.article", article(doc, site_marks_articles)),
         build("schema.breadth", breadth(doc)),
     ]

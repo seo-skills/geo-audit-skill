@@ -9,8 +9,8 @@
   "data_version": "2026.09",
   "error": null,
   "evidence": {
-    "content_hash": "fb0f593c34f60115898506becee6b95d8276cc25f7400c9541981eab28cf8426",
-    "normalizer_version": 2,
+    "content_hash": "21b637b7478f9846af832eed141dbdd39a6ef8681dfed68cc5a7716a7a910b43",
+    "normalizer_version": 3,
     "pages_failed": [],
     "pages_ok": 1,
     "stamp": "CURRENT"
@@ -47,7 +47,7 @@
       "title": "No structured data that answers a question directly"
     }
   ],
-  "normalizer_version": 2,
+  "normalizer_version": 3,
   "observed_at": "<volatile>",
   "ok": true,
   "page": {
@@ -238,7 +238,7 @@
     "tier": "good",
     "tier_meaning": "Most passages are quotable as-is; a few sections still need context to stand alone."
   },
-  "scoring_version": "3.0",
+  "scoring_version": "4.0",
   "signals": [
     {
       "class": "deterministic",

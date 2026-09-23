@@ -47,7 +47,7 @@ Output is JSON whenever stdout is not a terminal, so `--json` is belt-and-braces
 | `evidence.stamp` | `CURRENT`, `PARTIAL` or `STALE`. |
 | `error` | Populated only when `ok` is false. Relay `message` and `hint`. |
 
-A `value` of `null` means the signal was not measured, usually because the optional browser extra is not installed. That is not a zero and must never be reported as one. `citability.attribution` is also `null`, with a `skipped_reason` of `not applicable: articles only`, on a page that is not an article - a home page, an index, a product, a tool. Say it does not apply there.
+A `value` of `null` means the signal was not measured, usually because the optional browser extra is not installed. That is not a zero and must never be reported as one. `citability.attribution` is also `null`, with a `skipped_reason` of `not applicable: articles only`, on a page that is not an article - a home page, an index, an archive, a product, a tool, or a page a site that marks its articles left unmarked. Say it does not apply there.
 
 `scores: null` with `ok: true` means nothing on the page was scorable — the page returned 403, 404 or a server error. Report the finding, not a score.
 

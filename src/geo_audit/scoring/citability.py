@@ -313,8 +313,8 @@ def _jsonld_has(doc: Document, key: str) -> bool:
     return any(key in node for node in doc.jsonld)
 
 
-def attribution(doc: Document) -> tuple[float | None, dict]:
-    exempt = articles.exempt(doc)
+def attribution(doc: Document, site_marks_articles: bool = False) -> tuple[float | None, dict]:
+    exempt = articles.exempt(doc, site_marks_articles)
     if exempt:
         return exempt
     points_table = data.thresholds("attribution")["points"]
@@ -363,7 +363,7 @@ def render_parity(doc: Document, rendered_chars: int | None) -> tuple[float | No
 
 
 # --------------------------------------------------------------------------
-def score(doc: Document, *, rendered_chars: int | None = None) -> list[Signal]:
+def score(doc: Document, *, rendered_chars: int | None = None, site_marks_articles: bool = False) -> list[Signal]:
     spec = data.weights()["citability"]["signals"]
     page = doc.url
 
@@ -386,7 +386,7 @@ def score(doc: Document, *, rendered_chars: int | None = None) -> list[Signal]:
         build("citability.structure", structure(doc)),
         build("citability.evidence_density", evidence_density(doc)),
         build("citability.extractability", extractability(doc)),
-        build("citability.attribution", attribution(doc)),
+        build("citability.attribution", attribution(doc, site_marks_articles)),
         build("citability.render_parity", render_parity(doc, rendered_chars)),
     ]
 

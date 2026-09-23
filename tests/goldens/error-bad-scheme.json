@@ -12,12 +12,12 @@
   },
   "evidence": null,
   "findings": [],
-  "normalizer_version": 2,
+  "normalizer_version": 3,
   "observed_at": "<volatile>",
   "ok": false,
   "run_id": "<volatile>",
   "schema_version": 1,
   "scores": null,
-  "scoring_version": "3.0",
+  "scoring_version": "4.0",
   "signals": []
 }

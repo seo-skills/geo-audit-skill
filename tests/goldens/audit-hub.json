@@ -51,7 +51,7 @@
       {
         "blocks": 1,
         "content_chars": 11,
-        "content_hash": "066d38416479eacb27338cb7cd77095bfc9e7152fbc75eabf14cf3d8c56f209b",
+        "content_hash": "5bfd9356eaa44105570432b163e1715218cd1b1f8864ec7aefad0433588d9687",
         "content_root": "body",
         "headings": 0,
         "jsonld_types": [],
@@ -73,7 +73,7 @@
       {
         "blocks": 21,
         "content_chars": 679,
-        "content_hash": "ba87ca335cadb37484684ad362a8da9da6c6c7f2413779abc6fd41cd7fa58b57",
+        "content_hash": "717811f3cb5b2665d3e2ba5adf2483e37e87fd118132ecfe4b86452dc3a56eb7",
         "content_root": "main",
         "headings": 4,
         "jsonld_types": [],
@@ -84,7 +84,7 @@
       {
         "blocks": 8,
         "content_chars": 824,
-        "content_hash": "98f215eb68ffa4eb7f18dfbed028a39bba1770b10d22e0ead53e4d8c046b86f2",
+        "content_hash": "e5db5b8ca8829bdfc01e8f8a1221fbb3af69eae6f204b76c6a46e5e2f7bb9238",
         "content_root": "main",
         "headings": 3,
         "jsonld_types": [],
@@ -95,7 +95,7 @@
       {
         "blocks": 11,
         "content_chars": 944,
-        "content_hash": "d4ffce85cbfee45fb405add635f94e1acc643b4277e932cb9056466db245c6ef",
+        "content_hash": "0e7c7f0b5560db3b7813455af74c8042d2cb26c0156017d4b5088abd4bd99267",
         "content_root": "body",
         "headings": 5,
         "jsonld_types": [],
@@ -106,7 +106,7 @@
       {
         "blocks": 9,
         "content_chars": 703,
-        "content_hash": "4c5e4940010568d61b60d5cc66bce85557cb51fbe327f99cc61fa1d979b359cf",
+        "content_hash": "0660ee45adb182d59c58442b2ee7a201b4c67afea4fde7611cda1b4e685b6d36",
         "content_root": "main",
         "headings": 4,
         "jsonld_types": [],
@@ -117,7 +117,7 @@
       {
         "blocks": 9,
         "content_chars": 705,
-        "content_hash": "9298f037c5539f2ebaa55cc77a221ea7c9eb4bac800d2184656cb730918d97c0",
+        "content_hash": "608a79d1ddb44c4f7fbfc9bd527709f56c61282035271a6e1e9289d53ceb1b40",
         "content_root": "main",
         "headings": 4,
         "jsonld_types": [],
@@ -128,7 +128,7 @@
       {
         "blocks": 28,
         "content_chars": 2052,
-        "content_hash": "fb0f593c34f60115898506becee6b95d8276cc25f7400c9541981eab28cf8426",
+        "content_hash": "21b637b7478f9846af832eed141dbdd39a6ef8681dfed68cc5a7716a7a910b43",
         "content_root": "main",
         "headings": 5,
         "jsonld_types": [
@@ -242,8 +242,8 @@
   "data_version": "2026.09",
   "error": null,
   "evidence": {
-    "content_hash": "45191b9ec6312f355ad06aed39d9492c26d21eaded15cd8514bb082c973263fe",
-    "normalizer_version": 2,
+    "content_hash": "e4a38ad112fe6b5b2d75d9ef8cb07a9b134c566988fb905008880fcd967c856c",
+    "normalizer_version": 3,
     "pages_failed": [
       {
         "reason": "not_found",
@@ -648,7 +648,7 @@
       "title": "Heading structure does not segment the page into answerable sections"
     }
   ],
-  "normalizer_version": 2,
+  "normalizer_version": 3,
   "observed_at": "<volatile>",
   "ok": true,
   "run_id": "<volatile>",
@@ -665,7 +665,7 @@
     "tier": "weak",
     "tier_meaning": "Answers exist on these pages but are buried in context that does not travel."
   },
-  "scoring_version": "3.0",
+  "scoring_version": "4.0",
   "signals": [
     {
       "class": "heuristic",

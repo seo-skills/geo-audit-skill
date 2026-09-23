@@ -155,6 +155,53 @@ def test_a_single_article_is_the_content_root():
     assert "The body of one post." in " ".join(b.text for b in d.blocks)
 
 
+def test_a_lone_article_that_holds_nothing_is_not_the_content_root():
+    """Found by auditing userguiding.com.
+
+    A Webflow site wraps its promo banner in the page's only `<article>`, so
+    the exactly-one rule matched and the root was the banner. Every one of the
+    50 pages crawled came back at around 35 characters and no headings, the
+    site scored 42/100 with content at 4, and the report told a company with
+    950 blog posts that its pages were too thin to answer anything.
+    """
+    prose = "".join(
+        f"<h2>Section {i}</h2><p>A paragraph of the page's own writing that runs "
+        f"to a reasonable length and says something about topic {i}.</p>"
+        for i in range(6)
+    )
+    d = doc(
+        "<html><body>"
+        '<article class="header-section"><div class="banner-wrapper">'
+        "<div>New: a thing we launched</div></div></article>"
+        f"<div class='page'><h1>What this page is about</h1>{prose}</div>"
+        "</body></html>"
+    )
+    assert d.content_root == "body"
+    text = " ".join(b.text for b in d.blocks)
+    for i in range(6):
+        assert f"about topic {i}" in text, "the page's own writing is what gets scored"
+
+
+def test_an_article_that_holds_the_page_is_still_the_content_root():
+    """The guard on the rule above: a real post keeps winning over the body,
+    chrome and all. Measured on live posts, an article carries about nine
+    tenths of its page."""
+    prose = "".join(
+        f"<p>Paragraph {i} of the post, long enough to be worth quoting and to "
+        f"outweigh the navigation around it.</p>"
+        for i in range(8)
+    )
+    d = doc(
+        "<html><body>"
+        "<nav><a href='/a'>Home</a><a href='/b'>Blog</a></nav>"
+        f"<article><h1>The post</h1>{prose}</article>"
+        "<footer><p>Copyright</p></footer>"
+        "</body></html>"
+    )
+    assert d.content_root == "article"
+    assert "Copyright" not in " ".join(b.text for b in d.blocks)
+
+
 def test_many_articles_means_a_listing_and_the_body_is_the_root():
     """Found by auditing eff.org.
 
