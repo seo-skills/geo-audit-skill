@@ -800,7 +800,8 @@ contract behind them, and one skill end to end.
   composite is taken over the signals that were computed; a signal that was not
   measured is never scored as a failure.
 
-[Unreleased]: https://github.com/seo-skills/geo-audit-skill/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/seo-skills/geo-audit-skill/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v1.1.0
 [1.0.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v1.0.0
 [0.8.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.8.0
 [0.7.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.7.0
