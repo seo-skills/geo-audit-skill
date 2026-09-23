@@ -37,7 +37,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   article-only signals, unless it declares an article type. Rescored from its stored
   pages, seomator.com moves from 91 to 94 and those findings go from 43, 8 and 8 pages
   to its about page alone. A major scoring bump, so `compare` refuses to set a new run
-  against an older one.
+  against an older one. One hyphenated prefix on the word counts too: a CMS that cannot
+  nest a collection qualifies it instead, and userguiding.com's five
+  `/blog-category/<name>` lists were being asked for a byline and a publication date.
 - **A site that marks its articles has answered for the pages it left unmarked** (same
   bump). Presuming every undeclared page is an article kept real articles, but it asked
   careers pages, plans pages and a German privacy policy for a byline wherever a crawl

@@ -35,12 +35,16 @@ def _doc(url: str, jsonld: object = None):
     ("/blog/tags/python/page/3", "a tag archive"),
     ("/author/jane", "an author archive"),
     ("/authors/ben-kaiser/", "an author archive"),
+    # userguiding.com files the same lists one level up, under a qualified word.
+    ("/blog-category/product", "a category archive"),
+    ("/news-tag/releases", "a tag archive"),
 ])
 def test_an_archive_path_is_not_an_article(path, reason):
     assert articles.not_an_article(_doc(f"https://example.com{path}")) == reason
 
 
-@pytest.mark.parametrize("path", ["/category/news/my-post", "/blog/tagging-guide", "/tag", "/blog/authoring-tips"])
+@pytest.mark.parametrize("path", ["/category/news/my-post", "/blog/tagging-guide", "/tag",
+                                  "/blog/authoring-tips", "/blog/post-about-category-theory"])
 def test_a_post_near_an_archive_is_still_an_article(path):
     assert articles.not_an_article(_doc(f"https://example.com{path}")) is None
 

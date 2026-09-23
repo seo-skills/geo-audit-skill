@@ -39,9 +39,12 @@ ARTICLES_ONLY = f"{NOT_APPLICABLE}: articles only"
 _HOME = re.compile(r"/?(?:[a-z]{2}(?:[-_][a-z]{2,4})?/?)?", re.IGNORECASE)
 # `.../category/<name>`, `.../tag/<name>`, `.../author/<name>` and their plurals,
 # optionally paged: where CMSs put the lists of posts filed under one term. German
-# `kategorie` too, which seomator.com's `/de/blog/kategorie/<name>` uses.
+# `kategorie` too, which seomator.com's `/de/blog/kategorie/<name>` uses. A CMS that
+# cannot nest a collection qualifies the word instead - userguiding.com files the
+# same lists under `/blog-category/<name>` - so one hyphenated prefix is allowed.
 _ARCHIVE = re.compile(
-    r".*/(category|categories|kategorie|kategorien|tag|tags|author|authors)/[^/]+(?:/page/\d+)?/?", re.IGNORECASE
+    r".*/(?:[^/]+-)?(category|categories|kategorie|kategorien|tag|tags|author|authors)/[^/]+(?:/page/\d+)?/?",
+    re.IGNORECASE,
 )
 _ARCHIVE_OF = {"categor": "a category", "kategor": "a category", "tag": "a tag", "author": "an author"}
 
