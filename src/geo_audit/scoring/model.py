@@ -279,6 +279,14 @@ def aggregate(per_page: list[list[Signal]]) -> list[Signal]:
         # actionable part of a site-level signal - which crawler tokens are
         # blocked, say - is replaced by a mean and disappears.
         detail.update(_shared_detail(computed))
+        # `present` is the one detail the finding wording reads, and unanimity
+        # is the wrong test for it: two pages of fifty without the markup made
+        # the other forty-eight read as having none. userguiding.com carried
+        # Organization name, url and sameAs on 48 pages and was told "No
+        # machine-readable publisher identity".
+        typical = _typical_present(computed)
+        if typical is not None:
+            detail.setdefault("present", typical)
         if worst.detail.get("worst_example"):
             detail["worst_example"] = worst.detail["worst_example"]
         out.append(
@@ -291,6 +299,28 @@ def aggregate(per_page: list[list[Signal]]) -> list[Signal]:
             )
         )
     return out
+
+
+def _typical_present(signals: list[Signal]) -> list | None:
+    """The `present` list most of the measured pages carried.
+
+    Wording, not scoring: `findings_for` reads `present` to choose between
+    saying a thing is absent and saying it is incomplete. The typical page is
+    what a site-level finding is about, so a minority missing the markup does
+    not speak for the site, and a minority carrying it does not either.
+    """
+    counts: dict[str, int] = {}
+    values: dict[str, list] = {}
+    for signal in signals:
+        present = signal.detail.get("present")
+        if not isinstance(present, list):
+            continue
+        key = json.dumps(present, sort_keys=True)
+        counts[key] = counts.get(key, 0) + 1
+        values[key] = present
+    if not counts:
+        return None
+    return values[max(counts, key=lambda key: counts[key])]
 
 
 def _shared_detail(signals: list[Signal]) -> dict:

@@ -9,6 +9,14 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **A site-level finding says what is missing, not that everything is.** Four findings
+  carry a second wording for the half-present case, chosen from the `present` list the
+  scorer records. Rolling fifty pages into one signal kept only the details every page
+  agreed on, so `present` was dropped the moment one page differed, and an audit of
+  userguiding.com - Organization name, url and sameAs on 48 of 50 pages - read "No
+  machine-readable publisher identity". Aggregation now carries what the typical page
+  had, so authorship, attribution, publisher identity and Article markup are reported as
+  incomplete when they are incomplete.
 - **`--verbose` does what its help says.** It was declared once and read nowhere: every
   command accepted it, the docs promised "more progress on stderr" for all eleven, and it
   changed nothing. It now asks for the line per page that the single rewritten crawl line

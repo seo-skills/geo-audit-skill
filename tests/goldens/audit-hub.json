@@ -337,9 +337,9 @@
       ],
       "points_lost": 19.29,
       "priority": 4,
-      "remediation": "Add an Organization or Person node with name, url, logo, description and sameAs links to the profiles that identify you. sameAs is what lets an engine connect this site to the entity it already knows about.",
+      "remediation": "Complete the Organization node: name, url, logo, description, and sameAs links to the profiles that identify you. sameAs is what lets an engine connect this site to the entity it already knows about.",
       "severity": "high",
-      "title": "No machine-readable publisher identity"
+      "title": "The publisher's markup is missing properties that identify it"
     },
     {
       "effort": "low",
@@ -511,9 +511,9 @@
       ],
       "points_lost": 13.14,
       "priority": 13,
-      "remediation": "Add Article or BlogPosting with headline, author, datePublished, dateModified and image. This is how an engine decides a page is datable, attributable content rather than a landing page.",
+      "remediation": "Complete the Article markup with headline, author, datePublished, dateModified and image - the fields an engine reads to date and attribute a page. Only on pages that are articles; a hub or tool page described as one is mislabelled.",
       "severity": "medium",
-      "title": "Content pages are not described as articles"
+      "title": "Article markup is missing fields engines read"
     },
     {
       "effort": "low",
@@ -761,6 +761,7 @@
           "organization_schema": 2,
           "published_date": 3
         },
+        "present": [],
         "worst_page": "http://fixture/schema-broken.html"
       },
       "id": "citability.attribution",
@@ -951,6 +952,9 @@
         "min": 0.0,
         "pages_measured": 7,
         "pages_total": 7,
+        "present": [
+          "name"
+        ],
         "worst_page": "http://fixture/hub.html"
       },
       "id": "schema.organization",
@@ -966,6 +970,12 @@
         "min": 0.0,
         "pages_measured": 7,
         "pages_total": 7,
+        "present": [
+          "author",
+          "dateModified",
+          "datePublished",
+          "headline"
+        ],
         "worst_page": "http://fixture/hub.html"
       },
       "id": "schema.article",
@@ -1033,6 +1043,7 @@
           "organization": 3,
           "person_schema": 6
         },
+        "present": [],
         "worst_page": "http://fixture/hub.html"
       },
       "id": "content.expertise",
