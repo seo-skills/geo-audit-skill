@@ -92,3 +92,63 @@ def test_the_missing_run_hint_names_no_command(geo_home):
     parser answers that with `unrecognized arguments` and exit 2."""
     assert "--list" not in _what_is_recorded(None)
     assert "`geo" not in _what_is_recorded(None)
+
+
+# --- suppression end to end --------------------------------------------------
+
+def test_a_bare_page_is_not_also_told_its_markup_is_incomplete(serve, geo_home):
+    """The window the unit test above describes, driven through `audit`.
+
+    It needs a consequence the site is *not* reported for site-wide - so the
+    first pass stays quiet and the page-level pass runs - on pages where the
+    cause is at its floor. userguiding.com does not exercise it: its structured
+    data averages 0.72 of the maximum, so `schema.organization` is reported
+    site-wide and never reaches the second pass at all.
+    """
+    import io
+    import json
+
+    from geo_audit.cli import main
+    from tests.fixture_server import Reply
+
+    prose = "<p>" + ("A sentence with enough words in it to count as prose. " * 6) + "</p>"
+    good = (
+        '<html><head><title>Page</title><script type="application/ld+json">'
+        '{"@context":"https://schema.org","@type":"Organization","name":"Acme",'
+        '"url":"https://acme.example","logo":"https://acme.example/l.png",'
+        '"description":"We make things.","sameAs":["https://x.com/acme"]}'
+        f"</script></head><body><main><h1>Page</h1>{prose}</main></body></html>"
+    )
+    bare = f"<html><head><title>Bare</title></head><body><main><h1>Bare</h1>{prose}</main></body></html>"
+
+    marked = [f"/p-{n}" for n in range(8)]
+    links = "".join(f'<a href="{p}">{p}</a>' for p in [*marked, "/bare-1", "/bare-2"])
+    routes = {
+        # The links live inside <main>: the normalizer reads links from the
+        # content root, so anchors outside it are never followed.
+        "/": Reply(body=good.replace("<h1>Page</h1>", f"<h1>Home</h1>{links}")),
+        "/robots.txt": Reply(body="User-agent: *\nAllow: /\n", content_type="text/plain"),
+        "/bare-1": Reply(body=bare),
+        "/bare-2": Reply(body=bare),
+    }
+    routes.update({p: Reply(body=good) for p in marked})
+    site = serve(routes)
+
+    buffer = io.StringIO()
+    main(["audit", f"{site.url}/", "--allow-private", "--rate", "50", "--json", "--quiet"], out=buffer)
+    findings = {f["id"]: f for f in json.loads(buffer.getvalue())["findings"]}
+
+    bare_pages = {f"{site.url}/bare-1", f"{site.url}/bare-2"}
+    presence = findings.get("schema.presence")
+    assert presence and bare_pages <= set(presence["pages"]), "the bare pages are reported as bare"
+
+    # Only the page-level pass is at issue. A consequence the whole site earns
+    # is reported site-wide with its offenders listed, and suppression there
+    # already worked: it is decided from the site's own presence value.
+    for consequence in ("schema.validity", "schema.organization", "schema.article", "schema.breadth"):
+        finding = findings.get(consequence)
+        if not finding or not finding["page_level"]:
+            continue
+        assert not (set(finding["pages"]) & bare_pages), (
+            f"{consequence} is named on a page that carries no structured data at all"
+        )

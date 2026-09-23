@@ -21,7 +21,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   signals it is handed. The page-level pass handed it one signal at a time, so there was
   no cause to suppress from and every consequence came back. It only showed on a site
   whose pages disagree: presence averaging 28.8 over fifty pages while the posts carried
-  none. Suppression is now decided per page, where the cause is measured.
+  none. Suppression is now decided per page, where the cause is measured. The window is
+  narrower than it first looked: a consequence the site earns is still reported site-wide
+  with its offenders listed, and that path was always right. What was wrong is the
+  page-level pass, which fires for a signal the site is *not* reported for - so the fix
+  shows on a site whose structured data is healthy on average and absent on a handful of
+  pages, which is the case the regression test builds.
 - **The missing-run error names the runs that exist.** It said "`geo audit --list` shows
   what is recorded"; there is no such flag, and the parser answers it with
   `unrecognized arguments` and exit 2 - a worse dead end than the error it explained.
