@@ -18,6 +18,13 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the same address, and `errors.py` documents exit 3 for it; `geo audit` and `geo crawl`
   now do the same and record nothing. A start URL that answers with an HTTP error - a
   404, a 403 challenge - is still audited, since that is what the report is for.
+- **Rescoring an audit from before snapshots works again** (a regression in 1.1.0).
+  1.1.0 began passing `_assemble` the pages each consequence is explained on and set it
+  on two of `rescore`'s three branches; the third, for records older than the page
+  store, raised `UnboundLocalError` and reported `GEO_E_INTERNAL`. Every audit recorded
+  by 0.4 takes that branch. The same release's missing-run hint listed `geo score` run
+  ids beside audit ones, and rescoring one reached the same branch; `--rescore` and its
+  hint now read audit records only.
 
 ## [1.1.0] - 2026-09-23
 
