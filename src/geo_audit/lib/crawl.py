@@ -17,6 +17,7 @@ Three properties the rest of the product depends on:
 
 from __future__ import annotations
 
+import hashlib
 import threading
 import time
 from collections import deque
@@ -140,6 +141,30 @@ class CrawlResult:
         return [p for p in self.pages if p.scorable]
 
 
+def _spread(urls: list[str]) -> list[str]:
+    """Sitemap URLs in the order a capped crawl reads them.
+
+    Sorted, a capped crawl read the alphabetical prefix of a site: seomator.com's
+    fifty pages ran from `/` to `/blog/how-to-*` of 310, with no tool page after
+    "b" and no post after "h". Each section - a first path segment, with the
+    top-level pages as one more - now gives a page in turn, so a cap spreads over
+    the site. Within a section the order is a hash of the path, which no machine,
+    run or naming scheme changes.
+    """
+    sections: dict[str, list[str]] = {}
+    for url in urls:
+        segments = [part for part in urlsplit(url).path.split("/") if part]
+        sections.setdefault(segments[0] if len(segments) > 1 else "", []).append(url)
+    def rank(url: str) -> str:
+        # The path, not the origin: a site's origin never varies, and hashing it
+        # would reorder the same site served from another host or port.
+        parts = urlsplit(normalize_url(url))
+        return hashlib.sha256(f"{parts.path}?{parts.query}".encode("utf-8")).hexdigest()
+
+    queues = [sorted(group, key=rank) for _, group in sorted(sections.items())]
+    return [queue[rank] for rank in range(max(map(len, queues), default=0)) for queue in queues if rank < len(queue)]
+
+
 def urls_found(block: dict) -> int:
     """How many distinct URLs a recorded crawl knew of: its start URL, what the
     sitemap listed, and each new one a crawled page linked to."""
@@ -216,7 +241,11 @@ def _sitemap_urls(
             continue
         found.extend(locations)
 
-    return found[:MAX_SITEMAP_URLS]
+    # Spread before the cap, not after. The cap keeps a document-order prefix,
+    # and userguiding.com lists 2951 URLs with its first blog post at number
+    # 748: all 950 posts, the largest section on the site and the only one with
+    # articles in it, were cut before `_spread` ever saw them.
+    return _spread(found)[:MAX_SITEMAP_URLS]
 
 
 def crawl(
@@ -242,8 +271,9 @@ def crawl(
 
         start_host = host_of(start_url)
         seen: set[str] = {normalize_url(start_url)}
-        # The start URL first, then whatever the sitemap advertises, sorted.
-        # Level one is therefore deterministic before a single page is fetched.
+        # The start URL first, then whatever the sitemap advertises, spread over
+        # the site's sections. Level one is therefore deterministic before a
+        # single page is fetched.
         seeds: list[str] = []
 
         if options.use_sitemap and result.robots is not None and result.robots.sitemaps:
@@ -269,7 +299,7 @@ def crawl(
         # added and removed when nothing changed. A crawl is rate-limited, not
         # latency-limited, so waiting out a level costs almost nothing.
         with ThreadPoolExecutor(max_workers=max(1, options.concurrency)) as pool:
-            frontier = [start_url] + sorted(seeds, key=normalize_url)
+            frontier = [start_url] + _spread(seeds)
             # `seen` is keyed on what was requested, and two requests can land on
             # one page: a start URL that redirects to a page the sitemap also
             # lists. MDN did exactly that and had its homepage scored twice.
