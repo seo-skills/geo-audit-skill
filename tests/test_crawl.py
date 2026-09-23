@@ -380,9 +380,12 @@ def test_the_crawl_command_reports_the_frontier(site, geo_home):
 
 
 def test_crawl_defaults_are_the_documented_ones():
-    from geo_audit.cli import build_parser
+    from geo_audit.cli import _fill_defaults, build_parser
 
+    # The numeric defaults are filled after `--config` is read rather than by
+    # argparse, so that a config file can tell "unset" from "passed".
     args = build_parser().parse_args(["crawl", "https://example.com"])
+    _fill_defaults(args)
     assert args.max_pages == MAX_PAGES == 50
     assert args.rate == REQUESTS_PER_SECOND == 1.0
     assert args.concurrency == CONCURRENCY == 5

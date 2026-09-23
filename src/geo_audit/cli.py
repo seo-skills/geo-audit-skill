@@ -63,10 +63,25 @@ COMMANDS = {
 # the command writes itself - so the envelope must not then overwrite it.
 OWNS_OUT = frozenset({"report"})
 
+# What each numeric flag falls back to. They are filled after `--config` is
+# read, not by argparse: argparse fills its default before anything else runs,
+# so `getattr(args, key)` was never None and a config file's numeric keys were
+# accepted and silently ignored - a crawl with `max_pages: 2` read fifty.
+FLAG_DEFAULTS = {
+    "timeout": http.DEFAULT_TIMEOUT,
+    "max_bytes": http.DEFAULT_MAX_BYTES,
+    "max_pages": crawl_lib.MAX_PAGES,
+    "rate": crawl_lib.REQUESTS_PER_SECOND,
+    "concurrency": crawl_lib.CONCURRENCY,
+}
+
+# Every key here names a flag, so a config file sets defaults for what the
+# command line can set. `max_redirects` named no flag and reached no code, so a
+# config that set it was ignored; it is refused by name now rather than read
+# and dropped.
 CONFIG_KEYS = (
     "timeout",
     "max_bytes",
-    "max_redirects",
     "allow_private",
     "no_robots",
     "no_render",
@@ -126,12 +141,8 @@ def _global_flags() -> argparse.ArgumentParser:
 
 def _page_flags(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("url", help="an absolute http:// or https:// URL")
-    parser.add_argument(
-        "--timeout", type=float, default=http.DEFAULT_TIMEOUT, metavar="SECONDS"
-    )
-    parser.add_argument(
-        "--max-bytes", type=int, default=http.DEFAULT_MAX_BYTES, metavar="BYTES"
-    )
+    parser.add_argument("--timeout", type=float, metavar="SECONDS")
+    parser.add_argument("--max-bytes", type=int, metavar="BYTES")
     parser.add_argument("--no-robots", action="store_true", help="skip the robots.txt lookup")
 
 
@@ -139,14 +150,12 @@ def _crawl_flags(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--max-pages",
         type=int,
-        default=crawl_lib.MAX_PAGES,
         metavar="N",
         help=f"stop after N pages (default {crawl_lib.MAX_PAGES})",
     )
     parser.add_argument(
         "--rate",
         type=float,
-        default=crawl_lib.REQUESTS_PER_SECOND,
         metavar="PER_SECOND",
         help=(
             f"requests per second across the whole crawl, not per worker "
@@ -156,7 +165,6 @@ def _crawl_flags(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--concurrency",
         type=int,
-        default=crawl_lib.CONCURRENCY,
         metavar="N",
         help=(
             f"pages in flight at once (default {crawl_lib.CONCURRENCY}); the rate "
@@ -296,7 +304,7 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="URL",
         help="also read this site's Organization sameAs links and compare them",
     )
-    scan.add_argument("--timeout", type=float, default=http.DEFAULT_TIMEOUT, metavar="SECONDS")
+    scan.add_argument("--timeout", type=float, metavar="SECONDS")
 
     report = subparsers.add_parser(
         "report",
@@ -380,6 +388,13 @@ def _apply_config(args: argparse.Namespace) -> None:
             setattr(args, key, value)
 
 
+def _fill_defaults(args: argparse.Namespace) -> None:
+    """The documented default for every numeric flag the run left unset."""
+    for key, value in FLAG_DEFAULTS.items():
+        if hasattr(args, key) and getattr(args, key) is None:
+            setattr(args, key, value)
+
+
 def _validate_url(args: argparse.Namespace) -> None:
     url = getattr(args, "url", None)
     if url is None or (getattr(args, "rescore", None) and url == "-"):
@@ -443,6 +458,7 @@ def main(argv: list[str] | None = None, out: TextIO | None = None) -> int:
     run_id = new_run_id()
     try:
         _apply_config(args)
+        _fill_defaults(args)
         _validate_url(args)
         progress(args, f"[1/{_steps(args)}] {args.command} {getattr(args, 'url', '')}".rstrip())
         envelope = COMMANDS[args.command](args, run_id)

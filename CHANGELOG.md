@@ -9,6 +9,14 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **`--config` sets the numeric flags it names.** A config file saying
+  `{"max_pages": 2}` was accepted and ignored: the crawl read fifty. argparse had
+  already filled its own default, so the "only when nobody set it" test in
+  `_apply_config` was never true for a numeric flag, and only the booleans came
+  through. The numeric defaults are now filled after the config is read, so a config
+  sets what the command line does not. `max_redirects` named no flag and reached no
+  code, so it is refused by name instead of read and dropped.
+
 - **The browser-extra install hint works.** `geo doctor` and the report's PDF-unavailable
   message said `uv tool install 'seomator-geo-audit[browser]' && playwright install
   chromium`, and the second half failed with command not found: `uv tool` puts only the
