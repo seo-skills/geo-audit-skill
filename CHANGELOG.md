@@ -9,6 +9,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **A number no run could honour is a usage error.** `--timeout 0` reached the HTTP
+  layer, raised ValueError and came back as `GEO_E_INTERNAL` - exit 1, "this is a bug,
+  please open an issue" - for a typo; `--max-bytes -1` was reported as the page being too
+  large; and a negative rate, a negative page count or `--concurrency 0` were taken as
+  given. Each numeric flag now states what it accepts and refuses the rest with
+  `GEO_E_BAD_ARGS`, naming the flag. `--rate 0` still removes the rate limit.
 - **`--config` sets the numeric flags it names.** A config file saying
   `{"max_pages": 2}` was accepted and ignored: the crawl read fifty. argparse had
   already filled its own default, so the "only when nobody set it" test in

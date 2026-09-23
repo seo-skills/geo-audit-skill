@@ -75,6 +75,18 @@ FLAG_DEFAULTS = {
     "concurrency": crawl_lib.CONCURRENCY,
 }
 
+# What each numeric flag will accept, and how to say so. Nothing checked them:
+# `--timeout 0` reached the HTTP layer, raised ValueError and was reported as
+# GEO_E_INTERNAL - "this is a bug, please open an issue" - for a typo, and a
+# negative rate or page count was taken as given.
+FLAG_RANGES = {
+    "timeout": (lambda value: value > 0, "a number of seconds above zero"),
+    "max_bytes": (lambda value: value > 0, "a byte count above zero"),
+    "max_pages": (lambda value: value >= 1, "at least 1"),
+    "rate": (lambda value: value >= 0, "zero or more requests per second (0 removes the limit)"),
+    "concurrency": (lambda value: value >= 1, "at least 1"),
+}
+
 # Every key here names a flag, so a config file sets defaults for what the
 # command line can set. `max_redirects` named no flag and reached no code, so a
 # config that set it was ignored; it is refused by name now rather than read
@@ -395,6 +407,18 @@ def _fill_defaults(args: argparse.Namespace) -> None:
             setattr(args, key, value)
 
 
+def _validate_numbers(args: argparse.Namespace) -> None:
+    """Refuse a number no run could honour, naming the flag that carried it."""
+    for key, (accepts, expected) in FLAG_RANGES.items():
+        value = getattr(args, key, None)
+        if value is None or accepts(value):
+            continue
+        raise GeoError(
+            "GEO_E_BAD_ARGS",
+            f"--{key.replace('_', '-')} takes {expected}; got {value:g}.",
+        )
+
+
 def _validate_url(args: argparse.Namespace) -> None:
     url = getattr(args, "url", None)
     if url is None or (getattr(args, "rescore", None) and url == "-"):
@@ -459,6 +483,7 @@ def main(argv: list[str] | None = None, out: TextIO | None = None) -> int:
     try:
         _apply_config(args)
         _fill_defaults(args)
+        _validate_numbers(args)
         _validate_url(args)
         progress(args, f"[1/{_steps(args)}] {args.command} {getattr(args, 'url', '')}".rstrip())
         envelope = COMMANDS[args.command](args, run_id)
