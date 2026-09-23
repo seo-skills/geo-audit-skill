@@ -33,6 +33,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `GEO_E_INCOMPARABLE`, naming both sets, like a change of formula; `--from` and `--to`
   still pick any matching pair. The troubleshooting page and the divergence table now
   also name the normalizer gate 1.1.0 added.
+- **The command suggested after `--rescore` can be run.** It named the rescore's own run
+  id, and a rescore is not recorded, so following it answered "No audit with run id ...
+  was found". It now names the recorded run that was rescored.
 
 ## [1.1.0] - 2026-09-23
 
