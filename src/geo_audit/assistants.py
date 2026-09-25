@@ -709,6 +709,11 @@ def _ordinal(n: int) -> str:
     return f"{n}{suffix}"
 
 
+def _in_sentence(phrase: str) -> str:
+    """An engine's "Popup builder software" read mid-sentence; "SEO tools" keeps its acronym."""
+    return phrase if phrase[:2].isupper() else phrase[:1].lower() + phrase[1:]
+
+
 def _names(items: list[str]) -> str:
     return items[0] if len(items) == 1 else ", ".join(items[:-1]) + " and " + items[-1]
 
@@ -725,7 +730,7 @@ def describe(entry: dict, brand: str) -> tuple[str, str]:
     elif first.get("status") == "empty":
         about = f"showed no answer about {brand}."
     elif first.get("recognized"):
-        about = (f"describes {brand} as {first['category']}." if first.get("category")
+        about = (f"describes {brand} as {_in_sentence(first['category'])}." if first.get("category")
                  else f"recognizes {brand}.")
     else:
         about = f"does not recognize {brand}."

@@ -22,6 +22,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   answers are one sampled output each and are never scored: the composite, completeness
   and `compare` do not change, and `--rescore` replays them from the record without
   asking again, carrying the rest of the recorded brand scan with it. PRD §3.10.1.
+- **The report shows what the assistants said.** `geo report` on an audit with answers
+  adds "What AI assistants say about <brand>", beside the advisory section and marked the
+  same way as not scored: per engine, how it describes the brand, where it listed the
+  brand or whom it named instead, its list, the pages it relied on and the exact
+  questions. The operator copy adds the credits the run used and what the account has
+  left, or why nothing was asked; the client copy carries neither.
 
 ### Fixed
 

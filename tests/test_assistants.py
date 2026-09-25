@@ -246,6 +246,14 @@ def test_the_brand_is_not_found_in_ordinary_prose_by_a_common_word():
     assert got["named"] is False and got["named_outside_list"] is False
 
 
+def test_an_engine_category_reads_as_part_of_the_sentence():
+    said = {"brand_question": {"status": "answered", "recognized": True}, "category_question": {"status": "skipped", "reason": "x"}}
+    said["brand_question"]["category"] = "Popup builder software"
+    assert describe(said, "Acme")[0] == "describes Acme as popup builder software."
+    said["brand_question"]["category"] = "SEO audit tools"
+    assert describe(said, "Acme")[0] == "describes Acme as SEO audit tools."
+
+
 def test_describe_says_who_was_named_instead():
     entry = {
         "brand_question": {"status": "answered", "recognized": True, "category": "popup builder software"},
@@ -451,3 +459,48 @@ def test_every_recorded_string_is_capped(endpoint, geo_home, monkeypatch):
     found = list(strings(envelope["scan"]["assistants"]))
     assert all(len(text) <= 280 for text in found)
     assert not any("<" in text or "`" in text for text in found)
+
+
+# --- the report -------------------------------------------------------------
+
+
+def _report_html(site, *extra) -> str:
+    from pathlib import Path
+
+    _, envelope = run(["report", f"{site.url}/hub.html", *extra])
+    return Path(envelope["report"]["path"]).read_text(encoding="utf-8")
+
+
+def test_the_report_shows_the_answers_apart_from_every_score(endpoint, site, geo_home, monkeypatch):
+    monkeypatch.setenv(assistants.TOKEN_ENV, "test-token")
+    hostile = json.loads(json.dumps(CHATGPT_CATEGORY))
+    hostile["output"]["markdown"] += "5. [Evil<script>alert(1)</script>](https://evil.example/) — no\n"
+    endpoint(**{"/plugin/chatgpt/chat": sequence(vendor(CHATGPT_BRAND, 25), vendor(hostile, 25))})
+    run(["audit", f"{site.url}/hub.html", "--allow-private", "--rate", "50", "--max-pages", "5",
+         "--brand", "Acme", "--assistants", "chatgpt,gemini"])
+    client = _report_html(site)
+    assert "What AI assistants say about Acme" in client
+    assert "ChatGPT named Acme 3rd of 5." in client
+    assert "Gemini named Acme 3rd of 3." in client
+    assert "<script>" not in client
+    order = ["Everything found", "What AI assistants say", "How this was measured"]
+    positions = [client.index(marker) for marker in order]
+    assert positions == sorted(positions)
+    # What the run cost is the user's account, so only the operator copy says it.
+    assert "credits used" not in client
+    operator = _report_html(site, "--mode", "operator")
+    assert "100 credits used" in operator and "4880 left on the account" in operator
+
+
+def test_a_report_without_answers_has_no_assistant_section(site, geo_home):
+    run(["audit", f"{site.url}/hub.html", "--allow-private", "--rate", "50", "--max-pages", "5"])
+    assert "What AI assistants say" not in _report_html(site)
+
+
+def test_the_operator_copy_says_why_nothing_was_asked(endpoint, site, geo_home, monkeypatch):
+    monkeypatch.delenv(assistants.TOKEN_ENV, raising=False)
+    endpoint()
+    run(["audit", f"{site.url}/hub.html", "--allow-private", "--rate", "50", "--max-pages", "5",
+         "--brand", "Acme", "--assistants", "all"])
+    assert "What AI assistants say" not in _report_html(site)
+    assert f"set {assistants.TOKEN_ENV}" in _report_html(site, "--mode", "operator")
