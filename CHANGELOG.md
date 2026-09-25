@@ -54,6 +54,14 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **A request that times out is reported as a timeout, and sent once.** The HTTP session
+  retries once for a pooled connection the server dropped, and urllib3 counts a read
+  timeout as one of those, so every slow response was requested a second time: a slow
+  page took twice `--timeout` and was reported as `GEO_E_CONNECT` ("couldn't connect")
+  instead of `GEO_E_TIMEOUT`, and a slow scrape.do answer could be charged twice. A
+  timeout is no longer retried. A body that stalls after its headers is now a
+  `GEO_E_TIMEOUT` too, where it escaped every error handler.
+
 - **A platform's API key stays out of a scan's error reasons.** `geo scan` copied the
   fetch error into `scan.platforms[].reason`, and some fetch errors name the full URL:
   a redirect loop at YouTube printed `GEO_YOUTUBE_API_KEY` in the envelope, and
