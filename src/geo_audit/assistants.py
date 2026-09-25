@@ -220,9 +220,9 @@ class Answer:
     searched: bool
     search_queries: list[str] = field(default_factory=list)
     model: str | None = None
-    # AI Mode sends its list as structure; the chat engines as Markdown in `text`.
-    items: list[ListItem] | None = None
-    ranked: bool = True
+    # AI Mode sends its lists as structure, every usable one in order of preference
+    # (ranked, then longest); the chat engines send theirs as Markdown in `text`.
+    lists: list[tuple[bool, list[ListItem]]] | None = None
     empty: bool = False
 
 
@@ -302,9 +302,8 @@ def from_ai_mode(payload: dict) -> Answer | None:
                 numbered.append((ListItem(name=_plain(name).strip(" .:*"), url=None), snippet))
     if numbered:
         candidates.append((True, [item for item, _ in numbered], [text for _, text in numbered]))
-    chosen = _answer_list(candidates)
     return Answer(text="\n".join(line for line in lines if line), cited=cited, searched=bool(cited),
-                  items=chosen[1] if chosen else [], ranked=chosen[0] if chosen else False)
+                  lists=_answer_lists(candidates))
 
 
 # Labels an answer lists under a brand ("Pros: ...", "Cons: ..."), never brands.
@@ -314,14 +313,14 @@ _GENERIC_LABELS = frozenset(
 )
 
 
-def _answer_list(candidates: list[tuple[bool, list[ListItem], list[str]]]) -> tuple[bool, list[ListItem]] | None:
-    """Which of an answer's lists is the one it gave as an answer.
+def _answer_lists(candidates: list[tuple[bool, list[ListItem], list[str]]]) -> list[tuple[bool, list[ListItem]]]:
+    """An answer's lists that could be the one it gave as an answer, best first.
 
     AI Mode lays the same kind of answer out differently from one call to the next:
     brands as bullets followed by numbered follow-up questions, or brands as
     numbered paragraphs each followed by a pros-and-cons list. Lists of questions
-    and lists of labels are set aside; of the rest, a ranked list wins, then the
-    longest.
+    and lists of labels are set aside; of the rest, a ranked list comes first, then
+    the longest.
     """
     usable = [
         (ranked, items)
@@ -330,9 +329,7 @@ def _answer_list(candidates: list[tuple[bool, list[ListItem], list[str]]]) -> tu
         and sum("?" in text for text in texts) * 2 < len(texts)
         and sum(item.name.strip(" :").lower() in _GENERIC_LABELS for item in items) * 2 < len(items)
     ]
-    if not usable:
-        return None
-    return max(usable, key=lambda pair: (pair[0], len(pair[1])))
+    return sorted(usable, key=lambda pair: (pair[0], len(pair[1])), reverse=True)
 
 
 def _ai_mode_item(entry: dict) -> ListItem:
@@ -517,13 +514,52 @@ def _chat_items(text: str) -> tuple[list[tuple[int, ListItem]], bool] | None:
     return items, ranked
 
 
-def read_category(answer: Answer, brand: str, site: str | None) -> dict:
-    """The second question: is the brand among the best in its category, and where."""
-    if answer.items is not None:
-        if not answer.items:
-            return {"status": "failed", "reason": "no list in the answer"}
-        numbered = [(index + 1, item) for index, item in enumerate(answer.items[:MAX_LISTED])]
-        ranked = answer.ranked
+def _brands_in_prose(text: str, known: list[str]) -> list[ListItem]:
+    """Known brand names an answer mentions, in the order it first mentions them."""
+    plain = _plain(text)
+    first: dict[str, int] = {}
+    for name in known:
+        match = re.search(rf"(?<![^\W_]){re.escape(name)}(?![^\W_])", plain, re.IGNORECASE)
+        if match and name.lower() not in {seen.lower() for seen in first}:
+            first[name] = match.start()
+    return [ListItem(name=name, url=None) for name in sorted(first, key=first.get)]
+
+
+def _search_list(answer: Answer, brand: str, known: list[str]) -> tuple[list[ListItem], bool] | None:
+    """AI Mode's list of brands, checked against brands the other engines named.
+
+    AI Mode lays the same answer out differently on every call, and four live runs
+    produced four layouts: bullets, numbered paragraphs, "Name: Pros: ..." entries,
+    and once only advice headings, with the brands named in a sentence above them.
+    A list is taken as the answer only when at least half its entries are brands the
+    chat engines named, or linked; otherwise the brands it names in prose are read in
+    the order written. Neither means there is no list to read, never "not named".
+    """
+    vocabulary = [name for name in dict.fromkeys([*known, brand]) if name]
+
+    def is_brand(item: ListItem) -> bool:
+        linked = bool(item.url and "google." not in (host_of(unwrap(item.url) or "") or "google."))
+        return linked or any(_whole_word(name, item.name) or _whole_word(item.name, name) for name in vocabulary)
+
+    for ranked, items in answer.lists or []:
+        if sum(is_brand(item) for item in items) * 2 >= len(items):
+            return items, ranked
+    in_prose = _brands_in_prose(answer.text, vocabulary)
+    return (in_prose, False) if in_prose else None
+
+
+def read_category(answer: Answer, brand: str, site: str | None, known: list[str] | None = None) -> dict:
+    """The second question: is the brand among the best in its category, and where.
+
+    `known` is what the other engines called brands, which a search answer's list is
+    checked against; a chat answer's list is its own evidence.
+    """
+    if answer.lists is not None:
+        found_list = _search_list(answer, brand, known or [])
+        if found_list is None:
+            return {"status": "failed", "reason": "no list of brands in the answer"}
+        items, ranked = found_list
+        numbered = [(index + 1, item) for index, item in enumerate(items[:MAX_LISTED])]
     else:
         if _REFUSAL.search(answer.text) and not _NUMBERED.search(answer.text):
             return {"status": "failed", "reason": "refused"}
@@ -733,14 +769,23 @@ def ask(brand: str, site_url: str | None, requested: list[str], *, allow_private
                 engine: pool.submit(_probe, spec, category_question(engine, category), token, allow_private)
                 for engine, spec in engines.items()
             }
-            for engine, future in second.items():
-                record, answer, call = future.result()
+            answered = {engine: future.result() for engine, future in second.items()}
+            # Chat engines first: what they call brands is what a search answer's list
+            # is checked against.
+            known = [
+                competitor
+                for entry in results.values()
+                for competitor in (entry.get("brand_question") or {}).get("competitors") or []
+            ]
+            for engine in sorted(answered, key=lambda engine: ENGINES[engine].kind == "query"):
+                record, answer, call = answered[engine]
                 calls.append(call)
                 if answer is not None and record.get("status") != "empty":
-                    record.update(read_category(answer, name, site))
+                    record.update(read_category(answer, name, site, known))
                     results[engine]["model"] = results[engine]["model"] or (
                         excerpt(answer.model, 40) if answer.model else None
                     )
+                    known += [item["name"] for item in record.get("listed") or []]
                 results[engine]["category_question"] = record
         else:
             why = "no engine named a category to ask about"

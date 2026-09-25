@@ -35,6 +35,10 @@ Pass `--site` on a scan: without it, no cited page can be told apart as the bran
 | `category_question.listed` | The list itself: whom it named instead. |
 | `category_question.cited` | The pages the engine relied on, each marked `own` or not. |
 
+Google AI Mode lays its answer out differently on every call, so its list is checked
+against the brands ChatGPT and Gemini named; when it has none, the brands it names in
+its prose are read instead, without positions.
+
 A question whose `status` is `failed`, `skipped` or `empty` was not answered: relay its
 `reason` and say it was not measured. `empty` is Google showing no AI Mode answer, which
 is a result and costs nothing. `assistants.credits_used` is what the run cost.

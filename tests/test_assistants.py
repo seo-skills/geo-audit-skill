@@ -270,11 +270,29 @@ def test_ai_mode_ranks_written_as_numbered_paragraphs_beat_pros_and_cons_lists()
         {"type": "paragraph", "snippet": "2. Globex — Best free option"}, pros_cons,
         {"type": "list", "list": [{"snippet": "Which CMS do you use?"}, {"snippet": "What is your goal?"}]},
     ], "references": []}
-    got = read_category(from_ai_mode(payload), "Acme", SITE)
+    got = read_category(from_ai_mode(payload), "Acme", SITE, known=["Northwind", "Globex"])
     assert [item["name"] for item in got["listed"]] == ["Northwind", "Globex"]
     assert got["ranked"] is True and got["named"] is False
     # Named only in the flattened comparison table above the list.
     assert got["named_outside_list"] is True
+
+
+def test_ai_mode_advice_headings_are_not_read_as_the_brands_it_named():
+    """A fourth live answer's only lists were advice and questions; the brands were in a sentence."""
+    payload = {"text_blocks": [
+        {"type": "paragraph", "snippet": "The best brands this year are Northwind, Globex and Initech."},
+        {"type": "heading", "snippet": "Key factors"},
+        {"type": "list", "list": [{"snippet": "The Script Weight: keep it light."},
+                                  {"snippet": "Mobile Compliance: avoid interstitials."},
+                                  {"snippet": "The Software Layer: builders look alike."}]},
+        {"type": "list", "list": [{"snippet": "Which CMS do you use?"}, {"snippet": "What is your goal?"}]},
+    ], "references": []}
+    known = ["Northwind", "Globex", "Initech", "Umbrella"]
+    got = read_category(from_ai_mode(payload), "Acme", SITE, known=known)
+    assert [item["name"] for item in got["listed"]] == ["Northwind", "Globex", "Initech"]
+    assert got["named"] is False and got["ranked"] is False
+    # With nothing to check a list against and no brand in the prose, it is not read at all.
+    assert read_category(from_ai_mode(payload), "Acme", SITE)["status"] == "failed"
 
 
 def test_an_ai_mode_answer_with_no_list_is_unreadable_not_unnamed():

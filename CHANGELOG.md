@@ -42,7 +42,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   out differently: brands as numbered paragraphs, each followed by a pros-and-cons
   list, where the first run had them as bullets followed by numbered follow-up
   questions. The reader now weighs every list in the answer, sets aside lists of
-  questions and of labels such as "Pros", and takes a ranked list first.
+  questions and of labels such as "Pros", and takes a ranked list first. A fourth run
+  had no brand list at all, only advice headings, with the brands named in a sentence:
+  a list is now accepted only when at least half its entries are brands the chat
+  engines named (or linked), and otherwise the brands AI Mode names in its prose are
+  read in the order written. Nothing readable is "no list of brands", never "not named".
 
 ### Fixed
 
