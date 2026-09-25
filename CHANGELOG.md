@@ -59,6 +59,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   usable answer about Acme: the service was unavailable". The envelope keeps the code.
 - **"Google AI Mode showed no AI Mode answer"** now reads "Google AI Mode showed no answer
   for the category question".
+- **An engine's category reads right mid-sentence.** "describes Trendyol as E-commerce and
+  online marketplace" kept the capital because the acronym test read "E-" as upper case;
+  it now looks at letters, so "e-commerce" is lowercased and "SEO" or "B2B" stay.
 
 - **An empty `--assistants` value is refused.** `--assistants "$ENGINES"` with the variable
   unset asked nothing and said nothing; it is now a `GEO_E_BAD_ARGS` usage error that

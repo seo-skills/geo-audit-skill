@@ -42,3 +42,16 @@ def test_an_empty_answer_does_not_repeat_the_engine_name():
         "showed no answer about Acme.",
         "showed no answer for the category question.",
     )
+
+
+@pytest.mark.parametrize(("category", "read"), [
+    ("E-commerce and online marketplace", "e-commerce and online marketplace"),
+    ("SEO audit software", "SEO audit software"),
+    ("B2B lead generation", "B2B lead generation"),
+    ("Popup builder software", "popup builder software"),
+])
+def test_an_engine_category_is_cased_for_the_middle_of_a_sentence(category, read):
+    """Trendyol's live answer read "describes Trendyol as E-commerce and online marketplace"."""
+    entry = {"brand_question": {"status": "answered", "recognized": True, "category": category},
+             "category_question": {"status": "skipped", "reason": "x"}}
+    assert describe(entry, "Trendyol")[0] == f"describes Trendyol as {read}."

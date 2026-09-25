@@ -864,8 +864,15 @@ def _in_words(reason: str | None) -> str:
 
 
 def _in_sentence(phrase: str) -> str:
-    """An engine's "Popup builder software" read mid-sentence; "SEO tools" keeps its acronym."""
-    return phrase if phrase[:2].isupper() else phrase[:1].lower() + phrase[1:]
+    """An engine's "Popup builder software" read mid-sentence; "SEO tools" keeps its acronym.
+
+    The acronym test reads the first two letters, not characters: "E-commerce"
+    passed `isupper()` because a hyphen has no case.
+    """
+    letters = [char for char in phrase if char.isalpha()][:2]
+    if len(letters) == 2 and all(char.isupper() for char in letters):
+        return phrase
+    return phrase[:1].lower() + phrase[1:]
 
 
 def _names(items: list[str]) -> str:
