@@ -61,6 +61,19 @@ def _count_results(name: str, payload: dict) -> tuple[int, list[str]]:
     return 0, []
 
 
+def _without_key(text: str, key: str | None) -> str:
+    """A reason with the platform's key taken out.
+
+    Some fetch errors name the full URL, and a keyed platform carries its key in
+    the query string; the reason is printed and recorded with the audit.
+    """
+    if not key:
+        return text
+    for form in {key, quote_plus(key)}:
+        text = text.replace(form, "[key]")
+    return text
+
+
 def check(name: str, brand: str, spec: dict, allow_private: bool = False) -> dict:
     observed = envelope.now_iso()
     key_name = spec.get("needs_key")
@@ -89,7 +102,7 @@ def check(name: str, brand: str, spec: dict, allow_private: bool = False) -> dic
             "platform": name,
             "label": spec["label"],
             "checked": False,
-            "reason": f"{error.code}: {error.message}",
+            "reason": _without_key(f"{error.code}: {error.message}", key),
             "docs": spec["docs"],
             "observed_at": observed,
         }
