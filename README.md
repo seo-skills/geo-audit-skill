@@ -19,7 +19,7 @@ CLI      uv tool install seomator-geo-audit                  ->  geo audit <url>
 The CLI computes; the model explains and prioritizes. No score is ever produced by
 an LLM doing arithmetic in prose.
 
-> **Status: 1.1.0, stable.** Eleven commands, nine skills, six scoring categories, and an
+> **Status: 1.2.0, stable.** Eleven commands, nine skills, six scoring categories, and an
 > envelope schema the build enforces and 1.0 freezes: fields are added, never removed or
 > renamed without a new schema version announced two releases ahead. Reports are held
 > to [the practitioner eval](tests/evals/README.md). See [the roadmap](#roadmap).
@@ -269,6 +269,7 @@ would abort exactly the sites that most need a report.
 | 0.8.0 | the report renders with its whole stylesheet, redesigned for screen and print |
 | 1.0.0 | the envelope schema frozen and promised; released on the maintainer's approval |
 | 1.1.0 | expertise reads the article's author and archives are not articles (scoring 4.0); the page's only `<article>` has to hold the page (normalizer 3); a capped crawl spreads over the site's sections; `compare` refuses a normalizer change |
+| 1.2.0 | what ChatGPT, Gemini and Google AI Mode say about a brand, asked on the user's own scrape.do key, recorded and never scored; a timeout is reported as one and never sent twice |
 
 The bar a report is held to is not a feature. It is [the eval](tests/evals/README.md):
 two rounds where an outside practitioner would send at least four of five reports

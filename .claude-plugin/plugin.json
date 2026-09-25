@@ -1,7 +1,7 @@
 {
   "name": "geo",
   "description": "SEOmator GEO Audit Skill: deterministic GEO audits for Claude Code. Thin skills over a Python CLI, so every number traces to recorded evidence.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "author": {
     "name": "SEOmator",
     "url": "https://seomator.com"

@@ -7,6 +7,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-09-25
+
 ### Added
 
 - **Ask AI assistants about a brand, on your own scrape.do key.** `geo scan <brand>
@@ -880,7 +882,8 @@ contract behind them, and one skill end to end.
   composite is taken over the signals that were computed; a signal that was not
   measured is never scored as a failure.
 
-[Unreleased]: https://github.com/seo-skills/geo-audit-skill/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/seo-skills/geo-audit-skill/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v1.2.0
 [1.1.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v1.1.0
 [1.0.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v1.0.0
 [0.8.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.8.0

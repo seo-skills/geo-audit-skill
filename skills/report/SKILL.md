@@ -1,7 +1,7 @@
 ---
 name: report
 description: Render a recorded audit as a client-ready HTML or PDF report, with optional agency branding and a separate operator copy. Use when asked for a report, a deliverable, a PDF, something to send a client, or a white-labelled audit.
-version: 1.1.0
+version: 1.2.0
 allowed-tools: Bash, Read
 ---
 
@@ -18,10 +18,10 @@ Run this first, once per session:
 geo --version
 ```
 
-Expected: `seomator-geo-audit 1.1.x` or newer.
+Expected: `seomator-geo-audit 1.2.x` or newer.
 
 - **Command not found** -> stop and say: "The geo CLI is not installed. Install it with `uv tool install seomator-geo-audit` (or `pipx install seomator-geo-audit`), then run this again."
-- **Older than 1.1.0** -> stop and say: "This skill needs seomator-geo-audit 1.1.0 or newer. Upgrade with `uv tool upgrade seomator-geo-audit`."
+- **Older than 1.2.0** -> stop and say: "This skill needs seomator-geo-audit 1.2.0 or newer. Upgrade with `uv tool upgrade seomator-geo-audit`."
 - **Anything else odd** -> run `geo doctor` and relay what it reports.
 
 ## Run
