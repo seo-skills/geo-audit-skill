@@ -304,7 +304,8 @@ def run(args, run_id: str) -> dict:
     brand = args.brand.strip()
     if not brand:
         raise GeoError("GEO_E_BAD_ARGS", "Give a brand name to scan, for example `geo scan Acme`.")
-    requested = assistants.parse_engines(args.assistants) if getattr(args, "assistants", None) else []
+    # `is not None`: an empty value (say, an unset shell variable) is a usage error, not silence.
+    requested = assistants.parse_engines(args.assistants) if getattr(args, "assistants", None) is not None else []
 
     results = {
         name: check(name, brand, spec, allow_private=args.allow_private)

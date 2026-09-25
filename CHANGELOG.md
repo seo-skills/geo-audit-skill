@@ -54,6 +54,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **An empty `--assistants` value is refused.** `--assistants "$ENGINES"` with the variable
+  unset asked nothing and said nothing; it is now a `GEO_E_BAD_ARGS` usage error that
+  lists the engines.
+
 - **The profile-links finding says what is missing.** `brand.consistency` scores half when
   a site's Organization `sameAs` lists profiles but none is a Wikipedia or Wikidata
   entry, and the finding still read "The site does not link itself to the profiles that

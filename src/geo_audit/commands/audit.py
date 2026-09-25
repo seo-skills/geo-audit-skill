@@ -179,7 +179,7 @@ def _score_page(page, robots, categories: tuple[str, ...], site_facts: dict | No
 
 def run(args, run_id: str) -> dict:
     if getattr(args, "rescore", None):
-        if getattr(args, "assistants", None):
+        if getattr(args, "assistants", None) is not None:
             raise GeoError(
                 "GEO_E_BAD_ARGS",
                 "--rescore uses no network, so it cannot ask assistants; the answers "
@@ -266,7 +266,7 @@ def run(args, run_id: str) -> dict:
 def _assistants_requested(args, categories: tuple[str, ...]) -> list[str]:
     """The engines --assistants names, checked before anything is fetched."""
     value = getattr(args, "assistants", None)
-    if not value:
+    if value is None:
         return []
     if "brand" not in categories:
         raise GeoError(
