@@ -238,6 +238,9 @@ def _str(value) -> str | None:
     return value if isinstance(value, str) else None
 
 
+_FLAT_LINK = re.compile(r"(?<![\w/])url(?=\S)(.+?)(https?://[^\s)\]]+)")
+
+
 def from_chatgpt(payload: dict) -> Answer | None:
     """chatgpt.com's streaming envelope, assembled by scrape.do.
 
@@ -249,6 +252,8 @@ def from_chatgpt(payload: dict) -> Answer | None:
     text = _str(_dict(payload.get("output")).get("markdown"))
     if not text:
         return None
+    # ChatGPT's entity links sometimes arrive flattened to "urlApollo.iohttps://www.apollo.io".
+    text = _FLAT_LINK.sub(lambda m: f"[{m.group(1).strip()}]({m.group(2)})", text)
     meta = _dict(_dict(_dict(payload.get("data")).get("message")).get("metadata"))
     cited = [
         _str(item.get("url"))
@@ -467,6 +472,8 @@ def read_brand(answer: Answer, engine: str, brand: str, site: str | None) -> dic
         return None
 
     category, offers, competitors = label("CATEGORY"), label("OFFERS"), label("COMPETITORS")
+    if not (category or offers or competitors):
+        category, offers, competitors = _unlabelled(lines)
     not_found = bool(_NOT_FOUND.search(answer.text))
     if not (category and offers) and not not_found:
         return {"status": "failed", "reason": "refused" if _REFUSAL.search(answer.text) else "unreadable answer"}
@@ -480,6 +487,21 @@ def read_brand(answer: Answer, engine: str, brand: str, site: str | None) -> dic
         "cited": cited,
         "searched": answer.searched,
     }
+
+
+def _unlabelled(lines: list[str]) -> tuple[str | None, str | None, str | None]:
+    """The three asked-for lines when ChatGPT answered in order but dropped the labels.
+
+    Read by position only when the shape leaves no doubt: exactly three lines, a
+    short category, then a sentence, then a comma list.
+    """
+    kept = [line for line in lines if line]
+    if len(kept) != 3:
+        return None, None, None
+    category, offers, competitors = kept
+    if len(category.split()) <= 8 and competitors.count(",") >= 2 and len(offers.split()) >= 4:
+        return category, offers, competitors
+    return None, None, None
 
 
 def _chat_items(text: str) -> tuple[list[tuple[int, ListItem]], bool] | None:

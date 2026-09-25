@@ -47,6 +47,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   a list is now accepted only when at least half its entries are brands the chat
   engines named (or linked), and otherwise the brands AI Mode names in its prose are
   read in the order written. Nothing readable is "no list of brands", never "not named".
+  A fifth run had ChatGPT answer the three lines in order but without their labels, which
+  read as unreadable and let the category fall to Gemini's broader one; three lines of
+  that exact shape are now read by position. ChatGPT's entity links, which sometimes
+  arrive flattened to `urlName https://...`, are read as links again.
 
 ### Fixed
 

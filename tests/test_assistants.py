@@ -185,6 +185,28 @@ def test_chatgpt_brand_answer_reads_the_labels_and_the_cited_pages():
     assert got["searched"] is True
 
 
+def test_a_chatgpt_answer_without_its_labels_is_read_by_position():
+    """A fifth live run answered the three lines in order but dropped the labels."""
+    text = ("Popup builder software\nAcme offers no-code popups and lead capture forms. "
+            "([acme.example](https://acme.example/compare?utm_source=chatgpt.com))\n"
+            "OptinMonster, OptiMonk, Privy, Wisepops, Sleeknote")
+    got = read_brand(Answer(text=text, cited=[], searched=False), "chatgpt", "Acme", SITE)
+    assert (got["recognized"], got["category"]) == (True, "Popup builder software")
+    assert got["competitors"] == ["OptinMonster", "OptiMonk", "Privy", "Wisepops", "Sleeknote"]
+    # A three-line reply of another shape is still unreadable, never a guess.
+    prose = Answer(text="Sure.\nHere is what I found about it.\nMore soon.", cited=[], searched=False)
+    assert read_brand(prose, "chatgpt", "Acme", SITE)["status"] == "failed"
+
+
+def test_chatgpt_links_flattened_to_url_tokens_are_links_again():
+    payload = json.loads(json.dumps(CHATGPT_CATEGORY))
+    payload["output"]["markdown"] = payload["output"]["markdown"].replace(
+        "[OptiMonk](https://www.optimonk.com/)", "urlOptiMonk (Smart)https://www.optimonk.com/"
+    )
+    got = read_category(from_chatgpt(payload), "Acme", SITE)
+    assert got["listed"][1] == {"position": 2, "name": "OptiMonk (Smart)", "host": "optimonk.com", "own": False}
+
+
 def test_chatgpt_category_answer_finds_the_brand_by_its_host():
     got = read_category(from_chatgpt(CHATGPT_CATEGORY), "Acme", SITE)
     assert (got["named"], got["position"], got["ranked"]) == (True, 3, True)
