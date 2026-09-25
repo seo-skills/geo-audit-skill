@@ -101,7 +101,9 @@ geo fetch https://example.com/page
 ## `GEO_E_INCOMPARABLE`
 
 `geo compare` refuses when the two runs were scored under different rules — the
-formula changed (`scoring_version` major) or the constants did (`data_version`).
+formula changed (`scoring_version` major), the constants did (`data_version`), what
+the scorer reads did (`normalizer_version`), or the runs scored different categories
+(one used `--only` or `--brand` and the other did not).
 
 This is not a bug to work around. Subtracting them would measure the tool rather than
 the site, and "your score fell six points" when only our thresholds moved is a false
@@ -111,6 +113,9 @@ statement to whoever reads it. Re-run the older URL to get a comparable pair:
 geo audit https://example.com
 geo compare https://example.com
 ```
+
+For a difference in categories, audit with the same `--only` and `--brand` as the run
+you are comparing against, or name a matching pair with `--from` and `--to`.
 
 ## `GEO_E_TIMEOUT`, `GEO_E_DNS`, `GEO_E_CONNECT`, `GEO_E_TLS`
 

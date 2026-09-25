@@ -258,6 +258,7 @@ def crawl(
     result = CrawlResult(start_url=start_url)
     sessions = _Sessions()
     pacer = Pacer(options.requests_per_second)
+    unreached: GeoError | None = None
 
     try:
         if options.check_robots:
@@ -318,6 +319,8 @@ def crawl(
                         result.failures.append(
                             {"url": url, "reason": _reason_for(error), "status": None}
                         )
+                        if url == start_url:
+                            unreached = error
                         continue
 
                     final = normalize_url(page.result.final_url if page.result else page.url)
@@ -349,6 +352,14 @@ def crawl(
                 result.stopped_because = "max_pages"
     finally:
         sessions.close()
+
+    # The start URL failed below HTTP and nothing else answered: the site was
+    # never reached. Filed as one failed page among none, it went on to be
+    # scored as an empty site - 0/100, recorded, and the next `compare` read it
+    # as the site losing every point. errors.py gives this exit 3, as `geo
+    # fetch` already did for the same URL.
+    if unreached is not None and not result.pages:
+        raise unreached
 
     result.elapsed_ms = int((time.monotonic() - started) * 1000)
     return result

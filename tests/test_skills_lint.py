@@ -236,9 +236,10 @@ def test_every_identifier_a_skill_mentions_appears_in_a_real_envelope(site, geo_
     emitted |= emitted_key_paths(json.loads(buffer.getvalue()))
 
     # A second audit, so compare and report have two records to work from, and
-    # a rescore so that block is covered too.
+    # a rescore so that block is covered too. It names the same brand as the
+    # first: compare refuses two runs that scored different categories.
     buffer = io.StringIO()
-    main(["audit", f"{site.url}/hub.html", *crawl] + out, out=buffer)
+    main(["audit", f"{site.url}/hub.html", "--brand", "Acme", *crawl] + out, out=buffer)
     run_id = json.loads(buffer.getvalue())["run_id"]
     for follow_up in (
         ["audit", f"{site.url}/hub.html", "--rescore", run_id],

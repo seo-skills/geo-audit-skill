@@ -308,9 +308,11 @@ def _render_audit(envelope: dict, out: TextIO, style: Style) -> None:
     )
     if block.get("record"):
         print(style.dim(f"Recorded in {block['record']}"), file=out)
+    # A rescore is not recorded, so its own run id is not one to rescore.
+    recorded = (envelope.get("rescore") or {}).get("run_id") or envelope["run_id"]
     print(
         copytext.NEXT_COMMAND.format(
-            command=f"geo audit {block.get('start_url', '')} --rescore {envelope['run_id']}"
+            command=f"geo audit {block.get('start_url', '')} --rescore {recorded}"
         ),
         file=out,
     )

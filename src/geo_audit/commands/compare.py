@@ -82,7 +82,22 @@ def comparable(before: dict, after: dict) -> tuple[bool, str | None]:
             f"normalizer_version {left['normalizer_version']} against "
             f"{right['normalizer_version']} - what the scorer reads changed"
         )
+    # The composite is a weighted mean over the categories a run computed, so two
+    # runs over different sets are two yardsticks. `--only technical` after a full
+    # audit read as the unchanged site gaining seven points and a tier, with every
+    # finding outside technical listed as resolved - none fixed, none measured.
+    left_scope, right_scope = _scope(before), _scope(after)
+    if left_scope != right_scope:
+        return False, (
+            f"they scored different categories ({', '.join(left_scope) or 'none'} against "
+            f"{', '.join(right_scope) or 'none'}) - audit with the same --only and --brand, "
+            f"or pick a matching pair with --from and --to"
+        )
     return True, None
+
+
+def _scope(record: dict) -> list[str]:
+    return sorted((record.get("scores") or {}).get("categories") or {})
 
 
 def _delta(before: float | int | None, after: float | int | None) -> float | None:

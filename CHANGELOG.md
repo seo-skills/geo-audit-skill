@@ -7,6 +7,41 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **A site that was never reached is an error, not a score of zero.** When the start URL
+  failed below HTTP - no DNS answer, a refused connection, a private address without
+  `--allow-private` - the crawl filed it as one failed page among none, and `geo audit`
+  scored the empty set: `ok: true`, 0/100 "poor", stamp PARTIAL, appended to history. The
+  next `geo compare` then reported the site falling from 69 to 0 with every category
+  delta empty. `geo fetch` and `geo score` already returned the start URL's error for
+  the same address, and `errors.py` documents exit 3 for it; `geo audit` and `geo crawl`
+  now do the same and record nothing. A start URL that answers with an HTTP error - a
+  404, a 403 challenge - is still audited, since that is what the report is for.
+- **Rescoring an audit from before snapshots works again** (a regression in 1.1.0).
+  1.1.0 began passing `_assemble` the pages each consequence is explained on and set it
+  on two of `rescore`'s three branches; the third, for records older than the page
+  store, raised `UnboundLocalError` and reported `GEO_E_INTERNAL`. Every audit recorded
+  by 0.4 takes that branch. The same release's missing-run hint listed `geo score` run
+  ids beside audit ones, and rescoring one reached the same branch; `--rescore` and its
+  hint now read audit records only.
+- **`compare` refuses two runs that scored different categories.** The composite is a
+  weighted mean over the categories a run computed, so a full audit followed by
+  `--only technical` took the same unchanged site from 81 to 88 and a tier up, and
+  listed eight findings as resolved - every one outside technical, none fixed, all
+  simply not measured. `--brand` moves the denominator the same way. It is refused with
+  `GEO_E_INCOMPARABLE`, naming both sets, like a change of formula; `--from` and `--to`
+  still pick any matching pair. The troubleshooting page and the divergence table now
+  also name the normalizer gate 1.1.0 added.
+- **The command suggested after `--rescore` can be run.** It named the rescore's own run
+  id, and a rescore is not recorded, so following it answered "No audit with run id ...
+  was found". It now names the recorded run that was rescored.
+- **Every skill's preflight expects the current version line.** The compare, content and
+  report skills shipped 1.1.0 saying "Expected: `seomator-geo-audit 0.2.x` or newer" two
+  lines above "Older than 1.1.0 -> stop". The lint asked only that the current line
+  appear somewhere in the preflight, and the stop line satisfied it; it now fails any
+  expected line that names another.
+
 ## [1.1.0] - 2026-09-23
 
 ### Changed
@@ -765,7 +800,8 @@ contract behind them, and one skill end to end.
   composite is taken over the signals that were computed; a signal that was not
   measured is never scored as a failure.
 
-[Unreleased]: https://github.com/seo-skills/geo-audit-skill/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/seo-skills/geo-audit-skill/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v1.1.0
 [1.0.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v1.0.0
 [0.8.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.8.0
 [0.7.0]: https://github.com/seo-skills/geo-audit-skill/releases/tag/v0.7.0

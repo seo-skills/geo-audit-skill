@@ -587,6 +587,7 @@ def rescore(args, run_id: str) -> dict:
         # recorded findings, and page-level and check findings cannot be rebuilt.
         offenders = {f["id"]: f.get("pages") or [] for f in record.get("findings") or []}
         severe = {}
+        explained = {}
         source = "record"
     brand = (record.get("scan") or {}).get("brand")
     if brand and "brand" in by_category:
@@ -625,7 +626,7 @@ def _what_is_recorded(slug: str | None) -> str:
     recent = [
         record["run_id"]
         for candidate in slugs
-        for record in state.read_audits(candidate)[0]
+        for record in _audits(candidate)
         if record.get("run_id")
     ][-3:]
     if recent:
@@ -635,11 +636,16 @@ def _what_is_recorded(slug: str | None) -> str:
     return "No project has a recorded audit yet."
 
 
+def _audits(slug: str) -> list[dict]:
+    """The audits in a project's history. `geo score` records there too, and a
+    score record has no crawl to rescore."""
+    return [record for record in state.read_audits(slug)[0] if record.get("command") == "audit"]
+
+
 def _find_record(run_id: str, slug: str | None) -> dict | None:
     slugs = [slug] if slug else _known_slugs()
     for candidate in slugs:
-        records, _ = state.read_audits(candidate)
-        for record in reversed(records):
+        for record in reversed(_audits(candidate)):
             if record.get("run_id") == run_id:
                 return record
     return None
