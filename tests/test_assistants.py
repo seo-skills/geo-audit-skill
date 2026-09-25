@@ -241,12 +241,34 @@ def test_ai_mode_names_come_before_the_sub_points_joined_onto_them():
              "list": [{"snippet": "Targeting: exit intent everywhere."}, {"snippet": "Reach: any CMS."}]},
             {"snippet": "Acme Setup: minutes, not hours.", "list": [{"snippet": "Setup: minutes, not hours."}]},
         ]},
-        {"type": "ordered_list", "list": [{"snippet": "Which platform do you use?"}]},
+        {"type": "ordered_list", "list": [{"snippet": "Which platform do you use?"},
+                                          {"snippet": "What is your monthly traffic?"}]},
     ], "references": []}
     got = read_category(from_ai_mode(payload), "Acme", SITE)
     assert [item["name"] for item in got["listed"]] == ["Northwind", "Acme"]
     # The follow-up questions after the list are not the list.
     assert got["named"] is True and got["ranked"] is False
+
+
+def test_ai_mode_ranks_written_as_numbered_paragraphs_beat_pros_and_cons_lists():
+    """A second live AI Mode answer ranked brands in paragraphs, each with a pros/cons list."""
+    pros_cons = {"type": "list", "list": [{"snippet": "Pros: flexible."}, {"snippet": "Cons: pricey."}]}
+    payload = {"text_blocks": [
+        {"type": "paragraph", "snippet": "Brand Best For Northwind Enterprise Acme Speed"},
+        {"type": "paragraph", "snippet": "1. Northwind — Best overall"}, pros_cons,
+        {"type": "paragraph", "snippet": "2. Globex — Best free option"}, pros_cons,
+        {"type": "list", "list": [{"snippet": "Which CMS do you use?"}, {"snippet": "What is your goal?"}]},
+    ], "references": []}
+    got = read_category(from_ai_mode(payload), "Acme", SITE)
+    assert [item["name"] for item in got["listed"]] == ["Northwind", "Globex"]
+    assert got["ranked"] is True and got["named"] is False
+    # Named only in the flattened comparison table above the list.
+    assert got["named_outside_list"] is True
+
+
+def test_an_ai_mode_answer_with_no_list_is_unreadable_not_unnamed():
+    payload = {"text_blocks": [{"type": "paragraph", "snippet": "It depends on your platform."}], "references": []}
+    assert read_category(from_ai_mode(payload), "Acme", SITE)["status"] == "failed"
 
 
 def test_an_empty_ai_mode_answer_is_its_own_outcome():

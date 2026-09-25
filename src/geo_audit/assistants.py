@@ -281,21 +281,58 @@ def from_ai_mode(payload: dict) -> Answer | None:
     if not blocks:
         return Answer(text="", cited=[], searched=False, empty=True)
     lines: list[str] = []
-    items: list[ListItem] | None = None
-    ranked = True
+    # Every list the answer contains, each as (ranked, items, the entries' own text).
+    candidates: list[tuple[bool, list[ListItem], list[str]]] = []
+    numbered: list[tuple[ListItem, str]] = []
     for block in blocks:
         kind = block.get("type")
         if kind in ("list", "ordered_list"):
             entries = [_dict(entry) for entry in _list(block.get("list"))]
-            for entry in entries:
-                lines.append(_str(entry.get("snippet")) or "")
-            if items is None and entries:
-                ranked = kind == "ordered_list"
-                items = [_ai_mode_item(entry) for entry in entries]
+            texts = [_str(entry.get("snippet")) or "" for entry in entries]
+            lines.extend(texts)
+            if entries:
+                candidates.append((kind == "ordered_list", [_ai_mode_item(entry) for entry in entries], texts))
         else:
-            lines.append(_str(block.get("snippet")) or "")
+            snippet = _str(block.get("snippet")) or ""
+            lines.append(snippet)
+            # A ranking written as numbered paragraphs: "1. OptinMonster — Best overall".
+            match = _NUMBERED.match(snippet)
+            if match and int(match.group(1)) == len(numbered) + 1:
+                name = re.split(r"\s+[—–-]\s+|:\s", match.group(2), maxsplit=1)[0]
+                numbered.append((ListItem(name=_plain(name).strip(" .:*"), url=None), snippet))
+    if numbered:
+        candidates.append((True, [item for item, _ in numbered], [text for _, text in numbered]))
+    chosen = _answer_list(candidates)
     return Answer(text="\n".join(line for line in lines if line), cited=cited, searched=bool(cited),
-                  items=items, ranked=ranked)
+                  items=chosen[1] if chosen else [], ranked=chosen[0] if chosen else False)
+
+
+# Labels an answer lists under a brand ("Pros: ...", "Cons: ..."), never brands.
+_GENERIC_LABELS = frozenset(
+    "pros cons pricing price features verdict summary note tip tips drawbacks benefits "
+    "downsides considerations limitations strengths weaknesses".split()
+)
+
+
+def _answer_list(candidates: list[tuple[bool, list[ListItem], list[str]]]) -> tuple[bool, list[ListItem]] | None:
+    """Which of an answer's lists is the one it gave as an answer.
+
+    AI Mode lays the same kind of answer out differently from one call to the next:
+    brands as bullets followed by numbered follow-up questions, or brands as
+    numbered paragraphs each followed by a pros-and-cons list. Lists of questions
+    and lists of labels are set aside; of the rest, a ranked list wins, then the
+    longest.
+    """
+    usable = [
+        (ranked, items)
+        for ranked, items, texts in candidates
+        if len(items) >= 2
+        and sum("?" in text for text in texts) * 2 < len(texts)
+        and sum(item.name.strip(" :").lower() in _GENERIC_LABELS for item in items) * 2 < len(items)
+    ]
+    if not usable:
+        return None
+    return max(usable, key=lambda pair: (pair[0], len(pair[1])))
 
 
 def _ai_mode_item(entry: dict) -> ListItem:
@@ -482,6 +519,8 @@ def _chat_items(text: str) -> tuple[list[tuple[int, ListItem]], bool] | None:
 def read_category(answer: Answer, brand: str, site: str | None) -> dict:
     """The second question: is the brand among the best in its category, and where."""
     if answer.items is not None:
+        if not answer.items:
+            return {"status": "failed", "reason": "no list in the answer"}
         numbered = [(index + 1, item) for index, item in enumerate(answer.items[:MAX_LISTED])]
         ranked = answer.ranked
     else:

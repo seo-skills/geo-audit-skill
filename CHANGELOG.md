@@ -38,7 +38,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   without positions; AI Mode joins each entry's sub-points onto its name, which is now
   cut at the first sub-point; and Gemini's transient 502 ("no warm session"), which
   came back twice in a row, is retried twice with longer waits. ChatGPT accepted the
-  documented `q` parameter.
+  documented `q` parameter. A second run showed AI Mode laying the same kind of answer
+  out differently: brands as numbered paragraphs, each followed by a pros-and-cons
+  list, where the first run had them as bullets followed by numbered follow-up
+  questions. The reader now weighs every list in the answer, sets aside lists of
+  questions and of labels such as "Pros", and takes a ranked list first.
 
 ### Fixed
 
