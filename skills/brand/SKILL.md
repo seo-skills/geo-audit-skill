@@ -73,7 +73,9 @@ useful than a task list:
   against site rules and easy to spot.
 - **`brand.consistency` is the one that is entirely yours.** Adding the profiles that
   do exist to your Organization `sameAs` is an afternoon, and it is what tells an
-  engine that this site and that entity are the same thing.
+  engine that this site and that entity are the same thing. At half marks the site
+  already lists its profiles and only a Wikipedia or Wikidata entry is missing, which
+  follows independent coverage like the rest: say so rather than asking for more links.
 
 Lead with `brand.consistency` when it scores low. Treat the others as context about
 the company's public footprint, not as a backlog.

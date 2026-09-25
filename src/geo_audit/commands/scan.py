@@ -61,6 +61,19 @@ def _count_results(name: str, payload: dict) -> tuple[int, list[str]]:
     return 0, []
 
 
+def _without_key(text: str, key: str | None) -> str:
+    """A reason with the platform's key taken out.
+
+    Some fetch errors name the full URL, and a keyed platform carries its key in
+    the query string; the reason is printed and recorded with the audit.
+    """
+    if not key:
+        return text
+    for form in {key, quote_plus(key)}:
+        text = text.replace(form, "[key]")
+    return text
+
+
 def check(name: str, brand: str, spec: dict, allow_private: bool = False) -> dict:
     observed = envelope.now_iso()
     key_name = spec.get("needs_key")
@@ -89,7 +102,7 @@ def check(name: str, brand: str, spec: dict, allow_private: bool = False) -> dic
             "platform": name,
             "label": spec["label"],
             "checked": False,
-            "reason": f"{error.code}: {error.message}",
+            "reason": _without_key(f"{error.code}: {error.message}", key),
             "docs": spec["docs"],
             "observed_at": observed,
         }
@@ -133,6 +146,25 @@ def check(name: str, brand: str, spec: dict, allow_private: bool = False) -> dic
         "docs": spec["docs"],
         "observed_at": observed,
     }
+
+
+def brand_findings(signals: list[Signal], page: str) -> list:
+    """The findings for brand signals, with `brand.consistency` worded for what is missing.
+
+    Its wording in `data/findings.json` is for a site that links no profiles; a
+    site that lists them and scores half is missing only the encyclopedic link,
+    and "add the profiles found here" would tell it to do what it has done.
+    """
+    findings = findings_for(signals, page)
+    detail = next((s.detail for s in signals if s.id == "brand.consistency"), {})
+    count = detail.get("same_as_count") or 0
+    for finding in findings:
+        if finding.id == "brand.consistency" and count:
+            finding.title = copytext.BRAND_CONSISTENCY_LINKED_TITLE
+            finding.remediation = copytext.BRAND_CONSISTENCY_LINKED_REMEDIATION.format(
+                count=count, s="" if count == 1 else "s"
+            )
+    return findings
 
 
 def _signal(signal_id: str, value: float | None, detail: dict, spec: dict) -> Signal:
@@ -272,7 +304,8 @@ def run(args, run_id: str) -> dict:
     brand = args.brand.strip()
     if not brand:
         raise GeoError("GEO_E_BAD_ARGS", "Give a brand name to scan, for example `geo scan Acme`.")
-    requested = assistants.parse_engines(args.assistants) if getattr(args, "assistants", None) else []
+    # `is not None`: an empty value (say, an unset shell variable) is a usage error, not silence.
+    requested = assistants.parse_engines(args.assistants) if getattr(args, "assistants", None) is not None else []
 
     results = {
         name: check(name, brand, spec, allow_private=args.allow_private)
@@ -286,7 +319,7 @@ def run(args, run_id: str) -> dict:
     signals = build_signals(results, same_as)
     score, completeness = composite(signals)
     tier = data.tier_for(score)
-    findings = prioritize(findings_for(signals, args.site or brand))
+    findings = prioritize(brand_findings(signals, args.site or brand))
 
     checked = [entry for entry in results.values() if entry["checked"]]
     total_results = sum(entry.get("results", 0) for entry in checked)

@@ -9,6 +9,17 @@ commands that produce them.
 
 from __future__ import annotations
 
+# A site whose Organization `sameAs` already lists profiles scores half on
+# brand.consistency; the data's wording is written for none at all. Reworded in
+# code, not in `data/findings.json`, so `data_version` does not move.
+BRAND_CONSISTENCY_LINKED_TITLE = "The site's sameAs links no Wikipedia or Wikidata entry"
+BRAND_CONSISTENCY_LINKED_REMEDIATION = (
+    "The Organization `sameAs` already lists {count} profile{s}; the half this "
+    "category is missing is a Wikipedia article or Wikidata item to link to. "
+    "Neither can be created to order: they follow independent coverage. When "
+    "one exists, add it to `sameAs`."
+)
+
 # 1 — loading (stderr only)
 PROGRESS = "[{step}/{total}] {action}"
 ASKING_ASSISTANTS = (

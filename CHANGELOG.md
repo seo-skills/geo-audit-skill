@@ -54,6 +54,41 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **A failed assistant answer is said in words.** The report and the terminal read "Gemini
+  did not answer the question about Acme (HTTP 502)"; they now read "Gemini gave no
+  usable answer about Acme: the service was unavailable". The envelope keeps the code.
+- **"Google AI Mode showed no AI Mode answer"** now reads "Google AI Mode showed no answer
+  for the category question".
+- **An engine's category reads right mid-sentence.** "describes Trendyol as E-commerce and
+  online marketplace" kept the capital because the acronym test read "E-" as upper case;
+  it now looks at letters, so "e-commerce" is lowercased and "SEO" or "B2B" stay.
+
+- **An empty `--assistants` value is refused.** `--assistants "$ENGINES"` with the variable
+  unset asked nothing and said nothing; it is now a `GEO_E_BAD_ARGS` usage error that
+  lists the engines.
+
+- **The profile-links finding says what is missing.** `brand.consistency` scores half when
+  a site's Organization `sameAs` lists profiles but none is a Wikipedia or Wikidata
+  entry, and the finding still read "The site does not link itself to the profiles that
+  identify it: add the profiles found here". popupsmart.com lists sixteen. It now says
+  the site's `sameAs` links no Wikipedia or Wikidata entry, which follows independent
+  coverage, and the brand skill says the same. The wording is changed in code, so
+  `data_version` and comparisons are unaffected.
+
+- **A request that times out is reported as a timeout, and sent once.** The HTTP session
+  retries once for a pooled connection the server dropped, and urllib3 counts a read
+  timeout as one of those, so every slow response was requested a second time: a slow
+  page took twice `--timeout` and was reported as `GEO_E_CONNECT` ("couldn't connect")
+  instead of `GEO_E_TIMEOUT`, and a slow scrape.do answer could be charged twice. A
+  timeout is no longer retried. A body that stalls after its headers is now a
+  `GEO_E_TIMEOUT` too, where it escaped every error handler.
+
+- **A platform's API key stays out of a scan's error reasons.** `geo scan` copied the
+  fetch error into `scan.platforms[].reason`, and some fetch errors name the full URL:
+  a redirect loop at YouTube printed `GEO_YOUTUBE_API_KEY` in the envelope, and
+  `geo audit --brand` recorded it in `audits.jsonl`. The key is now replaced with
+  `[key]`, raw or URL-encoded.
+
 - **A site that was never reached is an error, not a score of zero.** When the start URL
   failed below HTTP - no DNS answer, a refused connection, a private address without
   `--allow-private` - the crawl filed it as one failed page among none, and `geo audit`

@@ -24,6 +24,7 @@ from urllib.parse import urljoin, urlsplit
 
 import requests
 from requests.adapters import HTTPAdapter
+from urllib3.exceptions import ReadTimeoutError
 from urllib3.util.retry import Retry
 
 from geo_audit.errors import GeoError
@@ -94,6 +95,20 @@ class FetchResult:
         return 200 <= self.status < 300
 
 
+class _RaceRetry(Retry):
+    """One retry for a pooled connection the server dropped, never for a timeout.
+
+    urllib3 counts a read timeout as a read error, so `read=1` alone re-sent every
+    request that timed out: the wait doubled, a paid API could charge twice, and
+    the spent retry surfaced as a connection error rather than a timeout.
+    """
+
+    def increment(self, method=None, url=None, response=None, error=None, _pool=None, _stacktrace=None):
+        if isinstance(error, ReadTimeoutError):
+            raise error
+        return super().increment(method, url, response, error, _pool, _stacktrace)
+
+
 def new_session() -> requests.Session:
     session = requests.Session()
     session.trust_env = True
@@ -103,7 +118,7 @@ def new_session() -> requests.Session:
     # is the standard remedy, and GET is idempotent so replaying it is safe.
     # Redirects stay off: this module follows them by hand so each hop is
     # revalidated.
-    retry = Retry(
+    retry = _RaceRetry(
         total=1,
         connect=1,
         read=1,
@@ -238,6 +253,19 @@ def _verify_peer(response: requests.Response, url: str, allow_private: bool) -> 
     return peer, True
 
 
+def _network_error(exc: requests.exceptions.RequestException, url: str, timeout: float) -> GeoError:
+    host = urlsplit(url).hostname
+    if isinstance(exc, requests.exceptions.SSLError):
+        return GeoError("GEO_E_TLS", f"TLS handshake with {host} failed.")
+    # A timeout while the body streams reaches us as a ConnectionError that
+    # wraps urllib3's ReadTimeoutError.
+    if isinstance(exc, requests.exceptions.Timeout) or any(isinstance(arg, ReadTimeoutError) for arg in exc.args):
+        return GeoError("GEO_E_TIMEOUT", f"Couldn't reach {host}: connection timed out after {timeout:g} s.")
+    if isinstance(exc.__cause__, socket.gaierror) or "NameResolution" in repr(exc):
+        return GeoError("GEO_E_DNS", f"Couldn't resolve {host}.")
+    return GeoError("GEO_E_CONNECT", f"Couldn't connect to {host}: {_connection_reason(exc)}.")
+
+
 def fetch(
     url: str,
     *,
@@ -266,26 +294,8 @@ def fetch(
                     allow_redirects=False,
                     stream=True,
                 )
-            except requests.exceptions.SSLError as exc:
-                raise GeoError(
-                    "GEO_E_TLS", f"TLS handshake with {urlsplit(current).hostname} failed."
-                ) from exc
-            except requests.exceptions.Timeout as exc:
-                raise GeoError(
-                    "GEO_E_TIMEOUT",
-                    f"Couldn't reach {urlsplit(current).hostname}: connection timed out "
-                    f"after {timeout:g} s.",
-                ) from exc
-            except requests.exceptions.ConnectionError as exc:
-                if isinstance(exc.__cause__, socket.gaierror) or "NameResolution" in repr(exc):
-                    raise GeoError(
-                        "GEO_E_DNS", f"Couldn't resolve {urlsplit(current).hostname}."
-                    ) from exc
-                raise GeoError(
-                    "GEO_E_CONNECT",
-                    f"Couldn't connect to {urlsplit(current).hostname}: "
-                    f"{_connection_reason(exc)}.",
-                ) from exc
+            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as exc:
+                raise _network_error(exc, current, timeout) from exc
 
             with response:
                 peer, verified = _verify_peer(response, current, allow_private)
@@ -319,16 +329,21 @@ def fetch(
                         )
 
                 buffer = bytearray()
-                for chunk in response.iter_content(chunk_size=65536):
-                    if not chunk:
-                        continue
-                    buffer.extend(chunk)
-                    if len(buffer) > max_bytes:
-                        raise GeoError(
-                            "GEO_E_TOO_LARGE",
-                            f"{current} exceeded the {max_bytes:,} byte cap while "
-                            f"downloading.",
-                        )
+                try:
+                    for chunk in response.iter_content(chunk_size=65536):
+                        if not chunk:
+                            continue
+                        buffer.extend(chunk)
+                        if len(buffer) > max_bytes:
+                            raise GeoError(
+                                "GEO_E_TOO_LARGE",
+                                f"{current} exceeded the {max_bytes:,} byte cap while "
+                                f"downloading.",
+                            )
+                except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as exc:
+                    # A body that stalls after its headers: the same errors as a
+                    # request that fails, not an exception past every handler.
+                    raise _network_error(exc, current, timeout) from exc
 
                 body, encoding = _decode(bytes(buffer), kept.get("content-type"))
                 return FetchResult(

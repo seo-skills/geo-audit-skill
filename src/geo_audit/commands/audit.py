@@ -179,7 +179,7 @@ def _score_page(page, robots, categories: tuple[str, ...], site_facts: dict | No
 
 def run(args, run_id: str) -> dict:
     if getattr(args, "rescore", None):
-        if getattr(args, "assistants", None):
+        if getattr(args, "assistants", None) is not None:
             raise GeoError(
                 "GEO_E_BAD_ARGS",
                 "--rescore uses no network, so it cannot ask assistants; the answers "
@@ -224,7 +224,7 @@ def run(args, run_id: str) -> dict:
         same_as = scan_cmd._same_as_for(args.url, args.allow_private, args.timeout)
         brand_signals = scan_cmd.build_signals(platforms, same_as)
         per_category["brand"] = [brand_signals]
-        findings.extend(findings_for(brand_signals, args.brand))
+        findings.extend(scan_cmd.brand_findings(brand_signals, args.brand))
         extra = {
             "scan": {
                 "brand": args.brand,
@@ -266,7 +266,7 @@ def run(args, run_id: str) -> dict:
 def _assistants_requested(args, categories: tuple[str, ...]) -> list[str]:
     """The engines --assistants names, checked before anything is fetched."""
     value = getattr(args, "assistants", None)
-    if not value:
+    if value is None:
         return []
     if "brand" not in categories:
         raise GeoError(
@@ -437,7 +437,12 @@ def _assemble(
         # because one of its forty pages does.
         if offenders is not None:
             reported = set()
-            for finding in findings_for(rolled, site):
+            # Brand findings carry wording that depends on the signal's detail;
+            # one helper words them wherever they are made.
+            from geo_audit.commands import scan as scan_cmd
+
+            produce = scan_cmd.brand_findings if name == "brand" else findings_for
+            for finding in produce(rolled, site):
                 finding.pages = sorted(set(offenders.get(finding.id) or []))
                 reported.add(finding.id)
                 findings.append(finding)
@@ -617,7 +622,9 @@ def rescore(args, run_id: str) -> dict:
         source = "record"
     brand = (record.get("scan") or {}).get("brand")
     if brand and "brand" in by_category:
-        findings.extend(findings_for(by_category["brand"][0], brand))
+        from geo_audit.commands import scan as scan_cmd
+
+        findings.extend(scan_cmd.brand_findings(by_category["brand"][0], brand))
     rescore_block["snapshot"] = bool(snapshot)
     # What this rescore recomputed from: the stored pages, the stored per-page
     # ratios, or - for a record older than both - the recorded findings.
