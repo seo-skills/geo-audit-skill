@@ -71,6 +71,8 @@ was applied, and finds out from a client that it was not, will not use the tool 
   artifacts exist.
 - If `evidence.stamp` is not `CURRENT`, the report carries a note about it and so
   should your message.
+- If the audit asked AI assistants, the report carries their answers in a section marked
+  not scored. What the run cost is in the operator copy only.
 - If the advisory section is unanswered, either answer it first with `--advisory` or
   tell the user it says "not assessed".
 - **Order it for what the site is for.** Without `--site-kind` the findings follow the

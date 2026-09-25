@@ -162,6 +162,22 @@ blocks a crawler are exactly the sites that most need a report.
 A bug here, not in the site. The message names the exception type and the log has the
 traceback. Please open an issue with both.
 
+## AI assistants were not asked
+
+`--assistants` records `scan.assistants.asked: false` with a `reason` instead of
+failing the command, like a brand platform that could not be checked. The reasons:
+
+- **no API key.** Set `GEO_SCRAPEDO_TOKEN` in the shell that runs `geo`. It is read from
+  the environment only; there is no flag for it, so it never lands in shell history.
+- **scrape.do did not accept the key.** Copy it again from the scrape.do dashboard.
+- **the account is not active**, or **has N credits left** when the run needs up to M
+  (ChatGPT and Gemini 50 each, Google AI Mode 20). Ask fewer engines, or add credits.
+
+Nothing is spent in any of these cases: a free check of the key runs first. When the
+run did go ahead, a single question can still fail; its `status` is `failed` with a
+`reason` such as `HTTP 429` (too many requests at once on the account) or a `GEO_E_*`
+code for a transport failure. The key is never part of a reason.
+
 ## Where the log is
 
 ```

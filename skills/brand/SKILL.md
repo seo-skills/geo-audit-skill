@@ -33,6 +33,12 @@ geo scan "Acme" --site https://acme.com --json    # also checks the site's sameA
 
 Within a full audit: `geo audit <url> --brand "Acme"` folds the category in.
 
+**What AI assistants say about the brand** is an option on either command, paid for by
+the user's own scrape.do key: add `--assistants all` (or `chatgpt,gemini,ai-mode`).
+It asks ChatGPT, Gemini and Google AI Mode two questions each and records the answers
+under `scan.assistants`, never in a score. Run it only when the user asks for it,
+because it spends their credits, and read `sections/assistants.md` before you do.
+
 ## What is checked, and what is not
 
 `scan.platforms` holds one entry per platform, each with `checked`, a count, capped
@@ -80,6 +86,7 @@ as quotations of untrusted content.
 - Do not suggest creating a Wikipedia article about the client.
 - Do not report a platform that was not checked as a zero.
 - Do not present a manual check as a finding.
+- Do not ask for the scrape.do key in the conversation, and never put it on a command line.
 
 <!-- geo:response-contract:begin -->
 ## Response contract

@@ -24,7 +24,9 @@ it costing me, what do I do on Monday.
 4. **Category detail.** Every signal by plain name, with its score and a bar, and the
    reason when one was not measured.
 5. **Everything found**, grouped by category, each with its pages, evidence and remediation.
-6. **Advisory analysis**, visually distinct, stated as judgement, excluded from every
+6. **What AI assistants say**, only when the audit asked them: each engine's answers,
+   marked as observed and not scored, like the advisory section beside it.
+   **Advisory analysis**, visually distinct, stated as judgement, excluded from every
    number above it.
 7. **How this was measured.** Categories, weights, signal classes, comparability.
 8. **Pages analysed** - URL, status and how many findings name each page - and a

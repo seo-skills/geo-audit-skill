@@ -41,6 +41,7 @@ crawl spreads its pages over the site's sections and `crawl.stopped_because` is
 |---|---|
 | a bigger or smaller crawl | `--max-pages 20` |
 | brand presence in the score | `--brand "Acme"` |
+| what AI assistants say about the brand (the user's scrape.do key, never scored) | `--brand "Acme" --assistants all` |
 | one category only | `--only technical` |
 | to reproduce an earlier run | `--rescore <run_id>` |
 | a local or staging site | `--allow-private` |

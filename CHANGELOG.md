@@ -28,6 +28,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   brand or whom it named instead, its list, the pages it relied on and the exact
   questions. The operator copy adds the credits the run used and what the account has
   left, or why nothing was asked; the client copy carries neither.
+- **The brand, audit and report skills know the option.** The brand skill loads a new
+  section on demand with the cost per engine, how to read `scan.assistants`, and how to
+  talk about one sampled answer (never a percentage, never a score); it tells the model
+  never to ask for the key in the conversation. The troubleshooting page lists why
+  assistants can go unasked.
 
 ### Fixed
 
