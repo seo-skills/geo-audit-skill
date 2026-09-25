@@ -843,6 +843,26 @@ def _ordinal(n: int) -> str:
     return f"{n}{suffix}"
 
 
+def _in_words(reason: str | None) -> str:
+    """A failure said in words for a reader; the envelope keeps the code itself."""
+    reason = reason or ""
+    if reason == "HTTP 429":
+        return "too many requests were running on the account at once"
+    if reason.startswith("HTTP 5"):
+        return "the service was unavailable"
+    if reason.startswith("HTTP "):
+        return "the request was refused"
+    if reason == "GEO_E_TIMEOUT":
+        return "it took too long to answer"
+    if reason.startswith("GEO_E_"):
+        return "the request did not go through"
+    if reason in ("not JSON", "unreadable answer"):
+        return "its answer could not be read"
+    if reason == "refused":
+        return "it declined to answer"
+    return reason or "no reason was given"
+
+
 def _in_sentence(phrase: str) -> str:
     """An engine's "Popup builder software" read mid-sentence; "SEO tools" keeps its acronym."""
     return phrase if phrase[:2].isupper() else phrase[:1].lower() + phrase[1:]
@@ -860,7 +880,7 @@ def describe(entry: dict, brand: str) -> tuple[str, str]:
     """
     first = entry.get("brand_question") or {}
     if first.get("status") == "failed":
-        about = f"did not answer the question about {brand} ({first.get('reason')})."
+        about = f"gave no usable answer about {brand}: {_in_words(first.get('reason'))}."
     elif first.get("status") == "empty":
         about = f"showed no answer about {brand}."
     elif first.get("recognized"):
@@ -874,7 +894,7 @@ def describe(entry: dict, brand: str) -> tuple[str, str]:
     if status == "skipped":
         ranking = f"was not asked for the best in its category: {second.get('reason')}."
     elif status == "failed":
-        ranking = f"did not answer the category question ({second.get('reason')})."
+        ranking = f"gave no usable answer to the category question: {_in_words(second.get('reason'))}."
     elif status == "empty":
         ranking = "showed no AI Mode answer for the category question."
     elif second.get("named"):
