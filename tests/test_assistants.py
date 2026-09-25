@@ -223,6 +223,32 @@ def test_an_unordered_ai_mode_list_has_no_positions():
                      "category_question": got}, "Acme")[1] == "listed Acme among 2, unranked."
 
 
+def test_a_bulleted_answer_is_a_list_without_positions():
+    """Asked for a top ten, Gemini answered a live run with bullets rather than numbers."""
+    text = ("Here are strong options:\n\n* **Northwind:** broad targeting.\n* **Acme:** quick setup.\n"
+            "    * an indented sub-point, not an entry\n* **Globex:** built for stores.\n\nPick by platform.")
+    got = read_category(Answer(text=text, cited=[], searched=False), "Acme", SITE)
+    assert got["status"] == "answered" and got["ranked"] is False
+    assert [item["name"] for item in got["listed"]] == ["Northwind", "Acme", "Globex"]
+    assert (got["named"], got["position"]) == (True, None)
+
+
+def test_ai_mode_names_come_before_the_sub_points_joined_onto_them():
+    """A live AI Mode entry carries its sub-points nested and again after the name."""
+    payload = {"text_blocks": [
+        {"type": "list", "list": [
+            {"snippet": "Northwind Targeting: exit intent everywhere. Reach: any CMS.",
+             "list": [{"snippet": "Targeting: exit intent everywhere."}, {"snippet": "Reach: any CMS."}]},
+            {"snippet": "Acme Setup: minutes, not hours.", "list": [{"snippet": "Setup: minutes, not hours."}]},
+        ]},
+        {"type": "ordered_list", "list": [{"snippet": "Which platform do you use?"}]},
+    ], "references": []}
+    got = read_category(from_ai_mode(payload), "Acme", SITE)
+    assert [item["name"] for item in got["listed"]] == ["Northwind", "Acme"]
+    # The follow-up questions after the list are not the list.
+    assert got["named"] is True and got["ranked"] is False
+
+
 def test_an_empty_ai_mode_answer_is_its_own_outcome():
     assert from_ai_mode(AI_MODE_EMPTY).empty is True
 
@@ -301,7 +327,7 @@ def endpoint(serve, monkeypatch):
     def build(**overrides):
         server = serve(routes(**overrides))
         monkeypatch.setattr(assistants, "BASE", server.url)
-        monkeypatch.setattr(assistants, "RETRY_AFTER", 0.0)
+        monkeypatch.setattr(assistants, "RETRY_DELAYS", (0.0, 0.0))
         spec = {
             name: {"label": name.title(), "url": f"{server.url}/{name}?q={{query}}", "docs": "d", "needs_key": None}
             for name in ("wikipedia", "wikidata", "reddit")
@@ -371,10 +397,11 @@ def test_a_key_that_cannot_pay_for_the_run_asks_nothing(endpoint, geo_home, monk
     assert [path for path in asked_paths(server) if path.startswith("/plugin")] == []
 
 
-def test_a_transient_502_is_retried_once(endpoint, geo_home, monkeypatch):
+def test_a_transient_502_is_retried_until_a_session_is_warm(endpoint, geo_home, monkeypatch):
+    """Gemini's "no warm session" came back twice in a row on a live run."""
     monkeypatch.setenv(assistants.TOKEN_ENV, "test-token")
     busy = Reply(status=502, body='{"error": "no warm session available"}', content_type="application/json")
-    endpoint(**{"/plugin/gemini/chat": sequence(busy, vendor(GEMINI_BRAND, 25), vendor(GEMINI_CATEGORY, 25))})
+    endpoint(**{"/plugin/gemini/chat": sequence(busy, busy, vendor(GEMINI_BRAND, 25), vendor(GEMINI_CATEGORY, 25))})
     _, envelope = run(["scan", "Acme", "--allow-private", "--assistants", "gemini"])
     gemini = envelope["scan"]["assistants"]["engines"][0]
     assert gemini["brand_question"]["http_status"] == 200

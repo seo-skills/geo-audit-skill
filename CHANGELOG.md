@@ -33,6 +33,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   talk about one sampled answer (never a percentage, never a score); it tells the model
   never to ask for the key in the conversation. The troubleshooting page lists why
   assistants can go unasked.
+- **Readers checked against a live run on popupsmart.com** (25 September 2026). Gemini
+  answered "the top 10" with bullets, which is now read as a list in the order written,
+  without positions; AI Mode joins each entry's sub-points onto its name, which is now
+  cut at the first sub-point; and Gemini's transient 502 ("no warm session"), which
+  came back twice in a row, is retried twice with longer waits. ChatGPT accepted the
+  documented `q` parameter.
 
 ### Fixed
 

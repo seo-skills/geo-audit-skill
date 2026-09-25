@@ -41,7 +41,10 @@ BASE = "https://api.scrape.do"
 PROVIDER = "scrape.do"
 LOCALE = "en-US"
 MAX_BYTES = 1_000_000
-RETRY_AFTER = 2.0
+# Waits before each retry of a transient 502. Gemini's "no warm session" came back
+# twice within three seconds on a live run, so a second, longer wait is worth it;
+# a 502 is uncharged, so a retry costs time, never credits.
+RETRY_DELAYS = (3.0, 6.0)
 INFO_TIMEOUT = 15.0
 
 MAX_CITED = 8
@@ -288,16 +291,29 @@ def from_ai_mode(payload: dict) -> Answer | None:
                 lines.append(_str(entry.get("snippet")) or "")
             if items is None and entries:
                 ranked = kind == "ordered_list"
-                items = []
-                for entry in entries:
-                    link = _dict((_list(entry.get("snippet_links")) or [None])[0])
-                    snippet = _str(entry.get("snippet")) or ""
-                    name = _str(link.get("text")) or re.split(r"\s+[—–-]\s+|:\s", snippet, maxsplit=1)[0]
-                    items.append(ListItem(name=name, url=_str(link.get("link"))))
+                items = [_ai_mode_item(entry) for entry in entries]
         else:
             lines.append(_str(block.get("snippet")) or "")
     return Answer(text="\n".join(line for line in lines if line), cited=cited, searched=bool(cited),
                   items=items, ranked=ranked)
+
+
+def _ai_mode_item(entry: dict) -> ListItem:
+    """One entry of AI Mode's list: its name and, when linked, its page.
+
+    An entry with sub-points carries them twice: nested under `list`, and joined
+    onto its own snippet after the name ("OptinMonster Targeting Depth: ..."). The
+    name is what comes before the first sub-point.
+    """
+    link = _dict((_list(entry.get("snippet_links")) or [None])[0])
+    snippet = _str(entry.get("snippet")) or ""
+    nested = [_str(_dict(sub).get("snippet")) for sub in _list(entry.get("list"))]
+    first = next((text for text in nested if text), None)
+    if first and first in snippet and snippet.index(first) > 0:
+        name = snippet[: snippet.index(first)].strip()
+    else:
+        name = _str(link.get("text")) or re.split(r"\s+[—–-]\s+|:\s", snippet, maxsplit=1)[0]
+    return ListItem(name=name, url=_str(link.get("link")))
 
 
 ADAPTERS = {"chatgpt": from_chatgpt, "gemini": from_gemini, "ai-mode": from_ai_mode}
@@ -310,6 +326,8 @@ _LINK = re.compile(r"\[([^\]]*)\]\(([^)\s]*)\)")
 _CITATION_MARKER = re.compile(r"\s*\((?:\s*\[[^\]]*\]\([^)\s]*\)\s*,?)+\s*\)")
 _EMPHASIS = re.compile(r"[*_`]+")
 _NUMBERED = re.compile(r"^\s*(?:#{1,6}\s*)?(?:\*\*)?\s*(\d{1,2})[.)]\s+(.*)$")
+# A top-level bullet. Indented bullets are sub-points of the one above.
+_BULLET = re.compile(r"^[*•-]\s+(.*)$")
 _REFUSAL = re.compile(
     r"\b(?:I can(?:not|'t|’t) (?:browse|help|assist|provide|answer)|"
     r"I(?:'m|’m| am) (?:unable|not able) to (?:help|assist|browse|provide|answer)|"
@@ -429,15 +447,24 @@ def read_brand(answer: Answer, engine: str, brand: str, site: str | None) -> dic
     }
 
 
-def _chat_items(text: str) -> list[tuple[int, ListItem]] | None:
-    """The numbered lines of a chat answer, or None when there are none or they restart."""
-    numbered = []
-    for line in _CITATION_MARKER.sub("", text).split("\n"):
-        match = _NUMBERED.match(line)
-        if match:
-            numbered.append((int(match.group(1)), match.group(2)))
-    if not numbered or any(number != index + 1 for index, (number, _) in enumerate(numbered)):
-        return None
+def _chat_items(text: str) -> tuple[list[tuple[int, ListItem]], bool] | None:
+    """The list in a chat answer and whether it is ranked, or None when there is none.
+
+    Numbered lines are a ranking, and numbering that restarts is unreadable rather
+    than read as "not named". Asked for a top ten, Gemini has answered with bullets
+    instead: that is a list in the order written, not a stated ranking.
+    """
+    lines = _CITATION_MARKER.sub("", text).split("\n")
+    numbered = [(int(m.group(1)), m.group(2)) for m in map(_NUMBERED.match, lines) if m]
+    if numbered:
+        if any(number != index + 1 for index, (number, _) in enumerate(numbered)):
+            return None
+        ranked = True
+    else:
+        numbered = [(index + 1, m.group(1)) for index, m in enumerate(m for m in map(_BULLET.match, lines) if m)]
+        if len(numbered) < 2:
+            return None
+        ranked = False
     items = []
     for number, line in numbered[:MAX_LISTED]:
         link = _LINK.search(line)
@@ -449,7 +476,7 @@ def _chat_items(text: str) -> list[tuple[int, ListItem]] | None:
         else:
             name, url = re.split(r"\s+[—–-]\s+|:\s", line, maxsplit=1)[0], None
         items.append((number, ListItem(name=_plain(name).strip(" .:*"), url=url)))
-    return items
+    return items, ranked
 
 
 def read_category(answer: Answer, brand: str, site: str | None) -> dict:
@@ -460,10 +487,10 @@ def read_category(answer: Answer, brand: str, site: str | None) -> dict:
     else:
         if _REFUSAL.search(answer.text) and not _NUMBERED.search(answer.text):
             return {"status": "failed", "reason": "refused"}
-        numbered = _chat_items(answer.text)
-        if numbered is None:
+        found_list = _chat_items(answer.text)
+        if found_list is None:
             return {"status": "failed", "reason": "unreadable answer"}
-        ranked = True
+        numbered, ranked = found_list
     terms = _name_terms(brand, site)
     listed, seen = [], set()
     for position, item in numbered:
@@ -482,7 +509,7 @@ def read_category(answer: Answer, brand: str, site: str | None) -> dict:
     listed_names = {item["name"] for item in listed}
     outside = "\n".join(
         line for line in answer.text.split("\n")
-        if not _NUMBERED.match(line) and _plain(line).strip() not in listed_names
+        if not _NUMBERED.match(line) and not _BULLET.match(line) and _plain(line).strip() not in listed_names
     )
     return {
         "status": "answered",
@@ -533,16 +560,16 @@ def _get(path: str, params: dict, timeout: float, allow_private: bool) -> http.F
 
 
 def _call(engine: Engine, question: str, token: str, allow_private: bool) -> Call:
-    """One question, retried once on a documented transient status."""
+    """One question, retried on a documented transient, uncharged status."""
     params = {"token": token, "q": question, **engine.params}
     started = time.monotonic()
-    for attempt in range(2):
+    for attempt in range(len(RETRY_DELAYS) + 1):
         result = _get(engine.path, params, engine.timeout, allow_private)
         elapsed = int((time.monotonic() - started) * 1000)
         if isinstance(result, str):
             return Call(None, None, None, None, elapsed, result)
-        if result.status in RETRYABLE and attempt == 0:
-            time.sleep(RETRY_AFTER)
+        if result.status in RETRYABLE and attempt < len(RETRY_DELAYS):
+            time.sleep(RETRY_DELAYS[attempt])
             continue
         remaining = _int_header(result.headers, "scrape.do-remaining-credits")
         if not result.ok:

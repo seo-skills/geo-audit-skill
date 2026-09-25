@@ -212,7 +212,7 @@ def test_every_identifier_a_skill_mentions_appears_in_a_real_envelope(site, geo_
     from tests.test_assistants import routes as scrapedo_routes
 
     monkeypatch.setattr(assistants, "BASE", serve(scrapedo_routes()).url)
-    monkeypatch.setattr(assistants, "RETRY_AFTER", 0.0)
+    monkeypatch.setattr(assistants, "RETRY_DELAYS", (0.0, 0.0))
     monkeypatch.setenv(assistants.TOKEN_ENV, "test-token")
 
     out = ["--json", "--quiet"]
