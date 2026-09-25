@@ -347,10 +347,11 @@ def _ai_mode_item(entry: dict) -> ListItem:
     nested = [_str(_dict(sub).get("snippet")) for sub in _list(entry.get("list"))]
     first = next((text for text in nested if text), None)
     if first and first in snippet and snippet.index(first) > 0:
-        name = snippet[: snippet.index(first)].strip()
+        name = snippet[: snippet.index(first)]
     else:
         name = _str(link.get("text")) or re.split(r"\s+[—–-]\s+|:\s", snippet, maxsplit=1)[0]
-    return ListItem(name=name, url=_str(link.get("link")))
+    # "OptinMonster: Pros: ..." leaves the name's own colon behind.
+    return ListItem(name=_plain(name).strip(" .:;*—–-"), url=_str(link.get("link")))
 
 
 ADAPTERS = {"chatgpt": from_chatgpt, "gemini": from_gemini, "ai-mode": from_ai_mode}

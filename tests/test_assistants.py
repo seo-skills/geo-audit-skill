@@ -250,6 +250,17 @@ def test_ai_mode_names_come_before_the_sub_points_joined_onto_them():
     assert got["named"] is True and got["ranked"] is False
 
 
+def test_an_ai_mode_name_does_not_keep_its_own_colon():
+    """A third live answer wrote each entry as "Name: Pros: ...", sub-points nested."""
+    payload = {"text_blocks": [{"type": "list", "list": [
+        {"snippet": "Northwind: Pros: fast. Cons: pricey.",
+         "list": [{"snippet": "Pros: fast."}, {"snippet": "Cons: pricey."}]},
+        {"snippet": "**Acme**: Pros: simple.", "list": [{"snippet": "Pros: simple."}]},
+    ]}], "references": []}
+    got = read_category(from_ai_mode(payload), "Acme", SITE)
+    assert [item["name"] for item in got["listed"]] == ["Northwind", "Acme"]
+
+
 def test_ai_mode_ranks_written_as_numbered_paragraphs_beat_pros_and_cons_lists():
     """A second live AI Mode answer ranked brands in paragraphs, each with a pros/cons list."""
     pros_cons = {"type": "list", "list": [{"snippet": "Pros: flexible."}, {"snippet": "Cons: pricey."}]}
