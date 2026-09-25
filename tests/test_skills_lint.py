@@ -188,7 +188,7 @@ def skill_identifiers() -> dict[str, set[str]]:
     return found
 
 
-def test_every_identifier_a_skill_mentions_appears_in_a_real_envelope(site, geo_home, monkeypatch):
+def test_every_identifier_a_skill_mentions_appears_in_a_real_envelope(site, geo_home, monkeypatch, serve):
     """The lint's offline key list must not be fiction.
 
     The lint is a fast approximation so it can run without a network. This
@@ -206,6 +206,14 @@ def test_every_identifier_a_skill_mentions_appears_in_a_real_envelope(site, geo_
     monkeypatch.setenv("GEO_YOUTUBE_API_KEY", "test-key")
     stub = serve_stub(site)
     monkeypatch.setattr(scan_cmd, "_platforms", lambda: stub)
+    # scrape.do stubbed locally, so the brand scan that asks assistants emits
+    # every key an answer carries.
+    from geo_audit import assistants
+    from tests.test_assistants import routes as scrapedo_routes
+
+    monkeypatch.setattr(assistants, "BASE", serve(scrapedo_routes()).url)
+    monkeypatch.setattr(assistants, "RETRY_DELAYS", (0.0, 0.0))
+    monkeypatch.setenv(assistants.TOKEN_ENV, "test-token")
 
     out = ["--json", "--quiet"]
     crawl = ["--allow-private", "--rate", "50", "--max-pages", "10"]
@@ -218,6 +226,7 @@ def test_every_identifier_a_skill_mentions_appears_in_a_real_envelope(site, geo_
         ["validate", f"{site.url}/schema-none.html", "--suggest", *page],
         ["llmstxt", f"{site.url}/hub.html", "--generate", *crawl],
         ["scan", "Acme", "--allow-private"],
+        ["scan", "Acme", "--allow-private", "--assistants", "all"],
         ["prune", "--dry-run"],
         ["doctor"],
     ]

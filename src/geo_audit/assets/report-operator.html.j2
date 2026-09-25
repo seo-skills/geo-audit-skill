@@ -21,6 +21,17 @@
     </tbody>
   </table>
 
+  {%- if operator.assistants %}
+  <h3>AI assistants</h3>
+  {% if operator.assistants.asked %}
+  <p>Asked {{ operator.assistants.requested | join(', ') }} on the scrape.do key in the environment{% if operator.assistants.credits_used is not none %}:
+     {{ operator.assistants.credits_used }} credits used{% endif %}{% if operator.assistants.credits_remaining is not none %},
+     {{ operator.assistants.credits_remaining }} left on the account{% endif %}.</p>
+  {% else %}
+  <p>Requested ({{ operator.assistants.requested | join(', ') }}) but not asked: {{ operator.assistants.reason }}.</p>
+  {% endif %}
+  {%- endif %}
+
   {% if operator.crawl_limits %}
   <h3>Crawl settings</h3>
   <p>{{ operator.crawl_limits.get('requests_per_second') }} request/s across

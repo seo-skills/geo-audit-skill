@@ -16,7 +16,7 @@ from __future__ import annotations
 from collections import Counter
 from dataclasses import dataclass, field, fields
 
-from geo_audit import data
+from geo_audit import assistants, data
 from geo_audit._version import PRODUCT_NAME
 from geo_audit.copy import CAPPED
 from geo_audit.lib.crawl import urls_found
@@ -120,6 +120,8 @@ class ClientContext:
     top_fixes: list[Fix] = field(default_factory=list)
     by_category: dict[str, list[Fix]] = field(default_factory=dict)
     advisory: list[dict] = field(default_factory=list)
+    # What AI assistants answered when asked about the brand: observed, never scored.
+    assistants: dict | None = None
     # Set when the findings were ordered for a kind of site. The scores never are.
     ordered_for: str | None = None
     strengths: list[dict] = field(default_factory=list)
@@ -158,6 +160,9 @@ class OperatorContext:
     brand_warnings: list[str] = field(default_factory=list)
     contrast: list[dict] = field(default_factory=list)
     completeness: dict = field(default_factory=dict)
+    # The user's own scrape.do account: what the assistant answers cost, and why
+    # none were asked. Account details, so never in the client copy.
+    assistants: dict | None = None
 
 
 def ordered_findings(findings: list[dict], site_kind: str | None) -> list[dict]:
@@ -330,6 +335,61 @@ def _plan(fixes: list[Fix]) -> list[dict]:
     ]
 
 
+def _assistants(envelope: dict) -> dict | None:
+    """Each engine's two answers, in the sentences the terminal uses.
+
+    Absent when nothing was asked: a report does not advertise a check the run
+    did not make. Only what the engines said reaches the client copy; the key's
+    account details are the operator's.
+    """
+    block = (envelope.get("scan") or {}).get("assistants")
+    if not block or not block.get("asked"):
+        return None
+    brand = block.get("brand") or "the brand"
+    engines = []
+    for entry in block.get("engines") or []:
+        first = entry.get("brand_question") or {}
+        second = entry.get("category_question") or {}
+        about, ranking = assistants.describe(entry, brand)
+        engines.append({
+            "label": entry.get("label"),
+            "model": entry.get("model"),
+            "about": about,
+            "ranking": ranking,
+            "said": first.get("offers") or first.get("description"),
+            "competitors": first.get("competitors") or [],
+            "listed": second.get("listed") or [],
+            "ranked": second.get("ranked", True),
+            "cited": second.get("cited") or first.get("cited") or [],
+            "questions": [q for q in (first.get("question"), second.get("question")) if q],
+        })
+    observed = next(
+        (e.get("brand_question", {}).get("observed_at") for e in block.get("engines") or []
+         if (e.get("brand_question") or {}).get("observed_at")),
+        None,
+    )
+    return {
+        "brand": brand,
+        "category": block.get("category"),
+        "observed_on": (observed or "")[:10] or None,
+        "provider": block.get("provider"),
+        "engines": engines,
+    }
+
+
+def _assistant_account(envelope: dict) -> dict | None:
+    block = (envelope.get("scan") or {}).get("assistants")
+    if not block:
+        return None
+    return {
+        "asked": bool(block.get("asked")),
+        "reason": block.get("reason"),
+        "requested": block.get("requested") or [],
+        "credits_used": block.get("credits_used"),
+        "credits_remaining": block.get("credits_remaining"),
+    }
+
+
 def _crawlers(envelope: dict) -> list[dict]:
     """Who can reach the site, and what each refusal costs.
 
@@ -498,6 +558,7 @@ def build(
         ),
         plan=_plan(fixes),
         crawlers=_crawlers(envelope),
+        assistants=_assistants(envelope),
         category_detail=_category_detail(envelope, categories),
         pages_analysed=_pages_analysed(envelope, fixes),
         glossary=[{"term": term, "meaning": meaning} for term, meaning in GLOSSARY],
@@ -557,5 +618,6 @@ def build(
         brand_warnings=brand.warnings,
         contrast=brand.contrast_report(),
         completeness=completeness,
+        assistants=_assistant_account(envelope),
     )
     return client, operator

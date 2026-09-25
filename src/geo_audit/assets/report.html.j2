@@ -226,6 +226,35 @@
   </section>
   {% endif %}
 
+  {#- observed answers from AI assistants: third-party output, excluded from every number #}
+  {%- if client.assistants %}
+  <section class="advisory assistants">
+    <span class="label">Observed — AI assistants' answers, not scored</span>
+    <h2>What AI assistants say about {{ client.assistants.brand }}</h2>
+    <p>Each engine was asked two questions once{% if client.assistants.observed_on %}, on {{ client.assistants.observed_on }}{% endif %},
+       through {{ client.assistants.provider }} from a US English session: what {{ client.assistants.brand }} is, and
+       {% if client.assistants.category %}the best {{ client.assistants.category }} brands{% else %}the best brands in its category{% endif %}.
+       One answer each: asked again, an engine can answer differently. Nothing here contributes to any score above.</p>
+    {% for engine in client.assistants.engines %}
+    <h3>{{ engine.label }}{% if engine.model %} <span class="chip">{{ engine.model }}</span>{% endif %}</h3>
+    <p>{{ engine.label }} {{ engine.about }} {{ engine.label }} {{ engine.ranking }}</p>
+    {% if engine.said %}<blockquote>{{ engine.said }}</blockquote>{% endif %}
+    {% if engine.competitors %}<p class="pages">Competitors it named: {{ engine.competitors | join(', ') }}</p>{% endif %}
+    {% if engine.listed %}
+    {% if engine.ranked %}<ol>{% else %}<ul>{% endif %}
+      {% for item in engine.listed %}<li>{% if item.own %}<strong>{{ item.name }}</strong> (this site){% else %}{{ item.name }}{% endif %}</li>{% endfor %}
+    {% if engine.ranked %}</ol>{% else %}</ul>{% endif %}
+    {% endif %}
+    {% if engine.cited %}
+    <p class="pages">Pages it relied on: {% for page in engine.cited %}<span class="path">{{ page.url }}{% if page.own %} (this site){% endif %}</span>{% endfor %}</p>
+    {% endif %}
+    {% if engine.questions %}
+    <p class="pages">Asked: {% for question in engine.questions %}&ldquo;{{ question }}&rdquo;{{ ', then ' if not loop.last }}{% endfor %}</p>
+    {% endif %}
+    {% endfor %}
+  </section>
+  {%- endif %}
+
   {# 4 — advisory, visually distinct and excluded from every number #}
   {% if client.advisory %}
   <section class="advisory">

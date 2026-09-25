@@ -7,6 +7,51 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Ask AI assistants about a brand, on your own scrape.do key.** `geo scan <brand>
+  --assistants all` and `geo audit <url> --brand <name> --assistants all` ask ChatGPT,
+  Gemini and Google AI Mode two questions each through scrape.do: what the brand is,
+  and the best brands in its category. Each engine's answer is recorded under
+  `scan.assistants`: whether it recognizes the brand and how it describes it, whether it
+  names the brand for its category and at what position, whom it names instead, and the
+  pages it relied on, own or third-party. The key is read only from
+  `GEO_SCRAPEDO_TOKEN`, never a flag, and appears nowhere in the output, the record or
+  an error; a free `/info` call checks it first, so a rejected key or an account without
+  the credits asks nothing. A run costs up to 120 credits with all three engines. The
+  answers are one sampled output each and are never scored: the composite, completeness
+  and `compare` do not change, and `--rescore` replays them from the record without
+  asking again, carrying the rest of the recorded brand scan with it. PRD §3.10.1.
+- **The report shows what the assistants said.** `geo report` on an audit with answers
+  adds "What AI assistants say about <brand>", beside the advisory section and marked the
+  same way as not scored: per engine, how it describes the brand, where it listed the
+  brand or whom it named instead, its list, the pages it relied on and the exact
+  questions. The operator copy adds the credits the run used and what the account has
+  left, or why nothing was asked; the client copy carries neither.
+- **The brand, audit and report skills know the option.** The brand skill loads a new
+  section on demand with the cost per engine, how to read `scan.assistants`, and how to
+  talk about one sampled answer (never a percentage, never a score); it tells the model
+  never to ask for the key in the conversation. The troubleshooting page lists why
+  assistants can go unasked.
+- **Readers checked against a live run on popupsmart.com** (25 September 2026). Gemini
+  answered "the top 10" with bullets, which is now read as a list in the order written,
+  without positions; AI Mode joins each entry's sub-points onto its name, which is now
+  cut at the first sub-point; and Gemini's transient 502 ("no warm session"), which
+  came back twice in a row, is retried twice with longer waits. ChatGPT accepted the
+  documented `q` parameter. A second run showed AI Mode laying the same kind of answer
+  out differently: brands as numbered paragraphs, each followed by a pros-and-cons
+  list, where the first run had them as bullets followed by numbered follow-up
+  questions. The reader now weighs every list in the answer, sets aside lists of
+  questions and of labels such as "Pros", and takes a ranked list first. A fourth run
+  had no brand list at all, only advice headings, with the brands named in a sentence:
+  a list is now accepted only when at least half its entries are brands the chat
+  engines named (or linked), and otherwise the brands AI Mode names in its prose are
+  read in the order written. Nothing readable is "no list of brands", never "not named".
+  A fifth run had ChatGPT answer the three lines in order but without their labels, which
+  read as unreadable and let the category fall to Gemini's broader one; three lines of
+  that exact shape are now read by position. ChatGPT's entity links, which sometimes
+  arrive flattened to `urlName https://...`, are read as links again.
+
 ### Fixed
 
 - **A site that was never reached is an error, not a score of zero.** When the start URL

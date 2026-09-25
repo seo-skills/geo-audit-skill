@@ -111,7 +111,7 @@ usage: geo audit [-h] [--json] [--out PATH] [--config PATH] [--no-input]
                  [--timeout SECONDS] [--max-bytes BYTES] [--no-robots]
                  [--max-pages N] [--rate PER_SECOND] [--concurrency N]
                  [--no-sitemap] [--only CATEGORY[,CATEGORY]] [--brand NAME]
-                 [--rescore RUN_ID]
+                 [--assistants ENGINES] [--rescore RUN_ID]
                  url
 
 Crawl a site and score citability, technical and schema over every page. The
@@ -148,6 +148,10 @@ options:
                         schema, content, platform, brand)
   --brand NAME          also score brand presence for this name, folding it
                         into the composite
+  --assistants ENGINES  with --brand, also ask AI assistants about the brand
+                        through your scrape.do key ($GEO_SCRAPEDO_TOKEN): all,
+                        or a list of chatgpt, gemini, ai-mode. Recorded, never
+                        scored; costs your scrape.do credits
   --rescore RUN_ID      recompute from a recorded audit instead of crawling;
                         no network is used
 ```
@@ -302,7 +306,7 @@ Query Wikipedia, Wikidata, Reddit and YouTube for a brand name through their doc
 ```
 usage: geo scan [-h] [--json] [--out PATH] [--config PATH] [--no-input]
                 [--quiet] [--verbose] [--allow-private] [--fail-on-partial]
-                [--site URL] [--timeout SECONDS]
+                [--site URL] [--timeout SECONDS] [--assistants ENGINES]
                 brand
 
 Query Wikipedia, Wikidata, Reddit and YouTube for a brand name through their
@@ -310,22 +314,27 @@ documented public APIs. Platforms with no usable API are listed as manual
 checks and never reported as results.
 
 positional arguments:
-  brand              the brand name to look for
+  brand                 the brand name to look for
 
 options:
-  -h, --help         show this help message and exit
-  --json             force JSON output
-  --out PATH         write this command's primary artifact here (the JSON
-                     envelope, or the HTML file for `report`)
-  --config PATH      JSON file of default flag values
-  --no-input         never prompt (reserved: this release never prompts)
-  --quiet            suppress progress on stderr
-  --verbose          more progress on stderr: a line per page while crawling
-  --allow-private    permit a private, loopback or link-local start URL
-  --fail-on-partial  exit 5 when the result is PARTIAL
-  --site URL         also read this site's Organization sameAs links and
-                     compare them
+  -h, --help            show this help message and exit
+  --json                force JSON output
+  --out PATH            write this command's primary artifact here (the JSON
+                        envelope, or the HTML file for `report`)
+  --config PATH         JSON file of default flag values
+  --no-input            never prompt (reserved: this release never prompts)
+  --quiet               suppress progress on stderr
+  --verbose             more progress on stderr: a line per page while
+                        crawling
+  --allow-private       permit a private, loopback or link-local start URL
+  --fail-on-partial     exit 5 when the result is PARTIAL
+  --site URL            also read this site's Organization sameAs links and
+                        compare them
   --timeout SECONDS
+  --assistants ENGINES  also ask AI assistants about the brand through your
+                        scrape.do key ($GEO_SCRAPEDO_TOKEN): all, or a list of
+                        chatgpt, gemini, ai-mode. Recorded, never scored;
+                        costs your scrape.do credits
 ```
 
 ## `geo report`
