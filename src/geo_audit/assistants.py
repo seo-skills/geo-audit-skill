@@ -896,7 +896,7 @@ def describe(entry: dict, brand: str) -> tuple[str, str]:
     elif status == "failed":
         ranking = f"gave no usable answer to the category question: {_in_words(second.get('reason'))}."
     elif status == "empty":
-        ranking = "showed no AI Mode answer for the category question."
+        ranking = "showed no answer for the category question."
     elif second.get("named"):
         listed = len(second.get("listed") or [])
         ranking = (f"named {brand} {_ordinal(second['position'])} of {listed}." if second.get("position")

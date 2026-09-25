@@ -33,3 +33,12 @@ def test_a_failure_is_said_in_words(code, words):
     _, ranking = describe(_failed(second=code), "Acme")
     assert ranking == f"gave no usable answer to the category question: {words}."
     assert code not in about + ranking or code in ("refused",)
+
+
+def test_an_empty_answer_does_not_repeat_the_engine_name():
+    """The label comes first: "Google AI Mode showed no AI Mode answer" said it twice."""
+    entry = {"brand_question": {"status": "empty"}, "category_question": {"status": "empty"}}
+    assert describe(entry, "Acme") == (
+        "showed no answer about Acme.",
+        "showed no answer for the category question.",
+    )

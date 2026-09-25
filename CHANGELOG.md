@@ -57,6 +57,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **A failed assistant answer is said in words.** The report and the terminal read "Gemini
   did not answer the question about Acme (HTTP 502)"; they now read "Gemini gave no
   usable answer about Acme: the service was unavailable". The envelope keeps the code.
+- **"Google AI Mode showed no AI Mode answer"** now reads "Google AI Mode showed no answer
+  for the category question".
 
 - **An empty `--assistants` value is refused.** `--assistants "$ENGINES"` with the variable
   unset asked nothing and said nothing; it is now a `GEO_E_BAD_ARGS` usage error that
