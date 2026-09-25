@@ -54,6 +54,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **A platform's API key stays out of a scan's error reasons.** `geo scan` copied the
+  fetch error into `scan.platforms[].reason`, and some fetch errors name the full URL:
+  a redirect loop at YouTube printed `GEO_YOUTUBE_API_KEY` in the envelope, and
+  `geo audit --brand` recorded it in `audits.jsonl`. The key is now replaced with
+  `[key]`, raw or URL-encoded.
+
 - **A site that was never reached is an error, not a score of zero.** When the start URL
   failed below HTTP - no DNS answer, a refused connection, a private address without
   `--allow-private` - the crawl filed it as one failed page among none, and `geo audit`
