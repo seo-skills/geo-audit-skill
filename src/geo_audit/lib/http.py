@@ -56,6 +56,10 @@ KEEP_HEADERS = (
     "server",
     "location",
     "vary",
+    # scrape.do's own accounting on each answer: what the call cost and what the
+    # user's account has left. A page never sends these.
+    "scrape.do-request-cost",
+    "scrape.do-remaining-credits",
 )
 
 

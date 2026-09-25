@@ -17,7 +17,8 @@ import json
 import os
 from urllib.parse import quote_plus
 
-from geo_audit import data, envelope
+from geo_audit import assistants, data, envelope
+from geo_audit import copy as copytext
 from geo_audit.errors import GeoError
 from geo_audit.lib import http
 from geo_audit.lib.extract import excerpt
@@ -254,10 +255,24 @@ def _same_as_for(url: str, allow_private: bool, timeout: float) -> list[str] | N
     return []
 
 
+def announcer(args, brand: str):
+    """The progress line an ask prints on stderr, or None under --quiet."""
+    if getattr(args, "quiet", False):
+        return None
+
+    def say(engines: str, credits: int) -> None:
+        import sys
+
+        print(copytext.ASKING_ASSISTANTS.format(engines=engines, brand=brand, credits=credits), file=sys.stderr)
+
+    return say
+
+
 def run(args, run_id: str) -> dict:
     brand = args.brand.strip()
     if not brand:
         raise GeoError("GEO_E_BAD_ARGS", "Give a brand name to scan, for example `geo scan Acme`.")
+    requested = assistants.parse_engines(args.assistants) if getattr(args, "assistants", None) else []
 
     results = {
         name: check(name, brand, spec, allow_private=args.allow_private)
@@ -275,6 +290,13 @@ def run(args, run_id: str) -> dict:
 
     checked = [entry for entry in results.values() if entry["checked"]]
     total_results = sum(entry.get("results", 0) for entry in checked)
+    # Observed, never scored: nothing below feeds `signals`.
+    asked = (
+        {"assistants": assistants.ask(brand, getattr(args, "site", None), requested,
+                                      allow_private=args.allow_private, say=announcer(args, brand))}
+        if requested
+        else {}
+    )
 
     return envelope.build(
         "scan",
@@ -299,6 +321,7 @@ def run(args, run_id: str) -> dict:
                 "total_results": total_results,
                 "manual_checks": data.load("brand_platforms")["manual"],
                 "same_as": same_as,
+                **asked,
             }
         },
     )

@@ -13,7 +13,7 @@ differ, because the site changed. Rescoring a snapshot twice cannot.
 from __future__ import annotations
 
 from geo_audit import copy as copytext
-from geo_audit import data, envelope, state
+from geo_audit import assistants, data, envelope, state
 from geo_audit.commands import crawl as crawl_cmd
 from geo_audit.commands.common import Options, Page, _check_finding, classify
 from geo_audit.errors import GeoError
@@ -179,11 +179,18 @@ def _score_page(page, robots, categories: tuple[str, ...], site_facts: dict | No
 
 def run(args, run_id: str) -> dict:
     if getattr(args, "rescore", None):
+        if getattr(args, "assistants", None):
+            raise GeoError(
+                "GEO_E_BAD_ARGS",
+                "--rescore uses no network, so it cannot ask assistants; the answers "
+                "an audit recorded are replayed from it.",
+            )
         return rescore(args, run_id)
 
     state.init()
     available = candidates(args)
     categories = parse_only(args.only, available)
+    requested = _assistants_requested(args, categories)
     options = crawl_cmd.options_from(args)
 
     result = crawl_cmd.crawl_reporting(args, options, step=2, steps=4)
@@ -230,6 +237,11 @@ def run(args, run_id: str) -> dict:
                 "same_as": same_as,
             }
         }
+        if requested:
+            extra["scan"]["assistants"] = assistants.ask(
+                args.brand, args.url, requested, allow_private=args.allow_private,
+                say=scan_cmd.announcer(args, args.brand),
+            )
 
     _step(args, 4, "Recording the audit")
     return _assemble(
@@ -249,6 +261,20 @@ def run(args, run_id: str) -> dict:
         extra=extra,
         snapshot=snapshot,
     )
+
+
+def _assistants_requested(args, categories: tuple[str, ...]) -> list[str]:
+    """The engines --assistants names, checked before anything is fetched."""
+    value = getattr(args, "assistants", None)
+    if not value:
+        return []
+    if "brand" not in categories:
+        raise GeoError(
+            "GEO_E_BAD_ARGS",
+            "--assistants asks about a brand, so it needs --brand <name> and the "
+            "brand category in the run.",
+        )
+    return assistants.parse_engines(value)
 
 
 def _step(args, step: int, action: str) -> None:
@@ -611,7 +637,9 @@ def rescore(args, run_id: str) -> dict:
         record=False,
         available=categories,
         advisory=stored_advisory,
-        extra={"rescore": rescore_block},
+        # Brand observations, assistant answers among them, are replayed as they
+        # were recorded: a rescore never asks again.
+        extra={"rescore": rescore_block, **({"scan": record["scan"]} if record.get("scan") else {})},
     )
 
 

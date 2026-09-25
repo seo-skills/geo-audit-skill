@@ -7,6 +7,22 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Ask AI assistants about a brand, on your own scrape.do key.** `geo scan <brand>
+  --assistants all` and `geo audit <url> --brand <name> --assistants all` ask ChatGPT,
+  Gemini and Google AI Mode two questions each through scrape.do: what the brand is,
+  and the best brands in its category. Each engine's answer is recorded under
+  `scan.assistants`: whether it recognizes the brand and how it describes it, whether it
+  names the brand for its category and at what position, whom it names instead, and the
+  pages it relied on, own or third-party. The key is read only from
+  `GEO_SCRAPEDO_TOKEN`, never a flag, and appears nowhere in the output, the record or
+  an error; a free `/info` call checks it first, so a rejected key or an account without
+  the credits asks nothing. A run costs up to 120 credits with all three engines. The
+  answers are one sampled output each and are never scored: the composite, completeness
+  and `compare` do not change, and `--rescore` replays them from the record without
+  asking again, carrying the rest of the recorded brand scan with it. PRD §3.10.1.
+
 ### Fixed
 
 - **A site that was never reached is an error, not a score of zero.** When the start URL

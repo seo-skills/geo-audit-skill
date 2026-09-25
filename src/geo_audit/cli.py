@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import TextIO
 
 from geo_audit import envelope as envelope_mod
-from geo_audit import render, state
+from geo_audit import assistants, render, state
 from geo_audit.scoring.model import site_kinds
 from geo_audit._version import (
     CLI_VERSION,
@@ -155,6 +155,16 @@ def _global_flags() -> argparse.ArgumentParser:
     return parent
 
 
+def _assistants_flag(parser: argparse.ArgumentParser, lead: str) -> None:
+    parser.add_argument(
+        "--assistants",
+        metavar="ENGINES",
+        help=f"{lead}ask AI assistants about the brand through your scrape.do key "
+        f"(${assistants.TOKEN_ENV}): all, or a list of {', '.join(assistants.ENGINES)}. "
+        "Recorded, never scored; costs your scrape.do credits",
+    )
+
+
 def _page_flags(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("url", help="an absolute http:// or https:// URL")
     parser.add_argument("--timeout", type=float, metavar="SECONDS")
@@ -243,6 +253,7 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="NAME",
         help="also score brand presence for this name, folding it into the composite",
     )
+    _assistants_flag(audit, "with --brand, also ")
     audit.add_argument(
         "--rescore",
         metavar="RUN_ID",
@@ -321,6 +332,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="also read this site's Organization sameAs links and compare them",
     )
     scan.add_argument("--timeout", type=float, metavar="SECONDS")
+    _assistants_flag(scan, "also ")
 
     report = subparsers.add_parser(
         "report",

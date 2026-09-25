@@ -11,6 +11,10 @@ from __future__ import annotations
 
 # 1 — loading (stderr only)
 PROGRESS = "[{step}/{total}] {action}"
+ASKING_ASSISTANTS = (
+    "Asking {engines} about \u201c{brand}\u201d: up to {credits} credits from your "
+    "scrape.do account, usually under a minute."
+)
 CRAWL_EXPECTATION = (
     "Running the audit. It crawls up to 50 pages at one request per second, "
     "so expect a few minutes."

@@ -13,6 +13,7 @@ import os
 import sys
 from typing import TextIO
 
+from geo_audit import assistants
 from geo_audit import copy as copytext
 from geo_audit._version import DIST_NAME
 from geo_audit.lib.crawl import urls_found
@@ -295,6 +296,7 @@ def _render_audit(envelope: dict, out: TextIO, style: Style) -> None:
             print(f"  {name:<{width}}  {value:>3}/100  {style.dim(label.strip())}", file=out)
 
     _render_findings(envelope, out, style, limit=5)
+    _render_assistants((envelope.get("scan") or {}).get("assistants"), out, style)
 
     print(file=out)
     print(
@@ -706,6 +708,7 @@ def _render_scan(envelope: dict, out: TextIO, style: Style) -> None:
             print(f"  {entry['label']}: {entry['how']}", file=out)
             print(style.dim(f"     ({entry['why']})"), file=out)
 
+    _render_assistants(block.get("assistants"), out, style)
     _render_findings(envelope, out, style)
     print(file=out)
     completeness = envelope.get("completeness") or {}
@@ -726,6 +729,35 @@ def _render_scan(envelope: dict, out: TextIO, style: Style) -> None:
         else f"geo scan \"{block.get('brand')}\" --site https://example.com"
     )
     print(copytext.NEXT_COMMAND.format(command=command), file=out)
+
+
+def _render_assistants(block: dict | None, out: TextIO, style: Style) -> None:
+    """What each engine said, under a heading that says it is not a score."""
+    if not block:
+        return
+    print(file=out)
+    print(style.bold("AI assistants - observed answers, never scored"), file=out)
+    if not block.get("asked"):
+        print(f"  [skip] not asked: {block.get('reason')}", file=out)
+        return
+    engines = block.get("engines") or []
+    width = max((len(entry["label"]) for entry in engines), default=0)
+    for entry in engines:
+        about, ranking = assistants.describe(entry, block.get("brand") or "the brand")
+        print(f"  {entry['label']:<{width}}  {about}", file=out)
+        print(f"  {'':<{width}}  {ranking}", file=out)
+    spent = block.get("credits_used")
+    left = block.get("credits_remaining")
+    costs = (f"; {spent} credits used" if spent is not None else "") + (
+        f", {left} left" if left is not None else ""
+    )
+    print(
+        style.dim(
+            f"  Asked through {block.get('provider')} in {block.get('locale')}{costs}. "
+            "One answer from each engine: it can differ when asked again."
+        ),
+        file=out,
+    )
 
 
 def _render_prune(envelope: dict, out: TextIO, style: Style) -> None:

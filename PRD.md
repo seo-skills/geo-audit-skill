@@ -291,6 +291,17 @@ Golden tests assert each string exists.
 
 Wikipedia and Wikidata: real API checks. Reddit: public search JSON. YouTube: Data API when a key is configured, otherwise reported as *not checked*. LinkedIn: no API, so it appears in a separate **manual checks** section and is never emitted as a result. Per-platform failures (429, outage) are per-platform error entries, not a command failure. All are `live`-class signals with `observed_at`.
 
+### 3.10.1 AI assistant answers on the user's own key (amended 2026-09-25)
+
+The maintainer moved one slice of the §8 "live AI-citation measurement" item into scope on 2026-09-25: asking AI assistants about a brand, paid for by a scrape.do key the user supplies. It is an option, never on by default.
+
+- **Engines.** The three AI answer endpoints scrape.do documents (read 2026-09-25): ChatGPT (`/plugin/chatgpt/chat`, 25 credits), Gemini (`/plugin/gemini/chat`, 25) and Google AI Mode (`/plugin/google/search/ai-mode`, 10, an empty answer is free). scrape.do lists none for Perplexity, Copilot or Claude; each later endpoint is one adapter.
+- **Surface.** `geo scan <brand> --assistants ENGINES` and `geo audit <url> --brand <name> --assistants ENGINES`, where ENGINES is `all` or a comma list of `chatgpt`, `gemini`, `ai-mode`. `geo report` shows the recorded answers in their own section.
+- **The key.** Read only from `GEO_SCRAPEDO_TOKEN`, like `GEO_YOUTUBE_API_KEY`: never a flag (shell history), never written to the envelope, the audit record, the page store or an error message. scrape.do takes it in the query string, so no vendor URL is ever recorded, and a transport error is reported by its code alone. One free `/info` call checks it first; a rejected key, an inactive account or too few credits asks nothing.
+- **Two questions per engine**, in English from a US locale: what the brand is (category, offer, five competitors) and the best brands in that category, top ten. The category comes from ChatGPT's first answer, else Gemini's; AI Mode never supplies one. The page-controlled brand name is sanitized and falls back to the domain label when it reads as an instruction.
+- **Not scored.** The answers are one sampled output of a non-deterministic model: recorded as observed under `scan.assistants`, never signals, never findings, never in the composite, completeness or `compare`. This keeps G1 and the rule that no score depends on model output. `--rescore` replays them from the record with no network.
+- **Output boundary.** Every string from an answer is third-party text, capped and escaped like `examples`; the full answer text is not kept.
+
 ### 3.11 Agency kit — M4, gated (D3)
 
 `geo crm` (rich dashboard in TTY mode, JSON otherwise), `geo serve` (Flask + HTMX, kept), `geo:proposal`, and:
@@ -379,7 +390,7 @@ Not built: multi-host generation · cross-machine sync · dual-voice external re
 
 ## 8. Deferred
 
-Live AI-citation measurement across engines (the strongest candidate for post-1.0; needs the CLI core first) · JS-rendered crawling at scale · longitudinal trend reports beyond `compare` · i18n · hosted version of `geo serve` · scorer plugin ecosystem · a `DESIGN.md` / design-consultation pass on the report.
+Live AI-citation measurement across engines beyond §3.10.1 (repeated sampling, answer share, scheduled tracking) · JS-rendered crawling at scale · longitudinal trend reports beyond `compare` · i18n · hosted version of `geo serve` · scorer plugin ecosystem · a `DESIGN.md` / design-consultation pass on the report.
 
 ---
 
