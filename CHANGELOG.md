@@ -54,6 +54,14 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **The profile-links finding says what is missing.** `brand.consistency` scores half when
+  a site's Organization `sameAs` lists profiles but none is a Wikipedia or Wikidata
+  entry, and the finding still read "The site does not link itself to the profiles that
+  identify it: add the profiles found here". popupsmart.com lists sixteen. It now says
+  the site's `sameAs` links no Wikipedia or Wikidata entry, which follows independent
+  coverage, and the brand skill says the same. The wording is changed in code, so
+  `data_version` and comparisons are unaffected.
+
 - **A request that times out is reported as a timeout, and sent once.** The HTTP session
   retries once for a pooled connection the server dropped, and urllib3 counts a read
   timeout as one of those, so every slow response was requested a second time: a slow

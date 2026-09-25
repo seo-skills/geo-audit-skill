@@ -148,6 +148,25 @@ def check(name: str, brand: str, spec: dict, allow_private: bool = False) -> dic
     }
 
 
+def brand_findings(signals: list[Signal], page: str) -> list:
+    """The findings for brand signals, with `brand.consistency` worded for what is missing.
+
+    Its wording in `data/findings.json` is for a site that links no profiles; a
+    site that lists them and scores half is missing only the encyclopedic link,
+    and "add the profiles found here" would tell it to do what it has done.
+    """
+    findings = findings_for(signals, page)
+    detail = next((s.detail for s in signals if s.id == "brand.consistency"), {})
+    count = detail.get("same_as_count") or 0
+    for finding in findings:
+        if finding.id == "brand.consistency" and count:
+            finding.title = copytext.BRAND_CONSISTENCY_LINKED_TITLE
+            finding.remediation = copytext.BRAND_CONSISTENCY_LINKED_REMEDIATION.format(
+                count=count, s="" if count == 1 else "s"
+            )
+    return findings
+
+
 def _signal(signal_id: str, value: float | None, detail: dict, spec: dict) -> Signal:
     meta = spec[signal_id]
     return Signal(
@@ -299,7 +318,7 @@ def run(args, run_id: str) -> dict:
     signals = build_signals(results, same_as)
     score, completeness = composite(signals)
     tier = data.tier_for(score)
-    findings = prioritize(findings_for(signals, args.site or brand))
+    findings = prioritize(brand_findings(signals, args.site or brand))
 
     checked = [entry for entry in results.values() if entry["checked"]]
     total_results = sum(entry.get("results", 0) for entry in checked)
