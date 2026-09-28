@@ -162,16 +162,19 @@ def sanitize_brand(name: str, site: str | None) -> str:
 def sanitize_category(raw: str, brand: str, site: str | None) -> str | None:
     """The category for the unbranded question, or None when nothing usable is left.
 
-    The brand's own words are removed so the question stays unbranded; two to six
-    words, 60 characters, lowercased except acronyms.
+    The brand is removed so the question stays unbranded, as a whole name and not
+    word by word: a descriptive brand is made of its category's words, and
+    removing "QR", "Code" and "Dynamic" one at a time left "Dynamic QR code
+    generator" as "generator". Two to six words, 60 characters, lowercased except
+    acronyms.
     """
-    own = {word for word in re.split(r"[\W_]+", brand.lower()) if len(word) > 1}
-    if site:
-        own.add(domain_label(site))
+    text = raw
+    for name in filter(None, (brand.strip(), domain_label(site) if site else None)):
+        text = re.sub(rf"(?<![^\W_]){re.escape(name)}(?![^\W_])", " ", text, flags=re.IGNORECASE)
     words = [
         word if re.fullmatch(r"[A-Z]{2,}", word) else word.lower()
-        for word in re.sub(r"[^\w &/+-]|_", " ", raw).split()
-        if (word == "&" or re.search(r"[^\W_]", word)) and word.lower() not in own
+        for word in re.sub(r"[^\w &/+-]|_", " ", text).split()
+        if word == "&" or re.search(r"[^\W_]", word)
     ][:6]
     while len(" ".join(words)) > 60:
         words.pop()

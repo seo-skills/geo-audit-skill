@@ -7,6 +7,15 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **A descriptive brand keeps its category question.** The assistants' category was
+  made unbranded by removing each word of the brand name, so a brand named for what it
+  does lost its category: for "QR Code Dynamic", ChatGPT's "Dynamic QR code generator"
+  became "generator" and Gemini's became "generator software", and every engine was
+  asked for the best generator software brands. The brand is now removed as a whole
+  name, so the question asks for the best dynamic QR code generator brands.
+
 ## [1.2.0] - 2026-09-25
 
 ### Added
