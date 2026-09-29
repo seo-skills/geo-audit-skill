@@ -7,6 +7,19 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **All nine skills install through skills.sh.** Six skill descriptions held an
+  unquoted ": ", which Claude Code reads as text and strict YAML reads as a nested
+  mapping, so `npx skills add seo-skills/geo-audit-skill` found three skills and
+  skipped audit, brand, compare, content, schema and technical. The descriptions are
+  quoted, and the skill lint now fails any plain frontmatter value holding ": ".
+
+### Changed
+
+- **The README names the skills.sh install**, `npx skills add seo-skills/geo-audit-skill`,
+  beside the plugin install.
+
 ## [1.2.1] - 2026-09-29
 
 ### Changed
