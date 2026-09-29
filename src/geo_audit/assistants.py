@@ -176,9 +176,13 @@ def sanitize_category(raw: str, brand: str, site: str | None) -> str | None:
         if not words:
             continue
         name_pattern = r"[\W_]+".join(map(re.escape, words))
-        # A possessive ("Popupsmart's popup builder") goes with the name, or its
-        # "s" is left behind as a word of the category.
-        text = re.sub(rf"(?<![^\W_]){name_pattern}(?:['’]s)?(?![^\W_])", " ", text, flags=re.IGNORECASE)
+        # A possessive ("Popupsmart's popup builder") or a hyphenated compound
+        # ("Notion-style note-taking app") goes with the name, or its remainder is
+        # left behind as a word of the category.
+        text = re.sub(
+            rf"(?<![^\W_])(?:[^\W_]+-)*{name_pattern}(?:-[^\W_]+)*(?:['’]s)?(?![^\W_])",
+            " ", text, flags=re.IGNORECASE,
+        )
     words = [
         word if re.fullmatch(r"[A-Z]{2,}", word) else word.lower()
         for word in re.sub(r"[^\w &/+-]|_", " ", text).split()

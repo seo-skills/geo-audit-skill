@@ -24,6 +24,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **A brand in the possessive leaves nothing behind.** "Popupsmart's popup builder"
   lost the brand but kept its "'s", so every engine was asked for the best "s popup
   builder" brands. The possessive now goes with the name.
+- **A compound built on the brand goes with it.** Removing the brand as a whole
+  name left "Notion-style note-taking app" as "-style note-taking app". A hyphenated
+  compound on the brand ("Notion-style", "Acme-powered") is now removed with the name.
 
 ## [1.2.0] - 2026-09-25
 
