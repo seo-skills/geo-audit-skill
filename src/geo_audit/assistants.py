@@ -162,16 +162,31 @@ def sanitize_brand(name: str, site: str | None) -> str:
 def sanitize_category(raw: str, brand: str, site: str | None) -> str | None:
     """The category for the unbranded question, or None when nothing usable is left.
 
-    The brand's own words are removed so the question stays unbranded; two to six
-    words, 60 characters, lowercased except acronyms.
+    The brand is removed so the question stays unbranded, as a whole name and not
+    word by word: a descriptive brand is made of its category's words, and
+    removing "QR", "Code" and "Dynamic" one at a time left "Dynamic QR code
+    generator" as "generator". The name's words match whatever punctuation joins
+    them, since the brand arrives cleaned ("Yes No Apps") and the engine writes it
+    as the site does ("Yes/No Apps"). Two to six words, 60 characters, lowercased
+    except acronyms.
     """
-    own = {word for word in re.split(r"[\W_]+", brand.lower()) if len(word) > 1}
-    if site:
-        own.add(domain_label(site))
+    text = raw
+    for name in filter(None, (brand.strip(), domain_label(site) if site else None)):
+        words = re.findall(r"[^\W_]+", name)
+        if not words:
+            continue
+        name_pattern = r"[\W_]+".join(map(re.escape, words))
+        # A possessive ("Popupsmart's popup builder") or a hyphenated compound
+        # ("Notion-style note-taking app") goes with the name, or its remainder is
+        # left behind as a word of the category.
+        text = re.sub(
+            rf"(?<![^\W_])(?:[^\W_]+-)*{name_pattern}(?:-[^\W_]+)*(?:['’]s)?(?![^\W_])",
+            " ", text, flags=re.IGNORECASE,
+        )
     words = [
         word if re.fullmatch(r"[A-Z]{2,}", word) else word.lower()
-        for word in re.sub(r"[^\w &/+-]|_", " ", raw).split()
-        if (word == "&" or re.search(r"[^\W_]", word)) and word.lower() not in own
+        for word in re.sub(r"[^\w &/+-]|_", " ", text).split()
+        if word == "&" or re.search(r"[^\W_]", word)
     ][:6]
     while len(" ".join(words)) > 60:
         words.pop()

@@ -7,6 +7,34 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **The README explains the AI assistant questions.** What `--assistants` asks, on
+  whose key, how the category question is kept unbranded, and that the brand name and
+  domain are the one thing it sends off the machine. The brand skill and PRD §3.10.1
+  describe the category the same way.
+
+### Fixed
+
+- **A descriptive brand keeps its category question.** The assistants' category was
+  made unbranded by removing each word of the brand name, so a brand named for what it
+  does lost its category: for "QR Code Dynamic", ChatGPT's "Dynamic QR code generator"
+  became "generator" and Gemini's became "generator software", and every engine was
+  asked for the best generator software brands. The brand is now removed as a whole
+  name, so the question asks for the best dynamic QR code generator brands.
+- **A brand written with punctuation is left out of its category question.** The
+  name reaches the category as cleaned for the questions, so "Yes/No Apps" arrived
+  as "Yes No Apps" and was never found in ChatGPT's "Yes/No Apps survey tool": every
+  engine was asked for the best "yes/no apps survey tool" brands, naming the brand
+  the question exists to leave out. The name's words now match whatever punctuation
+  joins them.
+- **A brand in the possessive leaves nothing behind.** "Popupsmart's popup builder"
+  lost the brand but kept its "'s", so every engine was asked for the best "s popup
+  builder" brands. The possessive now goes with the name.
+- **A compound built on the brand goes with it.** Removing the brand as a whole
+  name left "Notion-style note-taking app" as "-style note-taking app". A hyphenated
+  compound on the brand ("Notion-style", "Acme-powered") is now removed with the name.
+
 ## [1.2.0] - 2026-09-25
 
 ### Added

@@ -2,7 +2,11 @@
 
 Two questions per engine, through scrape.do on the user's own key: what the brand is
 (its category, what it offers, five competitors), and the best brands in that category,
-top ten. The category comes from ChatGPT's first answer, else Gemini's.
+top ten. The category comes from ChatGPT's first answer, else Gemini's. The brand is
+taken out of it as a whole name, with its punctuation, a possessive or a compound built
+on it, so the second question never names the brand: a descriptive brand keeps its
+category ("QR Code Dynamic" is asked about dynamic QR code generators). If a user asks
+why the question did not mention their brand, that is why.
 
 ## Before running it
 

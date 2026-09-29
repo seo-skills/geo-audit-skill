@@ -219,6 +219,24 @@ changes it.
 **Does my content leave my machine?** No. The CLI fetches the pages you point it at and
 stores them under `~/.geo` so a rescore can reproduce the number. Its output carries
 derived signals and short, escaped excerpts, never page text, and nothing is uploaded.
+The one exception is opt-in: `--assistants` sends the brand name, the site's domain and
+the category it was given to scrape.do, on your own key, as the questions below.
+
+**Can it tell me what ChatGPT says about my brand?** Yes, if you ask it to and pay for it
+on your own [scrape.do](https://scrape.do) key, read only from `GEO_SCRAPEDO_TOKEN`:
+
+```bash
+geo scan "Acme" --site https://acme.example --assistants all
+geo audit https://acme.example --brand "Acme" --assistants chatgpt,gemini
+```
+
+ChatGPT, Gemini and Google AI Mode are each asked two questions: what the brand is, and
+the best brands in its category, top ten. The category comes from ChatGPT's first answer,
+else Gemini's, with the brand taken out as a whole name (with its punctuation, a
+possessive or a compound built on it), so the second question never names the brand it
+is testing: "QR Code Dynamic", described as a dynamic QR code generator, is asked about
+the best dynamic QR code generator brands. The answers are one sample each, recorded
+and shown in the report, and never scored.
 
 **Can I compare the score with another tool's?** No. A score is comparable with another
 score from this tool at the same `scoring_version` and `data_version`. Other tools
