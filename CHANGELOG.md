@@ -21,6 +21,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   engine was asked for the best "yes/no apps survey tool" brands, naming the brand
   the question exists to leave out. The name's words now match whatever punctuation
   joins them.
+- **A brand in the possessive leaves nothing behind.** "Popupsmart's popup builder"
+  lost the brand but kept its "'s", so every engine was asked for the best "s popup
+  builder" brands. The possessive now goes with the name.
 
 ## [1.2.0] - 2026-09-25
 
