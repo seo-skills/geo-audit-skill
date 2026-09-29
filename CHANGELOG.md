@@ -15,6 +15,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   became "generator" and Gemini's became "generator software", and every engine was
   asked for the best generator software brands. The brand is now removed as a whole
   name, so the question asks for the best dynamic QR code generator brands.
+- **A brand written with punctuation is left out of its category question.** The
+  name reaches the category as cleaned for the questions, so "Yes/No Apps" arrived
+  as "Yes No Apps" and was never found in ChatGPT's "Yes/No Apps survey tool": every
+  engine was asked for the best "yes/no apps survey tool" brands, naming the brand
+  the question exists to leave out. The name's words now match whatever punctuation
+  joins them.
 
 ## [1.2.0] - 2026-09-25
 

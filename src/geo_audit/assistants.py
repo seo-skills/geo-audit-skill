@@ -165,12 +165,18 @@ def sanitize_category(raw: str, brand: str, site: str | None) -> str | None:
     The brand is removed so the question stays unbranded, as a whole name and not
     word by word: a descriptive brand is made of its category's words, and
     removing "QR", "Code" and "Dynamic" one at a time left "Dynamic QR code
-    generator" as "generator". Two to six words, 60 characters, lowercased except
-    acronyms.
+    generator" as "generator". The name's words match whatever punctuation joins
+    them, since the brand arrives cleaned ("Yes No Apps") and the engine writes it
+    as the site does ("Yes/No Apps"). Two to six words, 60 characters, lowercased
+    except acronyms.
     """
     text = raw
     for name in filter(None, (brand.strip(), domain_label(site) if site else None)):
-        text = re.sub(rf"(?<![^\W_]){re.escape(name)}(?![^\W_])", " ", text, flags=re.IGNORECASE)
+        words = re.findall(r"[^\W_]+", name)
+        if not words:
+            continue
+        name_pattern = r"[\W_]+".join(map(re.escape, words))
+        text = re.sub(rf"(?<![^\W_]){name_pattern}(?![^\W_])", " ", text, flags=re.IGNORECASE)
     words = [
         word if re.fullmatch(r"[A-Z]{2,}", word) else word.lower()
         for word in re.sub(r"[^\w &/+-]|_", " ", text).split()
