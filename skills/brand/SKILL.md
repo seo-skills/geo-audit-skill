@@ -1,7 +1,7 @@
 ---
 name: brand
 description: Check whether a brand exists as an entity an AI system can look up: Wikipedia, Wikidata, Reddit and YouTube presence, and whether the site links itself to those profiles. Use when asked about brand visibility, brand mentions, entity presence or why an AI does not seem to know a company exists.
-version: 1.2.0
+version: 1.2.1
 allowed-tools: Bash, Read
 ---
 

@@ -1,7 +1,7 @@
 ---
 name: report
 description: Render a recorded audit as a client-ready HTML or PDF report, with optional agency branding and a separate operator copy. Use when asked for a report, a deliverable, a PDF, something to send a client, or a white-labelled audit.
-version: 1.2.0
+version: 1.2.1
 allowed-tools: Bash, Read
 ---
 

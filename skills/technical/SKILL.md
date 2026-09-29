@@ -1,7 +1,7 @@
 ---
 name: technical
 description: Check whether crawlers can reach, read and index a site: robots.txt access for the AI crawler tokens, noindex and canonical problems, metadata, redirect health, HTTPS and URL structure. Use when asked why a site is not appearing in AI answers at all, or to check crawlability, indexability or bot access.
-version: 1.2.0
+version: 1.2.1
 allowed-tools: Bash, Read
 ---
 

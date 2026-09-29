@@ -1,7 +1,7 @@
 ---
 name: llmstxt
 description: Check whether a site publishes an llms.txt and whether it follows the format, or build one from the site's own pages. Use when asked about llms.txt, llms-full.txt, or how to tell AI systems which pages on a site matter.
-version: 1.2.0
+version: 1.2.1
 allowed-tools: Bash, Read
 ---
 

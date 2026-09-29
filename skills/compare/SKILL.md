@@ -1,7 +1,7 @@
 ---
 name: compare
 description: Show what changed between two recorded audits of a site: score movement, which findings were resolved or introduced, and which pages changed. Use when asked whether things improved, what changed since last time, or to report progress on GEO work.
-version: 1.2.0
+version: 1.2.1
 allowed-tools: Bash, Read
 ---
 

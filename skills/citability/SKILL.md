@@ -1,7 +1,7 @@
 ---
 name: citability
 description: Score how quotable a single page is for AI search engines. Runs the geo CLI, explains the seven citability signals behind the number, and ranks the fixes that recover the most points. Use when asked to check, score or improve whether a page can be cited by ChatGPT, Claude, Perplexity, Gemini or AI Overviews.
-version: 1.2.0
+version: 1.2.1
 allowed-tools: Bash, Read
 ---
 

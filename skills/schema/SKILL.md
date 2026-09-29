@@ -1,7 +1,7 @@
 ---
 name: schema
 description: Check and generate structured data: which schema.org types a page declares, which required and recommended properties are missing, whether the JSON-LD parses, and what to add. Use when asked about structured data, JSON-LD, schema markup, rich results or how to describe a page to search engines.
-version: 1.2.0
+version: 1.2.1
 allowed-tools: Bash, Read
 ---
 

@@ -1,7 +1,7 @@
 ---
 name: content
 description: Judge content quality for AI search: depth, author expertise, freshness and readability are measured by the CLI, and the experience and helpfulness questions are yours to answer against a fixed rubric. Use when asked about E-E-A-T, content quality, thin content, author authority or whether a page is worth citing.
-version: 1.2.0
+version: 1.2.1
 allowed-tools: Bash, Read
 ---
 
