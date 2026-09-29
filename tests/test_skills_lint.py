@@ -367,3 +367,30 @@ def test_heuristics_cite_their_primary_source(section, source):
     """PRD §3.7: sources, not personalities - auditor heuristics cite primary
     sources with URLs. Each of these sections makes a claim the source backs."""
     assert source in (ROOT / "skills" / section).read_text(encoding="utf-8")
+
+
+def _with_description(path: Path, description: str) -> Path:
+    skill = path / "SKILL.md"
+    text = skill.read_text(encoding="utf-8")
+    start = text.index("description: ")
+    end = text.index("\n", start)
+    skill.write_text(text[:start] + f"description: {description}" + text[end:], encoding="utf-8")
+    return path
+
+
+def test_an_unquoted_colon_in_the_frontmatter_is_caught(tmp_path):
+    # Claude Code reads "a site: crawl it" as text; the skills.sh CLI parses strict
+    # YAML, reads ": " as a nested mapping, and skips the skill without installing it.
+    path = _with_description(
+        make_skill(tmp_path, body=contract_block()),
+        "Audit a site: crawl it and score it. Use when asked to audit a site.",
+    )
+    assert any("strict YAML" in error for error in lint_one(path))
+
+
+def test_a_quoted_description_with_a_colon_passes(tmp_path):
+    path = _with_description(
+        make_skill(tmp_path, body=contract_block()),
+        '"Audit a site: crawl it and score it. Use when asked to audit a site."',
+    )
+    assert lint_one(path) == []

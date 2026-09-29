@@ -1,6 +1,6 @@
 ---
 name: audit
-description: Run a full GEO audit of a site: crawl it, score citability, technical and schema over every page, and rank the fixes by what each one recovers. Use when asked to audit, score or improve a whole site for AI search visibility, or when someone asks how a site performs in ChatGPT, Claude, Perplexity, Gemini or AI Overviews.
+description: "Run a full GEO audit of a site: crawl it, score citability, technical and schema over every page, and rank the fixes by what each one recovers. Use when asked to audit, score or improve a whole site for AI search visibility, or when someone asks how a site performs in ChatGPT, Claude, Perplexity, Gemini or AI Overviews."
 version: 1.2.1
 allowed-tools: Bash, Read
 ---

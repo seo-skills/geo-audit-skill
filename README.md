@@ -72,6 +72,14 @@ flag in a pipeline. Progress goes to stderr, always.
 /geo:audit https://example.com
 ```
 
+Or install the skills without the plugin manager, from [skills.sh](https://skills.sh):
+
+```
+npx skills add seo-skills/geo-audit-skill
+```
+
+Either way the skills need the `geo` CLI from the install step above.
+
 Nine skills ship with the plugin: `/geo:audit`, `/geo:citability`, `/geo:technical`,
 `/geo:schema`, `/geo:content`, `/geo:llmstxt`, `/geo:brand`, `/geo:compare` and
 `/geo:report`. They call the CLI and read its JSON.

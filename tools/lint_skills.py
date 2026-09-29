@@ -101,8 +101,31 @@ def parse_frontmatter(text: str) -> dict[str, str]:
     for line in block.splitlines():
         if ":" in line and not line.startswith(" "):
             key, _, value = line.partition(":")
-            fields[key.strip()] = value.strip()
+            value = value.strip()
+            if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+                value = value[1:-1]
+            fields[key.strip()] = value
     return fields
+
+
+def unquoted_colon_keys(text: str) -> list[str]:
+    """Frontmatter keys whose plain value holds ": ", which strict YAML rejects.
+
+    Claude Code reads such a value as text; the skills.sh CLI parses strict YAML,
+    reads the ": " as a nested mapping and skips the skill without a word to its
+    users. Quoting the value is the fix.
+    """
+    if not text.startswith("---\n"):
+        return []
+    _, block, _ = text.split("---\n", 2)
+    keys = []
+    for line in block.splitlines():
+        if ":" in line and not line.startswith(" "):
+            key, _, value = line.partition(":")
+            value = value.strip()
+            if value[:1] not in ("\"", "'") and (": " in value or value.endswith(":")):
+                keys.append(key.strip())
+    return keys
 
 
 def known_keys() -> set[str]:
@@ -308,6 +331,9 @@ def lint_skill(report: Report, path: Path, version: str, contract: str, allowed:
     fields = parse_frontmatter(text)
     for key in FRONTMATTER_REQUIRED:
         report.check(bool(fields.get(key)), where, f"frontmatter is missing {key}")
+    for key in unquoted_colon_keys(text):
+        report.fail(where, f"frontmatter {key} is not strict YAML: a plain value may not hold ': '; "
+                           "wrap it in double quotes, or the skills.sh CLI skips the skill")
     report.check(fields.get("name") == path.name, where, f"frontmatter name must be {path.name!r}")
     report.check(fields.get("version") == version, where, f"frontmatter version must be {version}")
     description = fields.get("description", "")
