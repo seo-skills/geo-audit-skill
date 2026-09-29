@@ -7,6 +7,13 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **The README explains the AI assistant questions.** What `--assistants` asks, on
+  whose key, how the category question is kept unbranded, and that the brand name and
+  domain are the one thing it sends off the machine. The brand skill and PRD §3.10.1
+  describe the category the same way.
+
 ### Fixed
 
 - **A descriptive brand keeps its category question.** The assistants' category was
